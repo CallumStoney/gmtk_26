@@ -9,6 +9,9 @@ public partial class GameManager : Node
 	[Signal] public delegate void StatsChangedEventHandler();
 	[Signal] public delegate void TurnAdvancedEventHandler(int currentTurn);
 	[Signal] public delegate void GameOverEventHandler(string reason);
+	[Signal] public delegate void AdvisorTagExecutedEventHandler(string tag);
+
+	public AdvisorMemory Memory { get; private set; }
 
 	private int _population  = 100;
 	private int _pollution   = 80;   //this might be a tad high idk
@@ -48,6 +51,7 @@ public partial class GameManager : Node
 	public override void _Ready()
 	{
 		Instance = this;
+		Memory = new AdvisorMemory();
 	}
 
 	//pub helps
@@ -90,6 +94,7 @@ public partial class GameManager : Node
 		_popularity = 50;
 		_money      = 500;
 		CurrentTurn = 1;
+		Memory.Reset();
 
 		EmitSignal(SignalName.StatsChanged);
 	}
