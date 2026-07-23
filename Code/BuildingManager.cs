@@ -9,7 +9,8 @@ public partial class BuildingManager : Node2D
     public enum FootprintType
     {
         Single1x1,
-        DynamicHorizontal2x1
+        DynamicHorizontal2x1,
+        Square2x2
     }
 
     // -----------------------------------------
@@ -140,22 +141,62 @@ public partial class BuildingManager : Node2D
         }
 
         // 2. Mouse Click Input
-        if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
         {
             Vector2 localMousePos = GroundTileMap.ToLocal(GetGlobalMousePosition());
             Vector2I clickGridPos = GroundTileMap.LocalToMap(localMousePos);
 
             if (!buildableTiles.ContainsKey(clickGridPos)) return;
 
-            FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
+            CityTile clickedTile = buildableTiles[clickGridPos];
 
-            if (activeFootprint == FootprintType.Single1x1)
+            // --- LEFT CLICK: PLACE OR UPGRADE ---
+            if (mouseEvent.ButtonIndex == MouseButton.Left)
             {
-                TryPlaceSingleTile(clickGridPos);
+                if (clickedTile.IsOccupied && clickedTile.BuildingNode != null)
+                {
+                    // Check if the node is an UpgradableBuilding
+                    if (clickedTile.BuildingNode is UpgradableBuilding upgradable)
+                    {
+                        if (upgradable.TryUpgrade())
+                            GD.Print("Building upgraded!");
+                        else
+                            GD.Print("Building is already at max level.");
+                    }
+                    return; // Stop here so we don't try to place a new building on top
+                }
+
+                // If empty, proceed with placement
+                FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
+
+                if (activeFootprint == FootprintType.Single1x1) TryPlaceSingleTile(clickGridPos);
+                else if (activeFootprint == FootprintType.DynamicHorizontal2x1) TryPlaceTwoTile(clickGridPos);
+                else if (activeFootprint == FootprintType.Square2x2) TryPlaceFourTile(clickGridPos);
             }
-            else if (activeFootprint == FootprintType.DynamicHorizontal2x1)
+
+            // --- RIGHT CLICK: DOWNGRADE OR DELETE ---
+            else if (mouseEvent.ButtonIndex == MouseButton.Right)
             {
-                TryPlaceTwoTile(clickGridPos);
+                if (clickedTile.IsOccupied && clickedTile.BuildingNode != null)
+                {
+                    if (clickedTile.BuildingNode is UpgradableBuilding upgradable)
+                    {
+                        // TryDowngrade returns false if it is at level 0
+                        if (!upgradable.TryDowngrade())
+                        {
+                            DeleteBuilding(clickedTile.BuildingNode);
+                        }
+                        else
+                        {
+                            GD.Print("Building downgraded!");
+                        }
+                    }
+                    else
+                    {
+                        // If it's a standard Node2D (not upgradable), just delete it immediately
+                        DeleteBuilding(clickedTile.BuildingNode);
+                    }
+                }
             }
         }
     }
@@ -176,11 +217,11 @@ public partial class BuildingManager : Node2D
 
         if (activeFootprint == FootprintType.Single1x1)
         {
-            buildingRotation = (buildingRotation + 1) % 2; // Toggles 0 and 1 for 1x1
+            buildingRotation = (buildingRotation + 1) % 2; // Toggles 0 and 1
         }
         else
         {
-            buildingRotation = (buildingRotation + 1) % 4; // Cycles 0..3 for 2x1 manual rotation
+            buildingRotation = (buildingRotation + 1) % 4; // Cycles 0..3 for 2x1 and 2x2
         }
 
         UpdatePreviewTransform(GetTargetNeighborEnum());
@@ -189,15 +230,14 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     // ROTATION & TRANSFORM HELPERS
     // -----------------------------------------
-
     private TileSet.CellNeighbor GetTargetNeighborEnum()
     {
         return buildingRotation switch
         {
-            0 => TileSet.CellNeighbor.BottomRightSide, // Down-Right
-            1 => TileSet.CellNeighbor.BottomLeftSide,  // Down-Left
-            2 => TileSet.CellNeighbor.TopLeftSide,     // Up-Left
-            3 => TileSet.CellNeighbor.TopRightSide,    // Up-Right
+            0 => TileSet.CellNeighbor.BottomRightSide,
+            1 => TileSet.CellNeighbor.BottomLeftSide,
+            2 => TileSet.CellNeighbor.TopLeftSide,
+            3 => TileSet.CellNeighbor.TopRightSide,
             _ => TileSet.CellNeighbor.BottomRightSide
         };
     }
@@ -235,10 +275,23 @@ public partial class BuildingManager : Node2D
         }
     }
 
-    // -----------------------------------------
-    // TILE PAIR RESOLVER (FORWARD & BACKWARD)
-    // -----------------------------------------
+    private void GetTwoByTwoCustomTransform(int rotationState, out Vector2 customScale, out float customRotationDegrees)
+    {
+        customRotationDegrees = 0.0f;
+        // Strictly visual flips, no positional offset jumping
+        switch (rotationState)
+        {
+            case 0: customScale = new Vector2(1, 1); break;
+            case 1: customScale = new Vector2(-1, 1); break;
+            case 2: customScale = new Vector2(1, 1); break;
+            case 3: customScale = new Vector2(-1, 1); break;
+            default: customScale = new Vector2(1, 1); break;
+        }
+    }
 
+    // -----------------------------------------
+    // TILE RESOLVERS (2x1 and 2x2)
+    // -----------------------------------------
     private CityTile GetTwoByOneSecondaryTile(Vector2I pivotGridPos, out TileSet.CellNeighbor matchedNeighbor)
     {
         matchedNeighbor = GetTargetNeighborEnum();
@@ -250,18 +303,16 @@ public partial class BuildingManager : Node2D
         if (!buildableTiles.ContainsKey(pivotGridPos) || buildableTiles[pivotGridPos].IsOccupied)
             return null;
 
-        // Determine forward and backward neighbors along the active rotation axis
         TileSet.CellNeighbor forwardNeighbor = matchedNeighbor;
         TileSet.CellNeighbor backwardNeighbor = buildingRotation switch
         {
-            0 => TileSet.CellNeighbor.TopLeftSide,     // Opposite of BottomRightSide
-            1 => TileSet.CellNeighbor.TopRightSide,    // Opposite of BottomLeftSide
-            2 => TileSet.CellNeighbor.BottomRightSide, // Opposite of TopLeftSide
-            3 => TileSet.CellNeighbor.BottomLeftSide,  // Opposite of TopRightSide
+            0 => TileSet.CellNeighbor.TopLeftSide,
+            1 => TileSet.CellNeighbor.TopRightSide,
+            2 => TileSet.CellNeighbor.BottomRightSide,
+            3 => TileSet.CellNeighbor.BottomLeftSide,
             _ => TileSet.CellNeighbor.TopLeftSide
         };
 
-        // 1. Check Primary/Forward Neighbor
         Vector2I forwardPos = GroundTileMap.GetNeighborCell(pivotGridPos, forwardNeighbor);
         if (buildableTiles.TryGetValue(forwardPos, out CityTile forwardTile) && !forwardTile.IsOccupied)
         {
@@ -269,7 +320,6 @@ public partial class BuildingManager : Node2D
             return forwardTile;
         }
 
-        // 2. Check Backward Neighbor (if forward is blocked or occupied)
         Vector2I backwardPos = GroundTileMap.GetNeighborCell(pivotGridPos, backwardNeighbor);
         if (buildableTiles.TryGetValue(backwardPos, out CityTile backwardTile) && !backwardTile.IsOccupied)
         {
@@ -277,6 +327,62 @@ public partial class BuildingManager : Node2D
             return backwardTile;
         }
 
+        return null;
+    }
+
+    private List<CityTile> TryGet2x2Config(Vector2I pivotGridPos, int configIndex)
+    {
+        Vector2I posTop = Vector2I.Zero, posRight = Vector2I.Zero, posLeft = Vector2I.Zero, posBottom = Vector2I.Zero;
+
+        switch (configIndex)
+        {
+            case 0: // Config 0: Mouse is the Top tile
+                posTop = pivotGridPos;
+                posRight = GroundTileMap.GetNeighborCell(posTop, TileSet.CellNeighbor.BottomRightSide);
+                posLeft = GroundTileMap.GetNeighborCell(posTop, TileSet.CellNeighbor.BottomLeftSide);
+                posBottom = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.BottomLeftSide);
+                break;
+            case 1: // Config 1: Mouse is the Right tile
+                posRight = pivotGridPos;
+                posBottom = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.BottomLeftSide);
+                posTop = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.TopLeftSide);
+                posLeft = GroundTileMap.GetNeighborCell(posBottom, TileSet.CellNeighbor.TopLeftSide);
+                break;
+            case 2: // Config 2: Mouse is the Bottom tile
+                posBottom = pivotGridPos;
+                posLeft = GroundTileMap.GetNeighborCell(posBottom, TileSet.CellNeighbor.TopLeftSide);
+                posRight = GroundTileMap.GetNeighborCell(posBottom, TileSet.CellNeighbor.TopRightSide);
+                posTop = GroundTileMap.GetNeighborCell(posLeft, TileSet.CellNeighbor.TopRightSide);
+                break;
+            case 3: // Config 3: Mouse is the Left tile
+                posLeft = pivotGridPos;
+                posTop = GroundTileMap.GetNeighborCell(posLeft, TileSet.CellNeighbor.TopRightSide);
+                posBottom = GroundTileMap.GetNeighborCell(posLeft, TileSet.CellNeighbor.BottomRightSide);
+                posRight = GroundTileMap.GetNeighborCell(posTop, TileSet.CellNeighbor.BottomRightSide);
+                break;
+        }
+
+        if (buildableTiles.TryGetValue(posTop, out CityTile tTop) && !tTop.IsOccupied &&
+            buildableTiles.TryGetValue(posRight, out CityTile tRight) && !tRight.IsOccupied &&
+            buildableTiles.TryGetValue(posLeft, out CityTile tLeft) && !tLeft.IsOccupied &&
+            buildableTiles.TryGetValue(posBottom, out CityTile tBottom) && !tBottom.IsOccupied)
+        {
+            // ALWAYS returns in standard orientation to preserve geometric calculations
+            return new List<CityTile> { tTop, tRight, tLeft, tBottom };
+        }
+
+        return null;
+    }
+
+    private List<CityTile> GetSquare2x2Tiles(Vector2I pivotGridPos)
+    {
+        // Loop through all 4 grid arrangements to find an empty valid 2x2 spot around the mouse.
+        // Independent from visual `buildingRotation`.
+        for (int i = 0; i < 4; i++)
+        {
+            List<CityTile> tiles = TryGet2x2Config(pivotGridPos, i);
+            if (tiles != null) return tiles;
+        }
         return null;
     }
 
@@ -291,17 +397,56 @@ public partial class BuildingManager : Node2D
             return true;
 
         if (activeFootprint == FootprintType.DynamicHorizontal2x1)
-        {
             return secondTile != null && !secondTile.IsOccupied;
+
+        if (activeFootprint == FootprintType.Square2x2)
+        {
+            List<CityTile> tiles = GetSquare2x2Tiles(pivotGridPos);
+            return tiles != null;
         }
 
         return false;
     }
 
+    // -----------------------------------------
+    // DEPTH & POSITION CALCULATORS
+    // -----------------------------------------
+    private int CalculateDepth(Vector2I pivotGridPos, CityTile secondTile)
+    {
+        float maxDepthY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(pivotGridPos)).Y;
+        FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
+
+        if (activeFootprint == FootprintType.DynamicHorizontal2x1 && secondTile != null)
+        {
+            float secondTileY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(secondTile.GridPosition)).Y;
+            maxDepthY = Mathf.Max(maxDepthY, secondTileY);
+        }
+        else if (activeFootprint == FootprintType.Square2x2)
+        {
+            List<CityTile> tiles = GetSquare2x2Tiles(pivotGridPos);
+            if (tiles != null)
+            {
+                foreach (CityTile t in tiles)
+                {
+                    float tileY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(t.GridPosition)).Y;
+                    maxDepthY = Mathf.Max(maxDepthY, tileY);
+                }
+            }
+            else // Failsafe if hovering over an invalid spot so the depth doesn't break
+            {
+                Vector2I posTop = pivotGridPos;
+                Vector2I posRight = GroundTileMap.GetNeighborCell(posTop, TileSet.CellNeighbor.BottomRightSide);
+                Vector2I posBottom = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.BottomLeftSide);
+                maxDepthY = Mathf.Max(maxDepthY, GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(posBottom)).Y);
+            }
+        }
+
+        return Mathf.RoundToInt(maxDepthY) + 10;
+    }
+
     private Vector2 CalculateBuildingWorldPosition(Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
     {
         Vector2 pivotCenter = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(pivotGridPos));
-
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
 
         if (activeFootprint == FootprintType.DynamicHorizontal2x1)
@@ -321,6 +466,30 @@ public partial class BuildingManager : Node2D
 
             Vector2 midpoint = (pivotCenter + secondCenter) * 0.5f;
             return midpoint + BuildingVisualOffset + customOffset;
+        }
+        else if (activeFootprint == FootprintType.Square2x2)
+        {
+            List<CityTile> tiles = GetSquare2x2Tiles(pivotGridPos);
+            Vector2I posTop, posBottom;
+
+            if (tiles != null && tiles.Count == 4)
+            {
+                // Tiles[0] is guaranteed to be Top, Tiles[3] is Bottom. Averages to exact center.
+                posTop = tiles[0].GridPosition;
+                posBottom = tiles[3].GridPosition;
+            }
+            else
+            {
+                // FAILSAFE: Maintain the smooth 2x2 offset even if hovered spot is temporarily invalid (red)
+                posTop = pivotGridPos;
+                Vector2I posRight = GroundTileMap.GetNeighborCell(posTop, TileSet.CellNeighbor.BottomRightSide);
+                posBottom = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.BottomLeftSide);
+            }
+
+            Vector2 topCenter = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(posTop));
+            Vector2 bottomCenter = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(posBottom));
+
+            return ((topCenter + bottomCenter) * 0.5f) + BuildingVisualOffset;
         }
 
         return pivotCenter + BuildingVisualOffset;
@@ -346,6 +515,7 @@ public partial class BuildingManager : Node2D
             Vector2I hoverGridPos = GroundTileMap.LocalToMap(localMousePos);
 
             CityTile secondTile = GetTwoByOneSecondaryTile(hoverGridPos, out TileSet.CellNeighbor matchedNeighbor);
+
             previewNode.GlobalPosition = CalculateBuildingWorldPosition(hoverGridPos, secondTile, matchedNeighbor);
             targetPreviewPosition = previewNode.GlobalPosition;
 
@@ -367,6 +537,12 @@ public partial class BuildingManager : Node2D
         else if (activeFootprint == FootprintType.DynamicHorizontal2x1)
         {
             GetTwoByOneCustomTransform(matchedNeighbor, out _, out Vector2 customScale, out float customRotation);
+            previewNode.Scale = customScale;
+            previewNode.RotationDegrees = customRotation;
+        }
+        else if (activeFootprint == FootprintType.Square2x2)
+        {
+            GetTwoByTwoCustomTransform(buildingRotation, out Vector2 customScale, out float customRotation);
             previewNode.Scale = customScale;
             previewNode.RotationDegrees = customRotation;
         }
@@ -417,11 +593,31 @@ public partial class BuildingManager : Node2D
         CommitBuilding(new List<CityTile> { pivotTile, secondTile }, pivotGridPos, secondTile, matchedNeighbor);
     }
 
+    private void TryPlaceFourTile(Vector2I pivotGridPos)
+    {
+        List<CityTile> tiles = GetSquare2x2Tiles(pivotGridPos);
+
+        if (tiles == null)
+        {
+            GD.Print("Cannot place: 2x2 area is blocked or out of bounds!");
+            return;
+        }
+
+        CommitBuilding(tiles, pivotGridPos, null, TileSet.CellNeighbor.BottomRightSide);
+    }
+
     // -----------------------------------------
     // COMMIT & SPAWN
     // -----------------------------------------
     private void CommitBuilding(List<CityTile> tilesToOccupy, Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
     {
+        // 1. Calculate the final position and depth BEFORE setting IsOccupied = true
+        // If we set IsOccupied first, CalculateBuildingWorldPosition will assume the spot 
+        // is invalid and forcefully fall back to a 1x1 position, causing the jump!
+        Vector2 finalWorldPos = CalculateBuildingWorldPosition(pivotGridPos, secondTile, matchedNeighbor);
+        int finalDepth = CalculateDepth(pivotGridPos, secondTile);
+
+        // 2. Now it's safe to mark the tiles as occupied
         foreach (CityTile tile in tilesToOccupy)
         {
             tile.IsOccupied = true;
@@ -443,9 +639,16 @@ public partial class BuildingManager : Node2D
             newBuilding.Scale = customScale;
             newBuilding.RotationDegrees = customRotation;
         }
+        else if (activeFootprint == FootprintType.Square2x2)
+        {
+            GetTwoByTwoCustomTransform(buildingRotation, out Vector2 customScale, out float customRotation);
+            newBuilding.Scale = customScale;
+            newBuilding.RotationDegrees = customRotation;
+        }
 
-        newBuilding.GlobalPosition = CalculateBuildingWorldPosition(pivotGridPos, secondTile, matchedNeighbor);
-        newBuilding.ZIndex = CalculateDepth(pivotGridPos, secondTile);
+        // 3. Apply the properly cached transform and depth
+        newBuilding.GlobalPosition = finalWorldPos;
+        newBuilding.ZIndex = finalDepth;
 
         foreach (CityTile tile in tilesToOccupy)
         {
@@ -456,20 +659,28 @@ public partial class BuildingManager : Node2D
     }
 
     // -----------------------------------------
-    // DEPTH SORTING HELPER
+    // DELETION LOGIC
     // -----------------------------------------
-    private int CalculateDepth(Vector2I pivotGridPos, CityTile secondTile)
+    private void DeleteBuilding(Node2D buildingToRemove)
     {
-        // Start with the pivot tile's Y position
-        float maxDepthY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(pivotGridPos)).Y;
+        if (buildingToRemove == null) return;
 
-        // If there's a second tile (for 2x1s), take the one that is lowest on the screen (Highest Y)
-        if (secondTile != null)
+        int freedTiles = 0;
+
+        // Find all tiles that reference this exact building and reset them
+        foreach (var kvp in buildableTiles)
         {
-            float secondTileY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(secondTile.GridPosition)).Y;
-            maxDepthY = Mathf.Max(maxDepthY, secondTileY);
+            if (kvp.Value.BuildingNode == buildingToRemove)
+            {
+                kvp.Value.IsOccupied = false;
+                kvp.Value.BuildingNode = null;
+                freedTiles++;
+            }
         }
 
-        return Mathf.RoundToInt(maxDepthY) + 10;
+        // Destroy the actual building node in the scene
+        buildingToRemove.QueueFree();
+
+        GD.Print($"Deleted building, cleanly freed {freedTiles} tile(s).");
     }
 }

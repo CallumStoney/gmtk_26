@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://da0l0ksymkuka"]
+
+[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="1_ppnb7"]
+
+[node name="House1" type="Sprite2D"]
+texture = ExtResource("1_ppnb7")
+offset = Vector2(0, -16)
+region_enabled = true
+region_rect = Rect2(139, 93, 38, 35)
