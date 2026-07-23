@@ -63,7 +63,7 @@ public partial class GameManager : Node
 		EmitSignal(SignalName.StatsChanged);
 	}
 
-	public void Advanceturn()
+	public void AdvanceTurn()
 	{
 		CurrentTurn++;
 		EmitSignal(SignalName.TurnAdvanced, CurrentTurn);

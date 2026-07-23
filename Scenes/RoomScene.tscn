@@ -1,3 +1,153 @@
-[gd_scene format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=2 format=3 uid="uid://l5ejk6qnrbk"]
 
-[node name="Node2D" type="Node2D"]
+[ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
+
+[node name="RoomScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.11, 0.11, 0.14, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 20
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="StatsBar" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="TurnLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Day 1 / 15"
+
+[node name="PopulationLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Pop: 100"
+
+[node name="PollutionLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "Pollution: 80"
+
+[node name="PopularityLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+text = "Approval: 50%"
+
+[node name="MoneyLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "$500"
+
+[node name="Sep1" type="HSeparator" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="AdvisorPortrait" type="ColorRect" parent="MarginContainer/MainVBox/ContentHBox"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_vertical = 0
+color = Color(0.28, 0.28, 0.33, 1)
+
+[node name="ContentVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="AdvisorNameLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/ContentVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Advisor Name"
+
+[node name="DialogueLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/ContentVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+text = "Dialogue text will appear here..."
+autowrap_mode = 3
+
+[node name="Sep2" type="HSeparator" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="ChoiceHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="AcceptButton" type="Button" parent="MarginContainer/MainVBox/ChoiceHBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Accept"
+
+[node name="DeclineButton" type="Button" parent="MarginContainer/MainVBox/ChoiceHBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Decline"
+
+[node name="ResponseLabel" type="Label" parent="MarginContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 3
+
+[node name="BottomHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="Spacer" type="Control" parent="MarginContainer/MainVBox/BottomHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="MarginContainer/MainVBox/BottomHBox"]
+visible = false
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Next Advisor"
+
+[node name="EndTurnButton" type="Button" parent="MarginContainer/MainVBox/BottomHBox"]
+visible = false
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "End Day"
