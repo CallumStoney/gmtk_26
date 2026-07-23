@@ -1,14 +1,62 @@
-[gd_scene load_steps=14 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=28 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
+[ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="2_ri1kh"]
 [ext_resource type="PackedScene" uid="uid://ctvvgj0ta5t46" path="res://Nodes/house_1.tscn" id="3_aobtk"]
+[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="3_ri1kh"]
 [ext_resource type="PackedScene" uid="uid://61b3yagpg4i2" path="res://Nodes/office_1.tscn" id="6_d46wb"]
 [ext_resource type="PackedScene" uid="uid://dphxq8hppc2n1" path="res://Nodes/office_2.tscn" id="7_bdw28"]
 [ext_resource type="PackedScene" uid="uid://da0l0ksymkuka" path="res://Nodes/factory_2.tscn" id="8_wen53"]
 [ext_resource type="PackedScene" uid="uid://chesq7swfvk18" path="res://Nodes/apartment_2.tscn" id="9_rp3ig"]
+[ext_resource type="Script" uid="uid://dtkb3w3mv15v" path="res://Scenes/ShopUI.cs" id="10_7cl7d"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ptyvu"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(65, 49, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bilth"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(81, 50, 14, 13)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3dntw"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(97, 81, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ri1kh"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(113, 82, 14, 13)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ljnjt"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(164, 167, 39, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xw3tc"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(288, 48, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m48b7"]
+texture = SubResource("AtlasTexture_xw3tc")
+expand_margin_right = 426.0
+region_rect = Rect2(10, 0, 22, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m48b7"]
+atlas = ExtResource("3_ri1kh")
+region = Rect2(25, 80, 30, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x7odd"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(256, 15, 32, 17)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_57116"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(304, 15, 32, 17)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3q8ur"]
+atlas = ExtResource("3_ri1kh")
+region = Rect2(79, 41, 20, 39)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nrjec"]
 texture = ExtResource("1_nrjec")
@@ -257,8 +305,139 @@ tile_shape = 1
 tile_size = Vector2i(28, 14)
 sources/0 = SubResource("TileSetAtlasSource_aobtk")
 
-[node name="Node2D" type="Node2D"]
+[node name="CityScene" type="Node2D"]
 position = Vector2(583, 339)
+
+[node name="GameUI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="OpenInventoryButton" type="TextureButton" parent="GameUI"]
+custom_minimum_size = Vector2(64, 64)
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -64.0
+offset_right = 64.0
+grow_vertical = 0
+texture_normal = SubResource("AtlasTexture_ptyvu")
+texture_pressed = SubResource("AtlasTexture_bilth")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ShopUI" type="Control" parent="GameUI" node_paths=PackedStringArray("ToggleButton", "ShopPopup")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_7cl7d")
+ToggleButton = NodePath("OpenShopButton")
+ShopPopup = NodePath("ShopPopup")
+
+[node name="OpenShopButton" type="TextureButton" parent="GameUI/ShopUI"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -64.0
+grow_horizontal = 0
+grow_vertical = 0
+texture_normal = SubResource("AtlasTexture_3dntw")
+texture_pressed = SubResource("AtlasTexture_ri1kh")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ShopPopup" type="Control" parent="GameUI/ShopUI"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -1.0
+offset_bottom = -1.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Background" type="TextureRect" parent="GameUI/ShopUI/ShopPopup"]
+custom_minimum_size = Vector2(300, 550)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -289.0
+offset_bottom = 261.0
+grow_horizontal = 0
+grow_vertical = 2
+texture = SubResource("AtlasTexture_ljnjt")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="GameUI/ShopUI/ShopPopup"]
+layout_mode = 0
+offset_left = -262.0
+offset_top = -228.0
+offset_bottom = 206.0
+horizontal_scroll_mode = 0
+
+[node name="GridContainer" type="GridContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_m48b7")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer/HBoxContainer"]
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = SubResource("AtlasTexture_m48b7")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TextureButton" type="TextureButton" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_x7odd")
+texture_pressed = SubResource("AtlasTexture_57116")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="PanelContainer2" type="PanelContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_m48b7")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer2"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(91, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = SubResource("AtlasTexture_3q8ur")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TextureButton" type="TextureButton" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer/PanelContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_x7odd")
+texture_pressed = SubResource("AtlasTexture_57116")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(2, 2)

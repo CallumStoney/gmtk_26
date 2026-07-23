@@ -123,7 +123,7 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     // INPUT & ROUTING
     // -----------------------------------------
-    public override void _Input(InputEvent @event)
+    public override void _UnhandledInput(InputEvent @event)
     {
         // 1. Keyboard Inputs
         if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
