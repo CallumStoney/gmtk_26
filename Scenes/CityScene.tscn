@@ -1,3 +1,10 @@
-[gd_scene format=3 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=2 format=3 uid="uid://cn1sjd3e0rebi"]
+
+[ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 
 [node name="Node2D" type="Node2D"]
+
+[node name="GroundTiles" type="Sprite2D" parent="."]
+position = Vector2(234.25, 257.75)
+scale = Vector2(1.18254, 2.5)
+texture = ExtResource("1_nrjec")
