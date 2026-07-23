@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=12 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
 [ext_resource type="PackedScene" uid="uid://ctvvgj0ta5t46" path="res://Nodes/house_1.tscn" id="3_aobtk"]
+[ext_resource type="PackedScene" uid="uid://61b3yagpg4i2" path="res://Nodes/office_1.tscn" id="6_d46wb"]
+[ext_resource type="PackedScene" uid="uid://dphxq8hppc2n1" path="res://Nodes/office_2.tscn" id="7_bdw28"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nrjec"]
 texture = ExtResource("1_nrjec")
@@ -275,5 +277,6 @@ tile_set = SubResource("TileSet_ynusb")
 [node name="BuildingManager" type="Node2D" parent="." node_paths=PackedStringArray("GroundTileMap")]
 script = ExtResource("1_aobtk")
 GroundTileMap = NodePath("../TileSets/GroundTileMap")
-HouseScene = ExtResource("3_aobtk")
-BuildingVisualOffset = Vector2(0, -2)
+BuildingScenes = Array[PackedScene]([ExtResource("3_aobtk"), ExtResource("6_d46wb"), ExtResource("7_bdw28")])
+BuildingFootprints = Array[int]([0, 0, 1])
+BuildingVisualOffset = Vector2(0, 9)
