@@ -7,6 +7,8 @@ public partial class UpgradableBuilding : Sprite2D
     // Index 0 is the base level, Index 1 is the first upgrade, etc.
     [Export] public Godot.Collections.Array<Rect2> UpgradeRegions = new Godot.Collections.Array<Rect2>();
 
+    [Export] public int MaxLevel = 3; // Change 3 to whatever your max upgrade limit is
+
     public int CurrentLevel { get; private set; } = 0;
     private Tween currentTween;
 
@@ -21,6 +23,20 @@ public partial class UpgradableBuilding : Sprite2D
         {
             GD.PrintErr($"UpgradableBuilding '{Name}' is missing its Sprite2D or UpgradeRegions!");
         }
+    }
+
+    // Inside UpgradableBuilding.cs
+
+    // Returns true if we have not reached the max level
+    public bool CanUpgrade()
+    {
+        return CurrentLevel < MaxLevel; // (Change these variable names to match your script)
+    }
+
+    // Returns true if the building currently has upgrades applied to it (Level 2 or higher)
+    public bool CanDowngrade()
+    {
+        return CurrentLevel > 0; // (Change this variable name to match your script)
     }
 
     // Called on Left Click. Returns true if it successfully upgraded.

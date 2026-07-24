@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\buildingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\selectionbutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\selectionbutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\ButtonHighlight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Code\\ButtonHighlight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\camera2d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -17,6 +17,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\upgradablebuilding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\upgradablebuilding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\selectionbutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\selectionbutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\buildingininventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -54,7 +58,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 11,
           "Children": [
             {
               "$type": "Bookmark",
@@ -63,6 +67,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "ButtonHighlight.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\ButtonHighlight.cs",
+              "RelativeDocumentMoniker": "Code\\ButtonHighlight.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\ButtonHighlight.cs",
+              "RelativeToolTip": "Code\\ButtonHighlight.cs",
+              "ViewState": "AQIAADEAAAAAAAAAAAAkwEoAAAAiAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-24T06:00:20.732Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "SelectionButton.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\SelectionButton.cs",
               "RelativeDocumentMoniker": "Code\\SelectionButton.cs",
@@ -74,7 +91,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "BuildingInInventory.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingInInventory.cs",
               "RelativeDocumentMoniker": "Code\\BuildingInInventory.cs",
@@ -86,7 +103,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "BuildingAmount.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingAmount.cs",
               "RelativeDocumentMoniker": "Code\\BuildingAmount.cs",
@@ -98,7 +115,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "BuildingInInventory.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scenes\\BuildingInInventory.cs",
               "RelativeDocumentMoniker": "Scenes\\BuildingInInventory.cs",
@@ -110,7 +127,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "SelectionButton.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scenes\\SelectionButton.cs",
               "RelativeDocumentMoniker": "Scenes\\SelectionButton.cs",
@@ -122,7 +139,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ShopUI.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\ShopUI.cs",
               "RelativeDocumentMoniker": "Code\\ShopUI.cs",
@@ -134,7 +151,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "BuyButton.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuyButton.cs",
               "RelativeDocumentMoniker": "Code\\BuyButton.cs",
@@ -146,7 +163,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "InventoryUI.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\InventoryUI.cs",
               "RelativeDocumentMoniker": "Code\\InventoryUI.cs",
@@ -164,9 +181,10 @@
               "RelativeDocumentMoniker": "Code\\UpgradableBuilding.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\UpgradableBuilding.cs",
               "RelativeToolTip": "Code\\UpgradableBuilding.cs",
-              "ViewState": "AQIAAEUAAAAAAAAAAAAAwE8AAAA3AAAA",
+              "ViewState": "AQIAADgAAAAAAAAAAADgvz4AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-23T18:30:27.513Z"
+              "WhenOpened": "2026-07-23T18:30:27.513Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -176,7 +194,7 @@
               "RelativeDocumentMoniker": "Code\\BuildingManager.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingManager.cs",
               "RelativeToolTip": "Code\\BuildingManager.cs",
-              "ViewState": "AQIAAGQAAAAAAAAAAAAAAG0AAAATAAAA",
+              "ViewState": "AQIAABUAAAAAAAAAAAAYwCAAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-23T04:35:20.474Z",
               "EditorCaption": ""
@@ -189,9 +207,10 @@
               "RelativeDocumentMoniker": "Code\\Camera2d.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\Camera2d.cs",
               "RelativeToolTip": "Code\\Camera2d.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAABEAAAAAAAAAAAArwBsAAAAoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-23T04:41:03.992Z"
+              "WhenOpened": "2026-07-23T04:41:03.992Z",
+              "EditorCaption": ""
             }
           ]
         }

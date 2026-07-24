@@ -1,10 +1,11 @@
-[gd_scene load_steps=48 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=53 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
+[ext_resource type="Script" uid="uid://cddum4itly5ic" path="res://Code/ButtonHighlight.cs" id="2_m48b7"]
 [ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="2_ri1kh"]
 [ext_resource type="Script" uid="uid://06f2f2puus5c" path="res://Code/BuildingInInventory.cs" id="3_57116"]
 [ext_resource type="PackedScene" uid="uid://ctvvgj0ta5t46" path="res://Nodes/house_1.tscn" id="3_aobtk"]
@@ -17,6 +18,22 @@
 [ext_resource type="PackedScene" uid="uid://da0l0ksymkuka" path="res://Nodes/factory_2.tscn" id="8_wen53"]
 [ext_resource type="PackedScene" uid="uid://chesq7swfvk18" path="res://Nodes/apartment_2.tscn" id="9_rp3ig"]
 [ext_resource type="Script" uid="uid://dtkb3w3mv15v" path="res://Code/ShopUI.cs" id="10_7cl7d"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_laldt"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(97, 81, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hggrv"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(65, 81, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ybcq3"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(65, 49, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ld7dv"]
+atlas = ExtResource("2_ri1kh")
+region = Rect2(65, 65, 14, 14)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ptyvu"]
 atlas = ExtResource("2_ri1kh")
@@ -372,6 +389,86 @@ sources/0 = SubResource("TileSetAtlasSource_aobtk")
 
 [node name="CityScene" type="Node2D"]
 position = Vector2(583, 339)
+
+[node name="InCityUI" type="CanvasLayer" parent="."]
+
+[node name="ActionMenu" type="Control" parent="InCityUI"]
+visible = false
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -20.0
+offset_right = 24.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BtnSell" type="TextureButton" parent="InCityUI/ActionMenu"]
+layout_mode = 0
+offset_top = 13.0
+offset_right = 14.0
+offset_bottom = 27.0
+texture_normal = SubResource("AtlasTexture_laldt")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("2_m48b7")
+HoverText = "Sell"
+FontSize = 4
+
+[node name="BtnInfo" type="TextureButton" parent="InCityUI/ActionMenu"]
+layout_mode = 0
+offset_left = 16.0
+offset_right = 30.0
+offset_bottom = 14.0
+texture_normal = SubResource("AtlasTexture_hggrv")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("2_m48b7")
+HoverText = "Info"
+FontSize = 4
+
+[node name="BtnUpgrade" type="TextureButton" parent="InCityUI/ActionMenu"]
+layout_mode = 0
+offset_left = 34.0
+offset_right = 48.0
+offset_bottom = 14.0
+texture_normal = SubResource("AtlasTexture_ybcq3")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("2_m48b7")
+HoverText = "Upgrade"
+FontSize = 4
+
+[node name="BtnStore" type="TextureButton" parent="InCityUI/ActionMenu"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 13.0
+offset_right = 64.0
+offset_bottom = 27.0
+texture_normal = SubResource("AtlasTexture_ld7dv")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("2_m48b7")
+HoverText = "Inventory"
+FontSize = 4
+
+[node name="SellDialog" type="ConfirmationDialog" parent="InCityUI/ActionMenu"]
+
+[node name="UpgradeDialog" type="ConfirmationDialog" parent="InCityUI/ActionMenu"]
+
+[node name="InfoPanel" type="Panel" parent="InCityUI/ActionMenu"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="InfoLabel" type="Label" parent="InCityUI/ActionMenu/InfoPanel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
 
 [node name="GameUI" type="CanvasLayer" parent="."]
 layer = 10
@@ -875,10 +972,23 @@ tile_set = SubResource("TileSet_cv3rj")
 tile_map_data = PackedByteArray("AAABAP7/AAABAAUAAAABAAAAAAABAAYAAAAAAAEAAAAAAAQAAAAAAAAAAAABAAUAAAAAAP3/AAAAAAMAAAD/////AAABAAMAAAAAAP7/AAAAAAUAAAABAAEAAAABAAUAAAACAAIAAAAAAAYAAAABAP//AAABAAQAAAACAAMAAAABAAUAAAADAAQAAAABAAcAAAADAAUAAAAAAAYAAAAEAAYAAAABAAUAAAAEAAcAAAABAAUAAAADAAYAAAAAAAUAAAACAAcAAAAAAAUAAAACAAgAAAAAAAQAAAABAAcAAAABAAUAAAABAAYAAAABAAUAAAAAAAUAAAABAAcAAAAAAAQAAAABAAUAAAD//wMAAAABAAUAAAD//wIAAAABAAUAAAD+/wEAAAABAAUAAAD+/wAAAAABAAUAAAD9////AAABAAUAAAD9//7/AAABAAUAAAD8//3/AAABAAUAAAD8//z/AAABAAUAAAABAAQAAAAAAAUAAAABAAMAAAAAAAUAAAADAAMAAAAAAAUAAAAEAAIAAAAAAAUAAAAEAAEAAAABAAQAAAAEAAAAAAABAAUAAAADAP//AAAAAAYAAAADAAAAAAAAAAUAAAACAAEAAAAAAAUAAAADAP7/AAABAAUAAAACAP3/AAABAAcAAAACAPz/AAABAAUAAAADAPz/AAAAAAUAAAADAPv/AAAAAAYAAAADAPr/AAABAAUAAAACAPr/AAAAAAUAAAACAPn/AAAAAAMAAAABAPv/AAABAAMAAAA=")
 tile_set = SubResource("TileSet_ynusb")
 
-[node name="BuildingManager" type="Node2D" parent="." node_paths=PackedStringArray("GroundTileMap")]
+[node name="BuildingManager" type="Node2D" parent="." node_paths=PackedStringArray("GroundTileMap", "MainCamera", "ActionMenu", "BtnSell", "BtnInfo", "BtnUpgrade", "BtnStore", "SellDialog", "UpgradeDialog", "InfoPanel", "InfoLabel")]
 script = ExtResource("1_aobtk")
 GroundTileMap = NodePath("../TileSets/GroundTileMap")
+MainCamera = NodePath("../Camera2D")
+BuildingInfo = Dictionary[int, PackedStringArray]({
+0: PackedStringArray("House", "Capacity: +4 /n Popularity: +1/day", "Price: $5k", "Sell: $3k")
+})
 BuildingScenes = Array[PackedScene]([ExtResource("3_aobtk"), ExtResource("6_d46wb"), ExtResource("7_bdw28"), ExtResource("8_wen53"), ExtResource("9_rp3ig")])
 BuildingFootprints = Array[int]([0, 0, 1, 2, 1])
 BuildingCounts = Array[int]([0, 0, 0, 0, 0])
 BuildingVisualOffset = Vector2(0, 9)
+ActionMenu = NodePath("../InCityUI/ActionMenu")
+BtnSell = NodePath("../InCityUI/ActionMenu/BtnSell")
+BtnInfo = NodePath("../InCityUI/ActionMenu/BtnInfo")
+BtnUpgrade = NodePath("../InCityUI/ActionMenu/BtnUpgrade")
+BtnStore = NodePath("../InCityUI/ActionMenu/BtnStore")
+SellDialog = NodePath("../InCityUI/ActionMenu/SellDialog")
+UpgradeDialog = NodePath("../InCityUI/ActionMenu/UpgradeDialog")
+InfoPanel = NodePath("../InCityUI/ActionMenu/InfoPanel")
+InfoLabel = NodePath("../InCityUI/ActionMenu/InfoPanel/InfoLabel")

@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
+
 public partial class BuildingManager : Node2D
 {
     // -----------------------------------------
@@ -26,13 +27,18 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     [Export] public TileMapLayer GroundTileMap;
 
+    [Export] public Camera2D MainCamera;
+
+    // Explicitly defining Godot.Collections so C# doesn't get confused
+    [Export]
+    public Godot.Collections.Dictionary<int, string[]> BuildingInfo { get; set; } = new Godot.Collections.Dictionary<int, string[]>();
+
     [Export]
     public Godot.Collections.Array<PackedScene> BuildingScenes = new Godot.Collections.Array<PackedScene>();
 
     [Export]
     public Godot.Collections.Array<FootprintType> BuildingFootprints = new Godot.Collections.Array<FootprintType>();
 
-    // Quantity available for each building type (matches BuildingScenes array index)
     [Export]
     public Godot.Collections.Array<int> BuildingCounts = new Godot.Collections.Array<int>();
 
@@ -46,7 +52,21 @@ public partial class BuildingManager : Node2D
     [ExportGroup("Particle Settings")]
     [Export] public Color ConstructionParticleColor = new Color(0.8f, 0.75f, 0.65f, 1.0f);
     [Export] public Color DeletionParticleColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+    [Export] public Color SellParticleColor = new Color(0.2f, 1.0f, 0.2f, 1.0f); // GREEN
     [Export] public int DefaultParticlesPerLayer = 16;
+
+    // --- NEW UI EXPORTS ---
+    [ExportGroup("UI References")]
+    [Export] public Control ActionMenu;
+    [Export] public TextureButton BtnSell;      // <-- Changed to TextureButton
+    [Export] public TextureButton BtnInfo;      // <-- Changed to TextureButton
+    [Export] public TextureButton BtnUpgrade;   // <-- Changed to TextureButton
+    [Export] public TextureButton BtnStore;     // <-- Changed to TextureButton
+
+    [Export] public ConfirmationDialog SellDialog;
+    [Export] public ConfirmationDialog UpgradeDialog;
+    [Export] public Control InfoPanel;
+    [Export] public Label InfoLabel;
 
     // -----------------------------------------
     // TILE IDENTIFIERS
@@ -57,21 +77,20 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     // STATE TRACKING
     // -----------------------------------------
-    private int currentSelectedIndex = -1; // -1 means no building selected
-
-    // Public property to read or change the selected building index from external scripts
+    private int currentSelectedIndex = -1;
     public int CurrentSelectedIndex
     {
         get => currentSelectedIndex;
         set => SelectBuilding(value);
     }
 
-    // Manual rotation state: 0 = Down-Right, 1 = Down-Left, 2 = Up-Left, 3 = Up-Right
     private int buildingRotation = 0;
-
     private Node2D previewNode = null;
     private Vector2 targetPreviewPosition = Vector2.Zero;
     private Label tooltipLabel;
+
+    // State for the currently selected building for the Action Menu
+    private CityTile targetActionTile = null;
 
     // -----------------------------------------
     // THE TILE DATA CLASS
@@ -82,7 +101,7 @@ public partial class BuildingManager : Node2D
         public bool IsOccupied;
         public List<CityTile> Neighbors;
         public Node2D BuildingNode;
-        public int BuildingTypeIndex; // Tracks which building index occupies this tile for refunds
+        public int BuildingTypeIndex;
 
         public CityTile(Vector2I gridPosition)
         {
@@ -101,7 +120,6 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public override void _Ready()
     {
-
         if (GroundTileMap == null ||
             BuildingScenes.Count != BuildingFootprints.Count ||
             BuildingScenes.Count != BuildingCounts.Count)
@@ -112,17 +130,26 @@ public partial class BuildingManager : Node2D
 
         // Setup the tooltip label
         tooltipLabel = new Label();
-        tooltipLabel.ZIndex = 100; // Keep text above all buildings
+        tooltipLabel.ZIndex = 100;
         tooltipLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
         tooltipLabel.AddThemeConstantOverride("outline_size", 4);
+        tooltipLabel.AddThemeFontSizeOverride("font_size", 6);
+        tooltipLabel.ZIndex = 4090;
         tooltipLabel.Visible = false;
-        tooltipLabel.AddThemeFontSizeOverride("font_size", 4);
-        tooltipLabel.ZIndex = 4094;
         AddChild(tooltipLabel);
 
         ScanForBuildableTiles();
         ConnectNeighbors();
         RefreshPreviewNode();
+
+        // Connect UI Button Signals
+        if (BtnSell != null) BtnSell.Pressed += OnSellButtonPressed;
+        if (BtnInfo != null) BtnInfo.Pressed += OnInfoButtonPressed;
+        if (BtnUpgrade != null) BtnUpgrade.Pressed += OnUpgradeButtonPressed;
+        if (BtnStore != null) BtnStore.Pressed += OnStoreButtonPressed;
+
+        if (SellDialog != null) SellDialog.Confirmed += OnSellConfirmed;
+        if (UpgradeDialog != null) UpgradeDialog.Confirmed += OnUpgradeConfirmed;
     }
 
     public override void _Process(double delta)
@@ -134,17 +161,43 @@ public partial class BuildingManager : Node2D
         {
             tooltipLabel.Visible = true;
             tooltipLabel.Text = "R to Rotate\nRight Click to Deselect";
-
-            // Calculate where we WANT the text to be (mouse pos + your offset)
             Vector2 targetTooltipPos = GetGlobalMousePosition() + new Vector2(-35, 10);
-
-            // Smoothly move the current position toward the target position
-            // You can change the "15.0f" at the end to make the follow speed faster or slower
             tooltipLabel.GlobalPosition = tooltipLabel.GlobalPosition.Lerp(targetTooltipPos, (float)delta * 15.0f);
         }
         else if (tooltipLabel != null)
         {
             tooltipLabel.Visible = false;
+        }
+
+        // --- Lock Action Menu to the building (BULLETPROOF METHOD) ---
+        if (ActionMenu != null && ActionMenu.Visible && targetActionTile != null && targetActionTile.BuildingNode != null)
+        {
+            // 1. Where is the building on the screen?
+            Vector2 screenPosition = targetActionTile.BuildingNode.GetGlobalTransformWithCanvas().Origin;
+
+            // 2. Your ideal offset (treated as WORLD coordinates)
+            Vector2 worldOffset = new Vector2(0, -50);
+
+            if (MainCamera != null)
+            {
+                // Apply zoom scale
+                ActionMenu.Scale = MainCamera.Zoom;
+
+                // Multiply the offset by zoom so the gap shrinks/grows proportionally 
+                Vector2 screenOffset = worldOffset * MainCamera.Zoom;
+
+                // The exact pixel on the screen we want the CENTER of the menu to be
+                Vector2 targetCenterPixel = screenPosition + screenOffset;
+
+                // Perfect centering: Shift the top-left position by exactly half of its scaled visual size
+                ActionMenu.Position = targetCenterPixel - ((ActionMenu.Size * ActionMenu.Scale) / 2.0f);
+            }
+            else
+            {
+                // Fallback if MainCamera is null
+                Vector2 targetCenterPixel = screenPosition + worldOffset;
+                ActionMenu.Position = targetCenterPixel - (ActionMenu.Size / 2.0f);
+            }
         }
     }
 
@@ -191,6 +244,9 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     // INPUT & ROUTING
     // -----------------------------------------
+    // -----------------------------------------
+    // INPUT & ROUTING
+    // -----------------------------------------
     public override void _UnhandledInput(InputEvent @event)
     {
         // 1. Keyboard Inputs
@@ -198,130 +254,238 @@ public partial class BuildingManager : Node2D
         {
             int pressedNumber = (int)keyEvent.Keycode - (int)Key.Key0;
 
-            if (pressedNumber >= 0 && pressedNumber <= 9)
-            {
-                SelectBuilding(pressedNumber);
-            }
-            else if (keyEvent.Keycode == Key.R)
-            {
-                RotateBuilding();
-            }
-            else if (keyEvent.Keycode == Key.Escape)
-            {
-                SelectBuilding(-1); // Deselect on Escape
-            }
+            if (pressedNumber >= 0 && pressedNumber <= 9) SelectBuilding(pressedNumber);
+            else if (keyEvent.Keycode == Key.R) RotateBuilding();
+            else if (keyEvent.Keycode == Key.Escape) SelectBuilding(-1);
         }
 
         // 2. Mouse Click Input
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
         {
-            // Immediate Right Click Check for Deselection (ignores grid bounds)
-            if (mouseEvent.ButtonIndex == MouseButton.Right && currentSelectedIndex >= 0)
+            // --- NEW: CLOSE MENU ON ANY UNHANDLED CLICK ---
+            // If you click a UI button, it consumes the event and NEVER reaches this code.
+            // So if this code runs while the menu is open, it means you clicked OUTSIDE the buttons.
+            if (ActionMenu != null && ActionMenu.Visible)
             {
-                SelectBuilding(-1);
+                CloseActionMenu();
+                // We DO NOT "return" here. This allows for seamless switching! 
+                // If you clicked another building, the code continues below and opens the new menu instantly.
+                // If you clicked empty grass or off-screen, it hits the checks below and safely does nothing.
+            }
+
+            // --- RIGHT CLICK: CANCEL / DESELECT ---
+            if (mouseEvent.ButtonIndex == MouseButton.Right)
+            {
+                if (currentSelectedIndex >= 0)
+                {
+                    SelectBuilding(-1); // Drop the building you are holding
+                }
                 return;
             }
 
             Vector2 localMousePos = GroundTileMap.ToLocal(GetGlobalMousePosition());
             Vector2I clickGridPos = GroundTileMap.LocalToMap(localMousePos);
 
+            // BOUNDS CHECK: If clicked outside the map, stop here. 
+            // (Because the CloseActionMenu code is ABOVE this check, the menu successfully closes!)
             if (!buildableTiles.ContainsKey(clickGridPos)) return;
 
             CityTile clickedTile = buildableTiles[clickGridPos];
 
-            // --- LEFT CLICK: PLACE OR UPGRADE ---
+            // --- LEFT CLICK: PLACE OR SELECT MENU ---
             if (mouseEvent.ButtonIndex == MouseButton.Left)
             {
                 if (clickedTile.IsOccupied && clickedTile.BuildingNode != null)
                 {
-                    if (clickedTile.BuildingNode is UpgradableBuilding upgradable)
-                    {
-                        int requiredIndex = (currentSelectedIndex >= 0) ? currentSelectedIndex : clickedTile.BuildingTypeIndex;
-
-                        if (HasAvailableBuilding(requiredIndex))
-                        {
-                            if (upgradable.TryUpgrade())
-                            {
-                                BuildingCounts[requiredIndex]--;
-                                GD.Print($"Building upgraded! Remaining stock for index {requiredIndex}: {BuildingCounts[requiredIndex]}");
-
-                                // Trigger placement/upgrade particles (footprint-perimeter based)
-                                List<CityTile> upgradeTiles = GetTilesForBuilding(clickedTile.BuildingNode);
-                                SpawnFootprintParticles(upgradeTiles, clickedTile.BuildingNode, new Color(1.0f, 0.85f, 0.3f, 0.9f), false);
-
-                                if (requiredIndex == currentSelectedIndex && !HasAvailableBuilding(currentSelectedIndex))
-                                {
-                                    SelectBuilding(-1);
-                                }
-                            }
-                            else
-                            {
-                                GD.Print("Building is already at max level.");
-                            }
-                        }
-                        else
-                        {
-                            GD.Print($"Cannot upgrade: No remaining stock in inventory for index {requiredIndex}!");
-                        }
-                    }
+                    SelectBuilding(-1); // Automatically drop any building you are holding
+                    OpenActionMenu(clickedTile);
                     return;
                 }
 
-                if (currentSelectedIndex < 0) return;
-
-                if (!HasAvailableBuilding(currentSelectedIndex))
+                // If we are holding a building, place it
+                if (currentSelectedIndex >= 0)
                 {
-                    GD.Print($"Cannot place: No remaining stock for building index {currentSelectedIndex}!");
-                    return;
-                }
-
-                FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
-
-                if (activeFootprint == FootprintType.Single1x1) TryPlaceSingleTile(clickGridPos);
-                else if (activeFootprint == FootprintType.DynamicHorizontal2x1) TryPlaceTwoTile(clickGridPos);
-                else if (activeFootprint == FootprintType.Square2x2) TryPlaceFourTile(clickGridPos);
-            }
-
-            // --- RIGHT CLICK: DOWNGRADE OR DELETE ---
-            else if (mouseEvent.ButtonIndex == MouseButton.Right)
-            {
-                if (clickedTile.IsOccupied && clickedTile.BuildingNode != null)
-                {
-                    if (clickedTile.BuildingNode is UpgradableBuilding upgradable)
+                    if (!HasAvailableBuilding(currentSelectedIndex))
                     {
-                        if (upgradable.TryDowngrade())
-                        {
-                            int refundIndex = clickedTile.BuildingTypeIndex;
-                            if (refundIndex >= 0 && refundIndex < BuildingCounts.Count)
-                            {
-                                BuildingCounts[refundIndex]++;
-                                GD.Print($"Building downgraded! Refunded 1 stock for type {refundIndex}. New stock: {BuildingCounts[refundIndex]}");
-                            }
+                        GD.Print($"Cannot place: No remaining stock!");
+                        return;
+                    }
 
-                            // Trigger footprint-perimeter particles on downgrade
-                            List<CityTile> downgradeTiles = GetTilesForBuilding(clickedTile.BuildingNode);
-                            SpawnFootprintParticles(downgradeTiles, clickedTile.BuildingNode, DeletionParticleColor, false);
-                        }
-                        else
-                        {
-                            DeleteBuilding(clickedTile.BuildingNode);
-                        }
-                    }
-                    else
-                    {
-                        DeleteBuilding(clickedTile.BuildingNode);
-                    }
+                    FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
+
+                    if (activeFootprint == FootprintType.Single1x1) TryPlaceSingleTile(clickGridPos);
+                    else if (activeFootprint == FootprintType.DynamicHorizontal2x1) TryPlaceTwoTile(clickGridPos);
+                    else if (activeFootprint == FootprintType.Square2x2) TryPlaceFourTile(clickGridPos);
                 }
             }
         }
     }
 
+    // -----------------------------------------
+    // ACTION MENU LOGIC
+    // -----------------------------------------
+    private void OpenActionMenu(CityTile tile)
+    {
+        targetActionTile = tile;
+        Node2D bld = tile.BuildingNode;
+        List<CityTile> tiles = GetTilesForBuilding(bld);
+
+        // 1. Play Jump Animation
+        PlayBuildingJumpAnimation(bld, tiles);
+
+        // 2. Position Menu above building
+        if (ActionMenu != null)
+        {
+            Vector2 screenPosition = bld.GetGlobalTransformWithCanvas().Origin;
+            Vector2 worldOffset = new Vector2(-60, -70);
+
+            if (MainCamera != null)
+            {
+                ActionMenu.Scale = MainCamera.Zoom;
+                Vector2 screenOffset = worldOffset * MainCamera.Zoom;
+                Vector2 targetCenterPixel = screenPosition + screenOffset;
+                ActionMenu.Position = targetCenterPixel - ((ActionMenu.Size * ActionMenu.Scale) / 2.0f);
+            }
+            else
+            {
+                Vector2 targetCenterPixel = screenPosition + worldOffset;
+                ActionMenu.Position = targetCenterPixel - (ActionMenu.Size / 2.0f);
+            }
+
+            ActionMenu.Visible = true;
+
+            // 3. Evaluate Buttons & Apply Alpha Greying
+            UpgradableBuilding ub = bld as UpgradableBuilding;
+            bool isUpgradable = (ub != null);
+
+            if (BtnStore != null)
+            {
+                // Can only store if it's NOT an upgraded building.
+                // If it HAS upgrades (CanDowngrade == true), they must sell upgrades first.
+                bool canStore = !isUpgradable || !ub.CanDowngrade();
+                UpdateButtonState(BtnStore, canStore);
+            }
+
+            if (BtnUpgrade != null)
+            {
+                // Can only upgrade if it's upgradable AND hasn't reached max level
+                bool canUpgrade = isUpgradable && ub.CanUpgrade();
+                UpdateButtonState(BtnUpgrade, canUpgrade);
+            }
+
+            // Sell and Info are always clickable!
+            UpdateButtonState(BtnSell, true);
+            UpdateButtonState(BtnInfo, true);
+        }
+    }
+
+    private void CloseActionMenu()
+    {
+        targetActionTile = null;
+        if (ActionMenu != null) ActionMenu.Visible = false;
+        if (InfoPanel != null) InfoPanel.Visible = false;
+    }
+
+    // --- BUTTON BINDINGS ---
+    private void OnSellButtonPressed()
+    {
+        if (targetActionTile == null) return;
+
+        // Dynamically change the dialog text based on what we are actually selling
+        if (targetActionTile.BuildingNode is UpgradableBuilding ub && ub.CanDowngrade())
+        {
+            SellDialog.DialogText = "Sell the current upgrade for resources/cash?";
+        }
+        else
+        {
+            SellDialog.DialogText = "Sell this base building for resources/cash?";
+        }
+        SellDialog.PopupCentered();
+    }
+
+    private void OnSellConfirmed()
+    {
+        if (targetActionTile != null)
+        {
+            Node2D bld = targetActionTile.BuildingNode;
+
+            // 1. If it's upgradable AND has upgrades applied, we ONLY sell the upgrade.
+            if (bld is UpgradableBuilding ub && ub.CanDowngrade())
+            {
+                if (ub.TryDowngrade())
+                {
+                    // ADD CASH/RESOURCES FOR UPGRADE HERE
+
+                    SpawnFootprintParticles(GetTilesForBuilding(ub), ub, SellParticleColor, false);
+                    PlayBuildingJumpAnimation(ub, GetTilesForBuilding(ub));
+                    CloseActionMenu();
+                    return; // Stop here! Do NOT delete the base building.
+                }
+            }
+
+            // 2. If it's a normal building, OR an upgradable building at its base level:
+            // ADD CASH/RESOURCES FOR BASE BUILDING HERE
+
+            DeleteOrStoreBuilding(bld, refundToInventory: false, particleColor: SellParticleColor);
+            CloseActionMenu();
+        }
+    }
+
+    private void OnInfoButtonPressed()
+    {
+        if (targetActionTile == null) return;
+        InfoLabel.Text = $"Building Info:\nName: {targetActionTile.BuildingNode.Name}\nType Index: {targetActionTile.BuildingTypeIndex}";
+        InfoPanel.Visible = true;
+    }
+
+    private void OnUpgradeButtonPressed()
+    {
+        if (targetActionTile == null) return;
+        UpgradeDialog.DialogText = "Upgrade this building for X resources?";
+        UpgradeDialog.PopupCentered();
+    }
+
+    private void OnStoreButtonPressed()
+    {
+        if (targetActionTile == null) return;
+        // Store puts it in inventory (refund = true), uses normal deletion particles
+        DeleteOrStoreBuilding(targetActionTile.BuildingNode, refundToInventory: true, particleColor: DeletionParticleColor);
+        CloseActionMenu();
+    }
+
+    // --- CONFIRMATION BINDINGS ---
+
+    private void OnUpgradeConfirmed()
+    {
+        if (targetActionTile != null && targetActionTile.BuildingNode is UpgradableBuilding ub)
+        {
+            // TryUpgrade() must be part of your UpgradableBuilding class
+            if (ub.TryUpgrade())
+            {
+                SpawnFootprintParticles(GetTilesForBuilding(ub), ub, new Color(1.0f, 0.85f, 0.3f, 0.9f), false);
+                PlayBuildingJumpAnimation(ub, GetTilesForBuilding(ub));
+            }
+            CloseActionMenu();
+        }
+    }
+
+    // -----------------------------------------
+    // SELECTION & PREVIEW 
+    // -----------------------------------------
     public void SelectBuilding(int index)
     {
+        // Force the action menu to close if the user presses a number key to grab a new building
+        CloseActionMenu();
+
         if (index >= 0 && index < BuildingScenes.Count && index < BuildingFootprints.Count && BuildingScenes[index] != null)
         {
             currentSelectedIndex = index;
             buildingRotation = 0;
+
+            if (tooltipLabel != null)
+            {
+                tooltipLabel.GlobalPosition = GetGlobalMousePosition() + new Vector2(-35, 10);
+            }
         }
         else
         {
@@ -338,15 +502,19 @@ public partial class BuildingManager : Node2D
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
 
         if (activeFootprint == FootprintType.Single1x1)
-        {
             buildingRotation = (buildingRotation + 1) % 2;
-        }
         else
-        {
             buildingRotation = (buildingRotation + 1) % 4;
-        }
 
         UpdatePreviewTransform(GetTargetNeighborEnum());
+    }
+
+    private void UpdateButtonState(TextureButton button, bool isEnabled)
+    {
+        if (button == null) return;
+        button.Disabled = !isEnabled;
+        // 1.0f is fully visible, 0.4f is transparent/greyed out
+        button.Modulate = isEnabled ? new Color(1, 1, 1, 1.0f) : new Color(1, 1, 1, 0.4f);
     }
 
     // -----------------------------------------
@@ -374,22 +542,18 @@ public partial class BuildingManager : Node2D
                 customOffset = new Vector2(0, 6);
                 customScale = new Vector2(-1, 1);
                 break;
-
             case TileSet.CellNeighbor.BottomLeftSide:
                 customOffset = new Vector2(0, 6);
                 customScale = new Vector2(1, 1);
                 break;
-
             case TileSet.CellNeighbor.TopLeftSide:
                 customOffset = new Vector2(0, 6);
                 customScale = new Vector2(-1, 1);
                 break;
-
             case TileSet.CellNeighbor.TopRightSide:
                 customOffset = new Vector2(0, 6);
                 customScale = new Vector2(1, 1);
                 break;
-
             default:
                 customOffset = Vector2.Zero;
                 customScale = new Vector2(1, 1);
@@ -509,19 +673,14 @@ public partial class BuildingManager : Node2D
     private bool CheckCanPlaceAt(Vector2I pivotGridPos, CityTile secondTile)
     {
         if (currentSelectedIndex < 0) return false;
-
         if (!HasAvailableBuilding(currentSelectedIndex)) return false;
-
         if (!buildableTiles.TryGetValue(pivotGridPos, out CityTile pivotTile) || pivotTile.IsOccupied)
             return false;
 
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
 
-        if (activeFootprint == FootprintType.Single1x1)
-            return true;
-
-        if (activeFootprint == FootprintType.DynamicHorizontal2x1)
-            return secondTile != null && !secondTile.IsOccupied;
+        if (activeFootprint == FootprintType.Single1x1) return true;
+        if (activeFootprint == FootprintType.DynamicHorizontal2x1) return secondTile != null && !secondTile.IsOccupied;
 
         if (activeFootprint == FootprintType.Square2x2)
         {
@@ -541,9 +700,6 @@ public partial class BuildingManager : Node2D
 
         float maxDepthY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(pivotGridPos)).Y;
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
-
-        // Small backward nudge so a multi-tile building's frontmost tile can never land
-        // on the exact same depth value as a single tile sitting right at that edge.
         float depthNudge = 0f;
 
         if (activeFootprint == FootprintType.DynamicHorizontal2x1 && secondTile != null)
@@ -590,17 +746,14 @@ public partial class BuildingManager : Node2D
 
             Vector2 secondCenter;
             if (secondTile != null)
-            {
                 secondCenter = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(secondTile.GridPosition));
-            }
             else
             {
                 Vector2I neighborPos = GroundTileMap.GetNeighborCell(pivotGridPos, matchedNeighbor);
                 secondCenter = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(neighborPos));
             }
 
-            Vector2 midpoint = (pivotCenter + secondCenter) * 0.5f;
-            return midpoint + BuildingVisualOffset + customOffset;
+            return ((pivotCenter + secondCenter) * 0.5f) + BuildingVisualOffset + customOffset;
         }
         else if (activeFootprint == FootprintType.Square2x2)
         {
@@ -694,7 +847,6 @@ public partial class BuildingManager : Node2D
         bool isValidSpot = CheckCanPlaceAt(hoverGridPos, secondTile);
 
         UpdatePreviewTransform(matchedNeighbor);
-
         targetPreviewPosition = CalculateBuildingWorldPosition(hoverGridPos, secondTile, matchedNeighbor);
 
         previewNode.GlobalPosition = previewNode.GlobalPosition.Lerp(targetPreviewPosition, delta * PreviewLerpSpeed);
@@ -719,11 +871,7 @@ public partial class BuildingManager : Node2D
         CityTile pivotTile = buildableTiles[pivotGridPos];
         CityTile secondTile = GetTwoByOneSecondaryTile(pivotGridPos, out TileSet.CellNeighbor matchedNeighbor);
 
-        if (!CheckCanPlaceAt(pivotGridPos, secondTile))
-        {
-            GD.Print("Cannot place: Target tile is occupied, out of bounds, or out of stock!");
-            return;
-        }
+        if (!CheckCanPlaceAt(pivotGridPos, secondTile)) return;
 
         CommitBuilding(new List<CityTile> { pivotTile, secondTile }, pivotGridPos, secondTile, matchedNeighbor);
     }
@@ -732,18 +880,11 @@ public partial class BuildingManager : Node2D
     {
         List<CityTile> tiles = GetSquare2x2Tiles(pivotGridPos);
 
-        if (tiles == null || !HasAvailableBuilding(currentSelectedIndex))
-        {
-            GD.Print("Cannot place: 2x2 area is blocked, out of bounds, or out of stock!");
-            return;
-        }
+        if (tiles == null || !HasAvailableBuilding(currentSelectedIndex)) return;
 
         CommitBuilding(tiles, pivotGridPos, null, TileSet.CellNeighbor.BottomRightSide);
     }
 
-    // -----------------------------------------
-    // COMMIT & SPAWN
-    // -----------------------------------------
     private void CommitBuilding(List<CityTile> tilesToOccupy, Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
     {
         BuildingCounts[currentSelectedIndex]--;
@@ -787,7 +928,7 @@ public partial class BuildingManager : Node2D
             tile.BuildingNode = newBuilding;
         }
 
-        // --- Drop-in / squash & stretch placement animation ---
+        // Drop-in Animation
         Vector2 targetPos = finalWorldPos;
         Vector2 originalScale = newBuilding.Scale;
 
@@ -799,64 +940,58 @@ public partial class BuildingManager : Node2D
 
         switch (cat)
         {
-            case BuildingSizeCategory.House1x1:
-                dropY = -4f;
-                dropTime = 0.06f;
-                landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
-                reboundTime = 0.06f;
-                break;
-            case BuildingSizeCategory.Tall1x1:
-                dropY = -6f;
-                dropTime = 0.07f;
-                landScale = new Vector2(originalScale.X * 1.04f, originalScale.Y * 0.96f);
-                reboundTime = 0.07f;
-                break;
-            case BuildingSizeCategory.Rectangle2x1:
-                dropY = -5f;
-                dropTime = 0.07f;
-                landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
-                reboundTime = 0.07f;
-                break;
-            case BuildingSizeCategory.Apartment2x2:
-                dropY = -8f;
-                dropTime = 0.09f;
-                landScale = new Vector2(originalScale.X * 1.05f, originalScale.Y * 0.95f);
-                reboundTime = 0.08f;
-                break;
+            case BuildingSizeCategory.Tall1x1: dropY = -6f; dropTime = 0.07f; landScale = new Vector2(originalScale.X * 1.04f, originalScale.Y * 0.96f); reboundTime = 0.07f; break;
+            case BuildingSizeCategory.Apartment2x2: dropY = -8f; dropTime = 0.09f; landScale = new Vector2(originalScale.X * 1.05f, originalScale.Y * 0.95f); reboundTime = 0.08f; break;
         }
 
         newBuilding.GlobalPosition = targetPos + new Vector2(0, dropY);
         newBuilding.Scale = new Vector2(originalScale.X * 0.98f, originalScale.Y * 1.02f);
 
         Tween tween = newBuilding.CreateTween();
-        tween.TweenProperty(newBuilding, "global_position", targetPos, dropTime)
-             .SetTrans(Tween.TransitionType.Quad)
-             .SetEase(Tween.EaseType.In);
-
-        // Trigger placement particle burst once the building "lands"
+        tween.TweenProperty(newBuilding, "global_position", targetPos, dropTime).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
         tween.TweenCallback(Callable.From(() => SpawnFootprintParticles(tilesToOccupy, newBuilding, ConstructionParticleColor, false)));
-
         tween.TweenProperty(newBuilding, "scale", landScale, 0.04f);
-        tween.TweenProperty(newBuilding, "scale", originalScale, reboundTime)
-             .SetTrans(Tween.TransitionType.Sine)
-             .SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(newBuilding, "scale", originalScale, reboundTime).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 
-        GD.Print($"Built {newBuilding.Name}. Remaining stock for type {currentSelectedIndex}: {BuildingCounts[currentSelectedIndex]}");
-
-        if (!HasAvailableBuilding(currentSelectedIndex))
-        {
-            SelectBuilding(-1);
-        }
+        if (!HasAvailableBuilding(currentSelectedIndex)) SelectBuilding(-1);
     }
 
     // -----------------------------------------
-    // DELETION LOGIC
+    // ANIMATIONS
     // -----------------------------------------
-    private void DeleteBuilding(Node2D buildingToRemove)
+    private void PlayBuildingJumpAnimation(Node2D building, List<CityTile> tilesOccupied)
+    {
+        Vector2 originalScale = building.Scale;
+        BuildingSizeCategory cat = GetBuildingCategory(building, tilesOccupied);
+
+        float dropY = -4f;
+        float dropTime = 0.06f;
+        Vector2 landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
+        float reboundTime = 0.06f;
+
+        switch (cat)
+        {
+            case BuildingSizeCategory.Tall1x1: dropY = -6f; dropTime = 0.07f; landScale = new Vector2(originalScale.X * 1.04f, originalScale.Y * 0.96f); reboundTime = 0.07f; break;
+            case BuildingSizeCategory.Apartment2x2: dropY = -8f; dropTime = 0.09f; landScale = new Vector2(originalScale.X * 1.05f, originalScale.Y * 0.95f); reboundTime = 0.08f; break;
+        }
+
+        Vector2 startPos = building.GlobalPosition;
+        building.GlobalPosition = startPos + new Vector2(0, dropY);
+        building.Scale = new Vector2(originalScale.X * 0.98f, originalScale.Y * 1.02f);
+
+        Tween tween = building.CreateTween();
+        tween.TweenProperty(building, "global_position", startPos, dropTime).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
+        tween.TweenProperty(building, "scale", landScale, 0.04f);
+        tween.TweenProperty(building, "scale", originalScale, reboundTime).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+    }
+
+    // -----------------------------------------
+    // DELETION / STORE LOGIC
+    // -----------------------------------------
+    private void DeleteOrStoreBuilding(Node2D buildingToRemove, bool refundToInventory, Color particleColor)
     {
         if (buildingToRemove == null) return;
 
-        int freedTiles = 0;
         int refundedIndex = -1;
         List<CityTile> occupiedTiles = new List<CityTile>();
 
@@ -869,27 +1004,20 @@ public partial class BuildingManager : Node2D
                 kvp.Value.IsOccupied = false;
                 kvp.Value.BuildingNode = null;
                 kvp.Value.BuildingTypeIndex = -1;
-                freedTiles++;
             }
         }
 
-        if (refundedIndex >= 0 && refundedIndex < BuildingCounts.Count)
+        if (refundToInventory && refundedIndex >= 0 && refundedIndex < BuildingCounts.Count)
         {
             BuildingCounts[refundedIndex]++;
-            GD.Print($"Refunded 1 stock for type {refundedIndex}. New stock: {BuildingCounts[refundedIndex]}");
         }
 
-        // Trigger footprint-perimeter deletion particles before animating the node out
-        SpawnFootprintParticles(occupiedTiles, buildingToRemove, DeletionParticleColor, true);
+        SpawnFootprintParticles(occupiedTiles, buildingToRemove, particleColor, true);
 
-        // --- Shake & fade removal animation ---
         Vector2 origPos = buildingToRemove.Position;
         BuildingSizeCategory cat = GetBuildingCategory(buildingToRemove, occupiedTiles);
 
-        int shakeSteps = 4;
-        if (cat == BuildingSizeCategory.Tall1x1 || cat == BuildingSizeCategory.Rectangle2x1) shakeSteps = 5;
-        if (cat == BuildingSizeCategory.Apartment2x2) shakeSteps = 6;
-
+        int shakeSteps = (cat == BuildingSizeCategory.Apartment2x2) ? 6 : 4;
         float shakeDir = GD.RandRange(-1.0, 1.0) >= 0 ? 1.0f : -1.0f;
         float randomMult = (float)GD.RandRange(0.85f, 1.15f);
 
@@ -900,7 +1028,6 @@ public partial class BuildingManager : Node2D
         {
             float dist = Mathf.Lerp(2.2f, 0.4f, (float)i / shakeSteps) * randomMult * shakeDir;
             float stepTime = (float)GD.RandRange(0.035f, 0.055f);
-
             shakeTween.TweenProperty(buildingToRemove, "position:x", origPos.X + dist, stepTime);
             totalShakeTime += stepTime;
             shakeDir *= -1.0f;
@@ -911,10 +1038,7 @@ public partial class BuildingManager : Node2D
         Tween fadeTween = buildingToRemove.CreateTween();
         fadeTween.TweenInterval(totalShakeTime * 0.4f);
         fadeTween.TweenProperty(buildingToRemove, "modulate:a", 0.0f, totalShakeTime * 0.6f);
-
         fadeTween.Chain().TweenCallback(Callable.From(() => buildingToRemove.QueueFree()));
-
-        GD.Print($"Deleted building, cleanly freed {freedTiles} tile(s).");
     }
 
     private List<CityTile> GetTilesForBuilding(Node2D building)
@@ -931,7 +1055,6 @@ public partial class BuildingManager : Node2D
     private BuildingSizeCategory GetBuildingCategory(Node2D building, List<CityTile> tiles)
     {
         if (tiles == null || tiles.Count == 0) return BuildingSizeCategory.House1x1;
-
         if (tiles.Count >= 4) return BuildingSizeCategory.Apartment2x2;
         if (tiles.Count == 2) return BuildingSizeCategory.Rectangle2x1;
 
@@ -944,7 +1067,7 @@ public partial class BuildingManager : Node2D
     }
 
     // -----------------------------------------
-    // PERIMETER GENERATOR
+    // PERIMETER / PARTICLES GENERATOR
     // -----------------------------------------
     private void GetFilteredPerimeterPoints(List<CityTile> tiles, BuildingSizeCategory cat, out List<Vector2> backPoints, out List<Vector2> frontPoints)
     {
@@ -961,21 +1084,12 @@ public partial class BuildingManager : Node2D
         footprintCenter /= tiles.Count;
 
         float sizeMultiplier = 1.0f;
-
         switch (cat)
         {
-            case BuildingSizeCategory.House1x1:
-                sizeMultiplier = 1.45f;
-                break;
-            case BuildingSizeCategory.Tall1x1:
-                sizeMultiplier = 0.70f;
-                break;
-            case BuildingSizeCategory.Rectangle2x1:
-                sizeMultiplier = 0.88f;
-                break;
-            case BuildingSizeCategory.Apartment2x2:
-                sizeMultiplier = 0.70f;
-                break;
+            case BuildingSizeCategory.House1x1: sizeMultiplier = 1.45f; break;
+            case BuildingSizeCategory.Tall1x1: sizeMultiplier = 0.70f; break;
+            case BuildingSizeCategory.Rectangle2x1: sizeMultiplier = 0.88f; break;
+            case BuildingSizeCategory.Apartment2x2: sizeMultiplier = 0.70f; break;
         }
 
         float halfW = 14f;
@@ -985,7 +1099,6 @@ public partial class BuildingManager : Node2D
         foreach (CityTile tile in tiles)
         {
             Vector2 center = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(tile.GridPosition));
-
             Vector2 top = center + new Vector2(0, -halfH);
             Vector2 right = center + new Vector2(halfW, 0);
             Vector2 bottom = center + new Vector2(0, halfH);
@@ -996,38 +1109,31 @@ public partial class BuildingManager : Node2D
                 for (int i = 0; i < pointsPerEdge; i++)
                 {
                     Vector2 pt = left.Lerp(top, (float)i / pointsPerEdge);
-                    Vector2 offset = pt - footprintCenter;
-                    backPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                    backPoints.Add(footprintCenter + ((pt - footprintCenter) * sizeMultiplier));
                 }
             }
-
             if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.TopRightSide))
             {
                 for (int i = 0; i < pointsPerEdge; i++)
                 {
                     Vector2 pt = top.Lerp(right, (float)i / pointsPerEdge);
-                    Vector2 offset = pt - footprintCenter;
-                    backPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                    backPoints.Add(footprintCenter + ((pt - footprintCenter) * sizeMultiplier));
                 }
             }
-
             if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.BottomRightSide))
             {
                 for (int i = 0; i < pointsPerEdge; i++)
                 {
                     Vector2 pt = right.Lerp(bottom, (float)i / pointsPerEdge);
-                    Vector2 offset = pt - footprintCenter;
-                    frontPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                    frontPoints.Add(footprintCenter + ((pt - footprintCenter) * sizeMultiplier));
                 }
             }
-
             if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.BottomLeftSide))
             {
                 for (int i = 0; i < pointsPerEdge; i++)
                 {
                     Vector2 pt = bottom.Lerp(left, (float)i / pointsPerEdge);
-                    Vector2 offset = pt - footprintCenter;
-                    frontPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                    frontPoints.Add(footprintCenter + ((pt - footprintCenter) * sizeMultiplier));
                 }
             }
         }
@@ -1043,9 +1149,6 @@ public partial class BuildingManager : Node2D
         return false;
     }
 
-    // -----------------------------------------
-    // PARTICLE GENERATOR (footprint-perimeter based)
-    // -----------------------------------------
     private void SpawnFootprintParticles(List<CityTile> tiles, Node2D building, Color color, bool isDeleting = false)
     {
         if (tiles == null || tiles.Count == 0) return;
@@ -1054,7 +1157,6 @@ public partial class BuildingManager : Node2D
         GetFilteredPerimeterPoints(tiles, cat, out List<Vector2> backPoints, out List<Vector2> frontPoints);
 
         int totalParticles = DefaultParticlesPerLayer * 2;
-
         switch (cat)
         {
             case BuildingSizeCategory.House1x1: totalParticles = 16; break;
@@ -1068,7 +1170,6 @@ public partial class BuildingManager : Node2D
         for (int i = 0; i < 2; i++)
         {
             bool isBehind = (i == 0);
-
             List<Vector2> targetPoints = isBehind ? backPoints : frontPoints;
             if (targetPoints.Count == 0) continue;
 
@@ -1085,7 +1186,6 @@ public partial class BuildingManager : Node2D
 
             particles.Emitting = false;
             particles.OneShot = true;
-
             particles.Explosiveness = isDeleting ? 0.95f : 0.85f;
             particles.Amount = amountPerLayer;
 
