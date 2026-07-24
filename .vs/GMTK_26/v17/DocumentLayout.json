@@ -70,8 +70,7 @@
               "RelativeToolTip": "Code\\SelectionButton.cs",
               "ViewState": "AQIAACkAAAAAAAAAAAAAwDYAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-24T00:01:37.732Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-24T00:01:37.732Z"
             },
             {
               "$type": "Document",
@@ -167,8 +166,7 @@
               "RelativeToolTip": "Code\\UpgradableBuilding.cs",
               "ViewState": "AQIAAEUAAAAAAAAAAAAAwE8AAAA3AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-23T18:30:27.513Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-23T18:30:27.513Z"
             },
             {
               "$type": "Document",
@@ -178,7 +176,7 @@
               "RelativeDocumentMoniker": "Code\\BuildingManager.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingManager.cs",
               "RelativeToolTip": "Code\\BuildingManager.cs",
-              "ViewState": "AQIAAOMBAAAAAAAAAAAAAPMBAAAwAAAA",
+              "ViewState": "AQIAAEIDAAAAAAAAAAAAwFcDAAAwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-23T04:35:20.474Z",
               "EditorCaption": ""
@@ -193,8 +191,7 @@
               "RelativeToolTip": "Code\\Camera2d.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-23T04:41:03.992Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-23T04:41:03.992Z"
             }
           ]
         }
