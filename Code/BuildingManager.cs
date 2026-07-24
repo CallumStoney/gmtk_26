@@ -71,6 +71,7 @@ public partial class BuildingManager : Node2D
 
     private Node2D previewNode = null;
     private Vector2 targetPreviewPosition = Vector2.Zero;
+    private Label tooltipLabel;
 
     // -----------------------------------------
     // THE TILE DATA CLASS
@@ -100,6 +101,7 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public override void _Ready()
     {
+
         if (GroundTileMap == null ||
             BuildingScenes.Count != BuildingFootprints.Count ||
             BuildingScenes.Count != BuildingCounts.Count)
@@ -107,6 +109,16 @@ public partial class BuildingManager : Node2D
             GD.PrintErr("CRITICAL: Check GroundTileMap reference and array sizes (Scenes, Footprints, Counts) in Inspector!");
             return;
         }
+
+        // Setup the tooltip label
+        tooltipLabel = new Label();
+        tooltipLabel.ZIndex = 100; // Keep text above all buildings
+        tooltipLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+        tooltipLabel.AddThemeConstantOverride("outline_size", 4);
+        tooltipLabel.Visible = false;
+        tooltipLabel.AddThemeFontSizeOverride("font_size", 4);
+        tooltipLabel.ZIndex = 4094;
+        AddChild(tooltipLabel);
 
         ScanForBuildableTiles();
         ConnectNeighbors();
@@ -116,6 +128,24 @@ public partial class BuildingManager : Node2D
     public override void _Process(double delta)
     {
         UpdatePreviewPositionAndValidation((float)delta);
+
+        // Update Tooltip Position & Visibility
+        if (currentSelectedIndex >= 0 && tooltipLabel != null)
+        {
+            tooltipLabel.Visible = true;
+            tooltipLabel.Text = "R to Rotate\nRight Click to Deselect";
+
+            // Calculate where we WANT the text to be (mouse pos + your offset)
+            Vector2 targetTooltipPos = GetGlobalMousePosition() + new Vector2(-35, 10);
+
+            // Smoothly move the current position toward the target position
+            // You can change the "15.0f" at the end to make the follow speed faster or slower
+            tooltipLabel.GlobalPosition = tooltipLabel.GlobalPosition.Lerp(targetTooltipPos, (float)delta * 15.0f);
+        }
+        else if (tooltipLabel != null)
+        {
+            tooltipLabel.Visible = false;
+        }
     }
 
     private void ScanForBuildableTiles()
@@ -185,6 +215,13 @@ public partial class BuildingManager : Node2D
         // 2. Mouse Click Input
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
         {
+            // Immediate Right Click Check for Deselection (ignores grid bounds)
+            if (mouseEvent.ButtonIndex == MouseButton.Right && currentSelectedIndex >= 0)
+            {
+                SelectBuilding(-1);
+                return;
+            }
+
             Vector2 localMousePos = GroundTileMap.ToLocal(GetGlobalMousePosition());
             Vector2I clickGridPos = GroundTileMap.LocalToMap(localMousePos);
 
@@ -274,10 +311,6 @@ public partial class BuildingManager : Node2D
                     {
                         DeleteBuilding(clickedTile.BuildingNode);
                     }
-                }
-                else
-                {
-                    SelectBuilding(-1);
                 }
             }
         }
@@ -511,11 +544,6 @@ public partial class BuildingManager : Node2D
 
         // Small backward nudge so a multi-tile building's frontmost tile can never land
         // on the exact same depth value as a single tile sitting right at that edge.
-        // Without this, a 2x1/2x2 placed with its front tile touching an existing 1x1's
-        // tile produces an EXACT tie in Y - and Godot resolves exact ZIndex ties by
-        // scene-tree sibling order (whoever was added later wins), not by real depth.
-        // The nudge is tiny relative to a full tile step, so it never affects ordering
-        // against anything that's genuinely a tile or more away.
         float depthNudge = 0f;
 
         if (activeFootprint == FootprintType.DynamicHorizontal2x1 && secondTile != null)
@@ -772,22 +800,26 @@ public partial class BuildingManager : Node2D
         switch (cat)
         {
             case BuildingSizeCategory.House1x1:
-                dropY = -4f; dropTime = 0.06f;
+                dropY = -4f;
+                dropTime = 0.06f;
                 landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
                 reboundTime = 0.06f;
                 break;
             case BuildingSizeCategory.Tall1x1:
-                dropY = -6f; dropTime = 0.07f;
+                dropY = -6f;
+                dropTime = 0.07f;
                 landScale = new Vector2(originalScale.X * 1.04f, originalScale.Y * 0.96f);
                 reboundTime = 0.07f;
                 break;
             case BuildingSizeCategory.Rectangle2x1:
-                dropY = -5f; dropTime = 0.07f;
+                dropY = -5f;
+                dropTime = 0.07f;
                 landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
                 reboundTime = 0.07f;
                 break;
             case BuildingSizeCategory.Apartment2x2:
-                dropY = -8f; dropTime = 0.09f;
+                dropY = -8f;
+                dropTime = 0.09f;
                 landScale = new Vector2(originalScale.X * 1.05f, originalScale.Y * 0.95f);
                 reboundTime = 0.08f;
                 break;
@@ -899,6 +931,7 @@ public partial class BuildingManager : Node2D
     private BuildingSizeCategory GetBuildingCategory(Node2D building, List<CityTile> tiles)
     {
         if (tiles == null || tiles.Count == 0) return BuildingSizeCategory.House1x1;
+
         if (tiles.Count >= 4) return BuildingSizeCategory.Apartment2x2;
         if (tiles.Count == 2) return BuildingSizeCategory.Rectangle2x1;
 
@@ -928,6 +961,7 @@ public partial class BuildingManager : Node2D
         footprintCenter /= tiles.Count;
 
         float sizeMultiplier = 1.0f;
+
         switch (cat)
         {
             case BuildingSizeCategory.House1x1:
@@ -951,6 +985,7 @@ public partial class BuildingManager : Node2D
         foreach (CityTile tile in tiles)
         {
             Vector2 center = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(tile.GridPosition));
+
             Vector2 top = center + new Vector2(0, -halfH);
             Vector2 right = center + new Vector2(halfW, 0);
             Vector2 bottom = center + new Vector2(0, halfH);
@@ -1019,6 +1054,7 @@ public partial class BuildingManager : Node2D
         GetFilteredPerimeterPoints(tiles, cat, out List<Vector2> backPoints, out List<Vector2> frontPoints);
 
         int totalParticles = DefaultParticlesPerLayer * 2;
+
         switch (cat)
         {
             case BuildingSizeCategory.House1x1: totalParticles = 16; break;
@@ -1032,6 +1068,7 @@ public partial class BuildingManager : Node2D
         for (int i = 0; i < 2; i++)
         {
             bool isBehind = (i == 0);
+
             List<Vector2> targetPoints = isBehind ? backPoints : frontPoints;
             if (targetPoints.Count == 0) continue;
 
@@ -1048,6 +1085,7 @@ public partial class BuildingManager : Node2D
 
             particles.Emitting = false;
             particles.OneShot = true;
+
             particles.Explosiveness = isDeleting ? 0.95f : 0.85f;
             particles.Amount = amountPerLayer;
 
