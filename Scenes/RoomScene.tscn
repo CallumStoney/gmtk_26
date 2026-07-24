@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=3 format=3 uid="uid://l5ejk6qnrbk"]
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
 
 [node name="RoomScene" type="Control"]
 layout_mode = 3
@@ -38,38 +39,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="StatsBar" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+[node name="StatsHUD" parent="MarginContainer/MainVBox" instance=ExtResource("2_statshud")]
 layout_mode = 2
-theme_override_constants/separation = 32
-
-[node name="TurnLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.75, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Day 1 / 15"
-
-[node name="PopulationLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Pop: 100"
-
-[node name="PollutionLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.4, 1)
-theme_override_font_sizes/font_size = 18
-text = "Pollution: 80"
-
-[node name="PopularityLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.55, 1)
-theme_override_font_sizes/font_size = 18
-text = "Approval: 50%"
-
-[node name="MoneyLabel" type="Label" parent="MarginContainer/MainVBox/StatsBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 18
-text = "$500"
 
 [node name="Sep1" type="HSeparator" parent="MarginContainer/MainVBox"]
 layout_mode = 2

@@ -45,7 +45,7 @@ public partial class GameManager : Node
 	public int CurrentTurn 		 { get; private set; } = 1;
 
 	public int PollutionTarget   { get; set; } = 30;   //must get pollution <= this
-	public int PopularityFloor   { get; set; } = 10;   //loose if popularity drops below
+	public int PopularityFloor   { get; set; } = 15;   //loose if popularity drops below
 
 	//idk
 	public override void _Ready()

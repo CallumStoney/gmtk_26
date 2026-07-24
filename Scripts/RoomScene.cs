@@ -8,12 +8,6 @@ public partial class RoomScene : Control
 													//  0   1   2    3  advisors
 	private static readonly int[] EventCountWeights = { 15, 40, 20, 15 };
 
-	private Label _turnLabel;
-	private Label _populationLabel;
-	private Label _pollutionLabel;
-	private Label _popularityLabel;
-	private Label _moneyLabel;
-
 	private ColorRect _advisorPortrait;
 	private Label _advisorNameLabel;
 	private Label _dialogueLabel;
@@ -37,19 +31,12 @@ public partial class RoomScene : Control
 		ConnectSignals();
 		BuildEventPool();
 
-		UpdateStatsDisplay();
 		StartTurn();
 	}
 
 	private void GrabNodeReferences()
 	{
 		var root = "MarginContainer/MainVBox";
-
-		_turnLabel       = GetNode<Label>($"{root}/StatsBar/TurnLabel");
-		_populationLabel = GetNode<Label>($"{root}/StatsBar/PopulationLabel");
-		_pollutionLabel  = GetNode<Label>($"{root}/StatsBar/PollutionLabel");
-		_popularityLabel = GetNode<Label>($"{root}/StatsBar/PopularityLabel");
-		_moneyLabel      = GetNode<Label>($"{root}/StatsBar/MoneyLabel");
 
 		_advisorPortrait  = GetNode<ColorRect>($"{root}/ContentHBox/AdvisorPortrait");
 		_advisorNameLabel = GetNode<Label>($"{root}/ContentHBox/ContentVBox/AdvisorNameLabel");
@@ -70,20 +57,10 @@ public partial class RoomScene : Control
 		_nextButton.Pressed    += OnNextPressed;
 		_endTurnButton.Pressed += OnEndTurnPressed;
 
-		GameManager.Instance.StatsChanged += UpdateStatsDisplay;
-		GameManager.Instance.GameOver     += OnGameOver;
+		GameManager.Instance.GameOver += OnGameOver;
 	}
 
 
-	private void UpdateStatsDisplay()
-	{
-		var gm = GameManager.Instance;
-		_turnLabel.Text       = $"Day {gm.CurrentTurn} / {gm.MaxTurns}";
-		_populationLabel.Text = $"Pop: {gm.Population}";
-		_pollutionLabel.Text  = $"Pollution: {gm.Pollution}";
-		_popularityLabel.Text = $"Approval: {gm.Popularity}%";
-		_moneyLabel.Text      = $"${gm.Money}";
-	}
 
 
 
@@ -292,7 +269,6 @@ public partial class RoomScene : Control
 	private void OnEndTurnPressed()
 	{
 		GameManager.Instance.AdvanceTurn();
-		UpdateStatsDisplay();
 		StartTurn();
 	}
 
