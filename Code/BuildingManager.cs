@@ -208,8 +208,9 @@ public partial class BuildingManager : Node2D
                                 BuildingCounts[requiredIndex]--;
                                 GD.Print($"Building upgraded! Remaining stock for index {requiredIndex}: {BuildingCounts[requiredIndex]}");
 
-                                // Trigger placement/upgrade particles
-                                SpawnBuildingParticles(clickedTile.BuildingNode, isDeleting: false);
+                                // Trigger placement/upgrade particles (footprint-perimeter based)
+                                List<CityTile> upgradeTiles = GetTilesForBuilding(clickedTile.BuildingNode);
+                                SpawnFootprintParticles(upgradeTiles, clickedTile.BuildingNode, new Color(1.0f, 0.85f, 0.3f, 0.9f), false);
 
                                 if (requiredIndex == currentSelectedIndex && !HasAvailableBuilding(currentSelectedIndex))
                                 {
@@ -260,8 +261,9 @@ public partial class BuildingManager : Node2D
                                 GD.Print($"Building downgraded! Refunded 1 stock for type {refundIndex}. New stock: {BuildingCounts[refundIndex]}");
                             }
 
-                            // Trigger particles on downgrade
-                            SpawnBuildingParticles(clickedTile.BuildingNode, isDeleting: true);
+                            // Trigger footprint-perimeter particles on downgrade
+                            List<CityTile> downgradeTiles = GetTilesForBuilding(clickedTile.BuildingNode);
+                            SpawnFootprintParticles(downgradeTiles, clickedTile.BuildingNode, DeletionParticleColor, false);
                         }
                         else
                         {
@@ -750,7 +752,6 @@ public partial class BuildingManager : Node2D
             newBuilding.RotationDegrees = customRotation;
         }
 
-        newBuilding.GlobalPosition = finalWorldPos;
         newBuilding.ZIndex = finalDepth;
 
         foreach (CityTile tile in tilesToOccupy)
@@ -758,8 +759,55 @@ public partial class BuildingManager : Node2D
             tile.BuildingNode = newBuilding;
         }
 
-        // Trigger placement particle burst
-        SpawnBuildingParticles(newBuilding, isDeleting: false);
+        // --- Drop-in / squash & stretch placement animation ---
+        Vector2 targetPos = finalWorldPos;
+        Vector2 originalScale = newBuilding.Scale;
+
+        BuildingSizeCategory cat = GetBuildingCategory(newBuilding, tilesToOccupy);
+        float dropY = -4f;
+        float dropTime = 0.06f;
+        Vector2 landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
+        float reboundTime = 0.06f;
+
+        switch (cat)
+        {
+            case BuildingSizeCategory.House1x1:
+                dropY = -4f; dropTime = 0.06f;
+                landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
+                reboundTime = 0.06f;
+                break;
+            case BuildingSizeCategory.Tall1x1:
+                dropY = -6f; dropTime = 0.07f;
+                landScale = new Vector2(originalScale.X * 1.04f, originalScale.Y * 0.96f);
+                reboundTime = 0.07f;
+                break;
+            case BuildingSizeCategory.Rectangle2x1:
+                dropY = -5f; dropTime = 0.07f;
+                landScale = new Vector2(originalScale.X * 1.03f, originalScale.Y * 0.97f);
+                reboundTime = 0.07f;
+                break;
+            case BuildingSizeCategory.Apartment2x2:
+                dropY = -8f; dropTime = 0.09f;
+                landScale = new Vector2(originalScale.X * 1.05f, originalScale.Y * 0.95f);
+                reboundTime = 0.08f;
+                break;
+        }
+
+        newBuilding.GlobalPosition = targetPos + new Vector2(0, dropY);
+        newBuilding.Scale = new Vector2(originalScale.X * 0.98f, originalScale.Y * 1.02f);
+
+        Tween tween = newBuilding.CreateTween();
+        tween.TweenProperty(newBuilding, "global_position", targetPos, dropTime)
+             .SetTrans(Tween.TransitionType.Quad)
+             .SetEase(Tween.EaseType.In);
+
+        // Trigger placement particle burst once the building "lands"
+        tween.TweenCallback(Callable.From(() => SpawnFootprintParticles(tilesToOccupy, newBuilding, ConstructionParticleColor, false)));
+
+        tween.TweenProperty(newBuilding, "scale", landScale, 0.04f);
+        tween.TweenProperty(newBuilding, "scale", originalScale, reboundTime)
+             .SetTrans(Tween.TransitionType.Sine)
+             .SetEase(Tween.EaseType.Out);
 
         GD.Print($"Built {newBuilding.Name}. Remaining stock for type {currentSelectedIndex}: {BuildingCounts[currentSelectedIndex]}");
 
@@ -778,12 +826,14 @@ public partial class BuildingManager : Node2D
 
         int freedTiles = 0;
         int refundedIndex = -1;
+        List<CityTile> occupiedTiles = new List<CityTile>();
 
         foreach (var kvp in buildableTiles)
         {
             if (kvp.Value.BuildingNode == buildingToRemove)
             {
                 refundedIndex = kvp.Value.BuildingTypeIndex;
+                occupiedTiles.Add(kvp.Value);
                 kvp.Value.IsOccupied = false;
                 kvp.Value.BuildingNode = null;
                 kvp.Value.BuildingTypeIndex = -1;
@@ -797,67 +847,237 @@ public partial class BuildingManager : Node2D
             GD.Print($"Refunded 1 stock for type {refundedIndex}. New stock: {BuildingCounts[refundedIndex]}");
         }
 
-        // Trigger deletion particles before freeing the node
-        SpawnBuildingParticles(buildingToRemove, isDeleting: true);
+        // Trigger footprint-perimeter deletion particles before animating the node out
+        SpawnFootprintParticles(occupiedTiles, buildingToRemove, DeletionParticleColor, true);
 
-        buildingToRemove.QueueFree();
+        // --- Shake & fade removal animation ---
+        Vector2 origPos = buildingToRemove.Position;
+        BuildingSizeCategory cat = GetBuildingCategory(buildingToRemove, occupiedTiles);
+
+        int shakeSteps = 4;
+        if (cat == BuildingSizeCategory.Tall1x1 || cat == BuildingSizeCategory.Rectangle2x1) shakeSteps = 5;
+        if (cat == BuildingSizeCategory.Apartment2x2) shakeSteps = 6;
+
+        float shakeDir = GD.RandRange(-1.0, 1.0) >= 0 ? 1.0f : -1.0f;
+        float randomMult = (float)GD.RandRange(0.85f, 1.15f);
+
+        Tween shakeTween = buildingToRemove.CreateTween();
+        float totalShakeTime = 0f;
+
+        for (int i = 0; i < shakeSteps; i++)
+        {
+            float dist = Mathf.Lerp(2.2f, 0.4f, (float)i / shakeSteps) * randomMult * shakeDir;
+            float stepTime = (float)GD.RandRange(0.035f, 0.055f);
+
+            shakeTween.TweenProperty(buildingToRemove, "position:x", origPos.X + dist, stepTime);
+            totalShakeTime += stepTime;
+            shakeDir *= -1.0f;
+        }
+        shakeTween.TweenProperty(buildingToRemove, "position:x", origPos.X, 0.03f);
+        totalShakeTime += 0.03f;
+
+        Tween fadeTween = buildingToRemove.CreateTween();
+        fadeTween.TweenInterval(totalShakeTime * 0.4f);
+        fadeTween.TweenProperty(buildingToRemove, "modulate:a", 0.0f, totalShakeTime * 0.6f);
+
+        fadeTween.Chain().TweenCallback(Callable.From(() => buildingToRemove.QueueFree()));
 
         GD.Print($"Deleted building, cleanly freed {freedTiles} tile(s).");
     }
 
-    // -----------------------------------------
-    // PARTICLE SYSTEM LOGIC
-    // -----------------------------------------
-    private void SpawnBuildingParticles(Node2D building, bool isDeleting)
+    private List<CityTile> GetTilesForBuilding(Node2D building)
     {
-        if (building == null) return;
-
-        // Spawn particles behind and in front of the building
-        CreateParticleLayer(building, isBehind: true, isDeleting: isDeleting);
-        CreateParticleLayer(building, isBehind: false, isDeleting: isDeleting);
+        List<CityTile> tiles = new List<CityTile>();
+        foreach (var kvp in buildableTiles)
+        {
+            if (kvp.Value.BuildingNode == building)
+                tiles.Add(kvp.Value);
+        }
+        return tiles;
     }
 
-    private void CreateParticleLayer(Node2D building, bool isBehind, bool isDeleting)
+    private BuildingSizeCategory GetBuildingCategory(Node2D building, List<CityTile> tiles)
     {
-        CpuParticles2D particles = new CpuParticles2D();
-        AddChild(particles);
+        if (tiles == null || tiles.Count == 0) return BuildingSizeCategory.House1x1;
+        if (tiles.Count >= 4) return BuildingSizeCategory.Apartment2x2;
+        if (tiles.Count == 2) return BuildingSizeCategory.Rectangle2x1;
 
-        particles.GlobalPosition = building.GlobalPosition;
-        particles.ZIndex = isBehind ? (building.ZIndex - 1) : (building.ZIndex + 1);
-
-        Color particleColor = isDeleting ? DeletionParticleColor : ConstructionParticleColor;
-
-        var img = Image.CreateEmpty(1, 1, false, Image.Format.Rgba8);
-        img.Fill(particleColor);
-        particles.Texture = ImageTexture.CreateFromImage(img);
-        particles.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
-
-        particles.Emitting = false;
-        particles.OneShot = true;
-        particles.Explosiveness = isDeleting ? 0.95f : 0.85f;
-        particles.Amount = DefaultParticlesPerLayer;
-
-        if (isDeleting)
+        string nameLower = building != null ? building.Name.ToString().ToLower() : "";
+        if (nameLower.Contains("tall") || nameLower.Contains("tower") || nameLower.Contains("office") || (!nameLower.Contains("house") && nameLower.Contains("2")))
         {
-            particles.Lifetime = (float)GD.RandRange(0.20f, 0.25f);
-            particles.InitialVelocityMin = (float)GD.RandRange(18f, 24f);
-            particles.InitialVelocityMax = (float)GD.RandRange(30f, 40f);
+            return BuildingSizeCategory.Tall1x1;
         }
-        else
+        return BuildingSizeCategory.House1x1;
+    }
+
+    // -----------------------------------------
+    // PERIMETER GENERATOR
+    // -----------------------------------------
+    private void GetFilteredPerimeterPoints(List<CityTile> tiles, BuildingSizeCategory cat, out List<Vector2> backPoints, out List<Vector2> frontPoints)
+    {
+        backPoints = new List<Vector2>();
+        frontPoints = new List<Vector2>();
+
+        if (tiles.Count == 0) return;
+
+        Vector2 footprintCenter = Vector2.Zero;
+        foreach (CityTile tile in tiles)
         {
-            particles.Lifetime = (float)GD.RandRange(0.40f, 0.48f);
-            particles.InitialVelocityMin = (float)GD.RandRange(12f, 16f);
-            particles.InitialVelocityMax = (float)GD.RandRange(22f, 28f);
+            footprintCenter += GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(tile.GridPosition));
+        }
+        footprintCenter /= tiles.Count;
+
+        float sizeMultiplier = 1.0f;
+        switch (cat)
+        {
+            case BuildingSizeCategory.House1x1:
+                sizeMultiplier = 1.45f;
+                break;
+            case BuildingSizeCategory.Tall1x1:
+                sizeMultiplier = 0.70f;
+                break;
+            case BuildingSizeCategory.Rectangle2x1:
+                sizeMultiplier = 0.88f;
+                break;
+            case BuildingSizeCategory.Apartment2x2:
+                sizeMultiplier = 0.70f;
+                break;
         }
 
-        particles.EmissionShape = CpuParticles2D.EmissionShapeEnum.Points;
-        particles.Direction = new Vector2((float)GD.RandRange(-1f, 1f), (float)GD.RandRange(-1f, 1f)).Normalized();
-        particles.Spread = 180f;
-        particles.Gravity = new Vector2(0, 10f);
+        float halfW = 14f;
+        float halfH = 7f;
+        int pointsPerEdge = 4;
 
-        // Clean up particle node automatically when emission finishes
-        particles.Finished += () => particles.QueueFree();
+        foreach (CityTile tile in tiles)
+        {
+            Vector2 center = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(tile.GridPosition));
+            Vector2 top = center + new Vector2(0, -halfH);
+            Vector2 right = center + new Vector2(halfW, 0);
+            Vector2 bottom = center + new Vector2(0, halfH);
+            Vector2 left = center + new Vector2(-halfW, 0);
 
-        particles.Emitting = true;
+            if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.TopLeftSide))
+            {
+                for (int i = 0; i < pointsPerEdge; i++)
+                {
+                    Vector2 pt = left.Lerp(top, (float)i / pointsPerEdge);
+                    Vector2 offset = pt - footprintCenter;
+                    backPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                }
+            }
+
+            if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.TopRightSide))
+            {
+                for (int i = 0; i < pointsPerEdge; i++)
+                {
+                    Vector2 pt = top.Lerp(right, (float)i / pointsPerEdge);
+                    Vector2 offset = pt - footprintCenter;
+                    backPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                }
+            }
+
+            if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.BottomRightSide))
+            {
+                for (int i = 0; i < pointsPerEdge; i++)
+                {
+                    Vector2 pt = right.Lerp(bottom, (float)i / pointsPerEdge);
+                    Vector2 offset = pt - footprintCenter;
+                    frontPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                }
+            }
+
+            if (!HasSameBuildingNeighbor(tile, TileSet.CellNeighbor.BottomLeftSide))
+            {
+                for (int i = 0; i < pointsPerEdge; i++)
+                {
+                    Vector2 pt = bottom.Lerp(left, (float)i / pointsPerEdge);
+                    Vector2 offset = pt - footprintCenter;
+                    frontPoints.Add(footprintCenter + (offset * sizeMultiplier));
+                }
+            }
+        }
+    }
+
+    private bool HasSameBuildingNeighbor(CityTile tile, TileSet.CellNeighbor neighborDir)
+    {
+        Vector2I neighborPos = GroundTileMap.GetNeighborCell(tile.GridPosition, neighborDir);
+        if (buildableTiles.TryGetValue(neighborPos, out CityTile neighbor))
+        {
+            return neighbor.BuildingNode != null && neighbor.BuildingNode == tile.BuildingNode;
+        }
+        return false;
+    }
+
+    // -----------------------------------------
+    // PARTICLE GENERATOR (footprint-perimeter based)
+    // -----------------------------------------
+    private void SpawnFootprintParticles(List<CityTile> tiles, Node2D building, Color color, bool isDeleting = false)
+    {
+        if (tiles == null || tiles.Count == 0) return;
+
+        BuildingSizeCategory cat = GetBuildingCategory(building, tiles);
+        GetFilteredPerimeterPoints(tiles, cat, out List<Vector2> backPoints, out List<Vector2> frontPoints);
+
+        int totalParticles = DefaultParticlesPerLayer * 2;
+        switch (cat)
+        {
+            case BuildingSizeCategory.House1x1: totalParticles = 16; break;
+            case BuildingSizeCategory.Tall1x1: totalParticles = 36; break;
+            case BuildingSizeCategory.Rectangle2x1: totalParticles = 28; break;
+            case BuildingSizeCategory.Apartment2x2: totalParticles = 40; break;
+        }
+
+        int amountPerLayer = Mathf.Max(4, totalParticles / 2);
+
+        for (int i = 0; i < 2; i++)
+        {
+            bool isBehind = (i == 0);
+            List<Vector2> targetPoints = isBehind ? backPoints : frontPoints;
+            if (targetPoints.Count == 0) continue;
+
+            CpuParticles2D particles = new CpuParticles2D();
+            GetTree().CurrentScene.AddChild(particles);
+
+            particles.GlobalPosition = Vector2.Zero;
+            particles.ZIndex = isBehind ? (building.ZIndex - 1) : (building.ZIndex + 1);
+
+            var img = Image.CreateEmpty(1, 1, false, Image.Format.Rgba8);
+            img.Fill(color);
+            particles.Texture = ImageTexture.CreateFromImage(img);
+            particles.TextureFilter = CanvasItem.TextureFilterEnum.Nearest;
+
+            particles.Emitting = false;
+            particles.OneShot = true;
+            particles.Explosiveness = isDeleting ? 0.95f : 0.85f;
+            particles.Amount = amountPerLayer;
+
+            if (isDeleting)
+            {
+                particles.Lifetime = (float)GD.RandRange(0.20f, 0.25f);
+                particles.InitialVelocityMin = (float)GD.RandRange(18f, 24f);
+                particles.InitialVelocityMax = (float)GD.RandRange(30f, 40f);
+            }
+            else
+            {
+                particles.Lifetime = (float)GD.RandRange(0.40f, 0.48f);
+                particles.InitialVelocityMin = (float)GD.RandRange(12f, 16f);
+                particles.InitialVelocityMax = (float)GD.RandRange(22f, 28f);
+            }
+
+            particles.EmissionShape = CpuParticles2D.EmissionShapeEnum.Points;
+            particles.EmissionPoints = targetPoints.ToArray();
+
+            particles.Direction = new Vector2(0, -1);
+            particles.Spread = isDeleting ? 40f : 30f;
+            particles.Gravity = new Vector2(0, -15f);
+
+            Gradient fadeGradient = new Gradient();
+            fadeGradient.SetColor(0, new Color(1, 1, 1, 1));
+            fadeGradient.SetColor(1, new Color(1, 1, 1, 0));
+            particles.ColorRamp = fadeGradient;
+
+            particles.Emitting = true;
+            GetTree().CreateTimer(0.6f).Timeout += () => particles.QueueFree();
+        }
     }
 }
