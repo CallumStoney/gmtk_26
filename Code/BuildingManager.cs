@@ -66,7 +66,8 @@ public partial class BuildingManager : Node2D
     [Export] public ConfirmationDialog SellDialog;
     [Export] public ConfirmationDialog UpgradeDialog;
     [Export] public Control InfoPanel;
-    [Export] public RichTextLabel InfoLabel; // <--- Change this to RichTextLabel
+    [Export] public Label InfoTitleLabel;
+    [Export] public Label InfoBodyLabel;
 
     // -----------------------------------------
     // TILE IDENTIFIERS
@@ -451,16 +452,13 @@ public partial class BuildingManager : Node2D
     {
         if (targetActionTile == null) return;
 
-        if (InfoLabel == null)
+        if (InfoTitleLabel == null || InfoBodyLabel == null)
         {
-            GD.PrintErr("InfoLabel reference is missing! Re-assign your RichTextLabel in the BuildingManager Inspector.");
+            GD.PrintErr("Info labels are missing in the BuildingManager Inspector!");
             return;
         }
 
-        // 1. Force BBCode parsing directly in code
-        InfoLabel.BbcodeEnabled = true;
-
-        // --- TOGGLE CHECK: If panel is already open, hide it and close ---
+        // TOGGLE CHECK: If panel is already open, hide it and close
         if (InfoPanel != null && InfoPanel.Visible)
         {
             InfoPanel.Visible = false;
@@ -469,52 +467,30 @@ public partial class BuildingManager : Node2D
 
         int index = targetActionTile.BuildingTypeIndex;
 
-        // Safely pull the data from the dictionary
         if (BuildingInfo.TryGetValue(index, out string[] infoArray))
         {
             if (infoArray.Length >= 4)
             {
                 string buildingName = infoArray[0];
                 string sellPrice = infoArray[3];
-
-                // Default to the base stats (Index 1)
                 string rawStats = infoArray[1];
 
-                // --- THE MULTI-LEVEL UPGRADE CHECK ---
-                if (targetActionTile.BuildingNode is UpgradableBuilding ub)
+                if (targetActionTile.BuildingNode is UpgradableBuilding ub && ub.CurrentLevel > 0)
                 {
-                    int level = ub.CurrentLevel;
-
-                    if (level > 0)
+                    int targetStatsIndex = 4 + ub.CurrentLevel;
+                    if (infoArray.Length > targetStatsIndex)
                     {
-                        int targetStatsIndex = 4 + level;
-
-                        if (infoArray.Length > targetStatsIndex)
-                        {
-                            rawStats = infoArray[targetStatsIndex];
-                            buildingName = $"Lvl {level + 1} {buildingName}";
-                        }
-                        else
-                        {
-                            GD.PrintErr($"Building info array is missing stats for Level {level} at index {targetStatsIndex}!");
-                        }
+                        rawStats = infoArray[targetStatsIndex];
+                        buildingName = $"Lvl {ub.CurrentLevel + 1} {buildingName}";
                     }
                 }
 
-                // Apply the comma replacement trick
                 string stats = rawStats.Replace(", ", "\n").Replace(",", "\n");
 
-                // Title = 16px font, Body/Price = 12px font
-                InfoLabel.Text = $"[center][font_size=5]{buildingName}[/font_size][/center][font_size=3]\n\n{stats}\n\nSell Price: {sellPrice}[/font_size]";
+                // Direct plain text into standard crisp labels
+                InfoTitleLabel.Text = buildingName;
+                InfoBodyLabel.Text = $"{stats}\nSell Price: {sellPrice}";
             }
-            else
-            {
-                InfoLabel.Text = "[font_size=3]Error: Array doesn't have enough data.[/font_size]";
-            }
-        }
-        else
-        {
-            InfoLabel.Text = "[font_size=3]Data for this building not found.[/font_size]";
         }
 
         InfoPanel.Visible = true;
