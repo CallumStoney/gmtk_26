@@ -4,6 +4,6 @@
 
 [node name="House1" type="Sprite2D"]
 texture = ExtResource("1_kpv1k")
-offset = Vector2(0, -24)
+offset = Vector2(0, -26)
 region_enabled = true
 region_rect = Rect2(0, 5, 36, 40)

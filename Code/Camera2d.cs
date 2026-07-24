@@ -14,9 +14,6 @@ public partial class Camera2d : Camera2D
     // How softly the camera tracks your mouse. Lower = softer, Higher = snappier.
     [Export] public float DragSmoothingSpeed = 20f;
 
-    // ---> THIS IS THE VARIABLE YOU ASSIGN IN THE INSPECTOR <---
-    [Export] public CanvasLayer GameUI;
-
     private bool _isDragging = false;
     private Vector2 _targetPosition;
 
@@ -24,9 +21,6 @@ public partial class Camera2d : Camera2D
     {
         Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
         _targetPosition = Position;
-
-        // Sync the UI scale as soon as the game starts
-        UpdateUIScale();
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -34,19 +28,26 @@ public partial class Camera2d : Camera2D
         // 1. Standard Mouse Interactions
         if (@event is InputEventMouseButton mouseButton)
         {
+            // Ignore zoom wheel if the cursor is hovering over ANY UI control node
+            bool isHoveringUI = GetViewport().GuiGetHoveredControl() != null;
+
             if (mouseButton.ButtonIndex == MouseButton.WheelUp && mouseButton.Pressed)
             {
+                if (isHoveringUI) return; // Prevent zooming over UI
+
                 Zoom += ZoomSpeed;
                 Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
-                UpdateUIScale();
             }
             else if (mouseButton.ButtonIndex == MouseButton.WheelDown && mouseButton.Pressed)
             {
+                if (isHoveringUI) return; // Prevent zooming over UI
+
                 Zoom -= ZoomSpeed;
                 Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
-                UpdateUIScale();
             }
-            else if (mouseButton.ButtonIndex == MouseButton.Middle)
+            else if (mouseButton.ButtonIndex == MouseButton.Left ||
+                     mouseButton.ButtonIndex == MouseButton.Right ||
+                     mouseButton.ButtonIndex == MouseButton.Middle)
             {
                 _isDragging = mouseButton.Pressed;
 
@@ -57,22 +58,19 @@ public partial class Camera2d : Camera2D
             }
         }
 
-        // Standard Middle-Mouse Dragging
+        // Standard Mouse Dragging
         if (@event is InputEventMouseMotion mouseMotion && _isDragging)
         {
             _targetPosition -= mouseMotion.Relative / Zoom;
         }
 
         // 2. Trackpad Specific Interactions
-        // Handles pinch-to-zoom on supported trackpads/touchscreens
         if (@event is InputEventMagnifyGesture magnifyGesture)
         {
             Zoom *= magnifyGesture.Factor;
             Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
-            UpdateUIScale();
         }
 
-        // Handles two-finger panning on supported trackpads
         if (@event is InputEventPanGesture panGesture)
         {
             _targetPosition += (panGesture.Delta * TrackpadPanSpeed) / Zoom;
@@ -82,14 +80,5 @@ public partial class Camera2d : Camera2D
     public override void _Process(double delta)
     {
         Position = Position.Lerp(_targetPosition, (float)delta * DragSmoothingSpeed);
-    }
-
-    private void UpdateUIScale()
-    {
-        if (GameUI != null)
-        {
-            // This applies the exact camera zoom level to the CanvasLayer
-            GameUI.Scale = Zoom;
-        }
     }
 }
