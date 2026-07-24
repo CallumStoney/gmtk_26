@@ -507,10 +507,20 @@ public partial class BuildingManager : Node2D
         float maxDepthY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(pivotGridPos)).Y;
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
 
+        // Small backward nudge so a multi-tile building's frontmost tile can never land
+        // on the exact same depth value as a single tile sitting right at that edge.
+        // Without this, a 2x1/2x2 placed with its front tile touching an existing 1x1's
+        // tile produces an EXACT tie in Y - and Godot resolves exact ZIndex ties by
+        // scene-tree sibling order (whoever was added later wins), not by real depth.
+        // The nudge is tiny relative to a full tile step, so it never affects ordering
+        // against anything that's genuinely a tile or more away.
+        float depthNudge = 0f;
+
         if (activeFootprint == FootprintType.DynamicHorizontal2x1 && secondTile != null)
         {
             float secondTileY = GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(secondTile.GridPosition)).Y;
             maxDepthY = Mathf.Max(maxDepthY, secondTileY);
+            depthNudge = 1.0f;
         }
         else if (activeFootprint == FootprintType.Square2x2)
         {
@@ -530,9 +540,10 @@ public partial class BuildingManager : Node2D
                 Vector2I posBottom = GroundTileMap.GetNeighborCell(posRight, TileSet.CellNeighbor.BottomLeftSide);
                 maxDepthY = Mathf.Max(maxDepthY, GroundTileMap.ToGlobal(GroundTileMap.MapToLocal(posBottom)).Y);
             }
+            depthNudge = 2.0f;
         }
 
-        return Mathf.RoundToInt(maxDepthY) + 10;
+        return Mathf.RoundToInt(maxDepthY - depthNudge) + 10;
     }
 
     private Vector2 CalculateBuildingWorldPosition(Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
