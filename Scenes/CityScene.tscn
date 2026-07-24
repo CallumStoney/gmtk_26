@@ -410,6 +410,7 @@ DragHotspot = Vector2(0, 0)
 [node name="InCityUI" type="CanvasLayer" parent="."]
 
 [node name="ActionMenu" type="Control" parent="InCityUI"]
+visible = false
 custom_minimum_size = Vector2(32, 0)
 layout_mode = 3
 anchors_preset = 8
