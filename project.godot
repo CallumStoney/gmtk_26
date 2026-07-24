@@ -21,6 +21,11 @@ window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[autoload]
+
+GameManager="*res://Scripts/GameManager.cs"
+
+
 [dotnet]
 
 project/assembly_name="GMTK_26"
