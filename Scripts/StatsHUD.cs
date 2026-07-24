@@ -1,24 +1,19 @@
 using Godot;
 
-/// <summary>
-/// Reusable PPPE stats HUD — drop this scene into any UI and it self-updates
-/// via GameManager signals. Day bar counts DOWN to fit the countdown theme.
-/// </summary>
 public partial class StatsHUD : HBoxContainer
 {
-	// labels
+	//lables
 	private Label _turnLabel;
 	private Label _populationLabel;
 	private Label _pollutionLabel;
 	private Label _popularityLabel;
 	private Label _moneyLabel;
 
-	// bar fills (sized via AnchorRight)
+	//bar fills (sized via AnchorRight)
 	private ColorRect _dayBarFill;
 	private ColorRect _pollutionBarFill;
 	private ColorRect _approvalBarFill;
 
-	// threshold markers
 	private ColorRect _pollutionThreshold;
 	private ColorRect _approvalThreshold;
 
@@ -53,7 +48,7 @@ public partial class StatsHUD : HBoxContainer
 	{
 		var gm = GameManager.Instance;
 
-		// --- Labels ---
+
 		int daysLeft = gm.MaxTurns - gm.CurrentTurn;
 		_turnLabel.Text       = daysLeft == 0 ? "Final Day!" : $"{daysLeft} Days Left";
 		_populationLabel.Text = $"Pop: {gm.Population}";
@@ -61,17 +56,14 @@ public partial class StatsHUD : HBoxContainer
 		_popularityLabel.Text = $"Approval: {gm.Popularity}%";
 		_moneyLabel.Text      = $"${gm.Money}";
 
-		// --- Day bar COUNTS DOWN (full on day 1, empty on last day) ---
-		float dayRatio = gm.MaxTurns > 1
-			? 1f - ((float)(gm.CurrentTurn - 1) / (gm.MaxTurns - 1))
-			: 0f;
+
+		float dayRatio = gm.MaxTurns > 1 ? 1f - ((float)(gm.CurrentTurn - 1) / (gm.MaxTurns - 1)) : 0f;
 		_dayBarFill.AnchorRight = dayRatio;
 
-		// --- Pollution & Approval bars ---
 		_pollutionBarFill.AnchorRight = gm.Pollution / 100f;
 		_approvalBarFill.AnchorRight  = gm.Popularity / 100f;
 
-		// --- Threshold markers ---
+
 		float pollThresh = gm.PollutionTarget / 100f;
 		_pollutionThreshold.AnchorLeft  = pollThresh;
 		_pollutionThreshold.AnchorRight = pollThresh;

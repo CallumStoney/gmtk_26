@@ -1,22 +1,22 @@
 [gd_scene load_steps=48 format=4 uid="uid://cn1sjd3e0rebi"]
 
-[ext_resource type="Script" path="res://Code/InventoryUI.cs" id="1_3dntw"]
+[ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
 [ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="2_ri1kh"]
-[ext_resource type="Script" path="res://Code/BuildingInInventory.cs" id="3_57116"]
+[ext_resource type="Script" uid="uid://06f2f2puus5c" path="res://Code/BuildingInInventory.cs" id="3_57116"]
 [ext_resource type="PackedScene" uid="uid://ctvvgj0ta5t46" path="res://Nodes/house_1.tscn" id="3_aobtk"]
 [ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="3_ri1kh"]
-[ext_resource type="Script" path="res://Code/SelectionButton.cs" id="4_x7odd"]
-[ext_resource type="Script" path="res://Code/BuyButton.cs" id="5_3q8ur"]
+[ext_resource type="Script" uid="uid://c3jud65gs0gpk" path="res://Code/SelectionButton.cs" id="4_x7odd"]
+[ext_resource type="Script" uid="uid://cxjx7u0t3tbum" path="res://Code/BuyButton.cs" id="5_3q8ur"]
 [ext_resource type="PackedScene" uid="uid://61b3yagpg4i2" path="res://Nodes/office_1.tscn" id="6_d46wb"]
 [ext_resource type="PackedScene" uid="uid://dphxq8hppc2n1" path="res://Nodes/office_2.tscn" id="7_bdw28"]
-[ext_resource type="Script" path="res://Code/BuildingAmount.cs" id="7_xw3tc"]
+[ext_resource type="Script" uid="uid://c3d5nb5i1twq4" path="res://Code/BuildingAmount.cs" id="7_xw3tc"]
 [ext_resource type="PackedScene" uid="uid://da0l0ksymkuka" path="res://Nodes/factory_2.tscn" id="8_wen53"]
 [ext_resource type="PackedScene" uid="uid://chesq7swfvk18" path="res://Nodes/apartment_2.tscn" id="9_rp3ig"]
-[ext_resource type="Script" path="res://Code/ShopUI.cs" id="10_7cl7d"]
+[ext_resource type="Script" uid="uid://dtkb3w3mv15v" path="res://Code/ShopUI.cs" id="10_7cl7d"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ptyvu"]
 atlas = ExtResource("2_ri1kh")
@@ -464,8 +464,8 @@ texture_pressed = SubResource("AtlasTexture_xobmb")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("4_x7odd")
-BuildingScene = ExtResource("3_aobtk")
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingScene = ExtResource("3_aobtk")
 
 [node name="Label" type="Label" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/House1/VBoxContainer"]
 layout_mode = 2
@@ -486,8 +486,8 @@ Manager = NodePath("../../../../../../../BuildingManager")
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_57116")
 script = ExtResource("3_57116")
-BuildingIndex = 1
 Manager = NodePath("../../../../../../BuildingManager")
+BuildingIndex = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Office1"]
 layout_mode = 2
@@ -500,8 +500,8 @@ texture_pressed = SubResource("AtlasTexture_sb74f")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("4_x7odd")
-BuildingScene = ExtResource("6_d46wb")
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingScene = ExtResource("6_d46wb")
 
 [node name="Label2" type="Label" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Office1/VBoxContainer"]
 layout_mode = 2
@@ -515,15 +515,15 @@ theme_override_font_sizes/font_size = 24
 text = "x2"
 horizontal_alignment = 2
 script = ExtResource("7_xw3tc")
-BuildingIndex = 1
 Manager = NodePath("../../../../../../../BuildingManager")
+BuildingIndex = 1
 
 [node name="Office2" type="PanelContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer" node_paths=PackedStringArray("Manager")]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_57116")
 script = ExtResource("3_57116")
-BuildingIndex = 2
 Manager = NodePath("../../../../../../BuildingManager")
+BuildingIndex = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Office2"]
 layout_mode = 2
@@ -536,8 +536,8 @@ texture_pressed = SubResource("AtlasTexture_56atv")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("4_x7odd")
-BuildingScene = ExtResource("7_bdw28")
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingScene = ExtResource("7_bdw28")
 
 [node name="Label2" type="Label" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Office2/VBoxContainer"]
 layout_mode = 2
@@ -551,15 +551,15 @@ theme_override_font_sizes/font_size = 24
 text = "x2"
 horizontal_alignment = 2
 script = ExtResource("7_xw3tc")
-BuildingIndex = 2
 Manager = NodePath("../../../../../../../BuildingManager")
+BuildingIndex = 2
 
 [node name="Factory2" type="PanelContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer" node_paths=PackedStringArray("Manager")]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_57116")
 script = ExtResource("3_57116")
-BuildingIndex = 3
 Manager = NodePath("../../../../../../BuildingManager")
+BuildingIndex = 3
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Factory2"]
 layout_mode = 2
@@ -572,8 +572,8 @@ texture_pressed = SubResource("AtlasTexture_iqlop")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("4_x7odd")
-BuildingScene = ExtResource("8_wen53")
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingScene = ExtResource("8_wen53")
 
 [node name="Label2" type="Label" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Factory2/VBoxContainer"]
 layout_mode = 2
@@ -587,15 +587,15 @@ theme_override_font_sizes/font_size = 24
 text = "x2"
 horizontal_alignment = 2
 script = ExtResource("7_xw3tc")
-BuildingIndex = 3
 Manager = NodePath("../../../../../../../BuildingManager")
+BuildingIndex = 3
 
 [node name="Apartment2" type="PanelContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer" node_paths=PackedStringArray("Manager")]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_57116")
 script = ExtResource("3_57116")
-BuildingIndex = 4
 Manager = NodePath("../../../../../../BuildingManager")
+BuildingIndex = 4
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Apartment2"]
 layout_mode = 2
@@ -608,8 +608,8 @@ texture_pressed = SubResource("AtlasTexture_11u8x")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("4_x7odd")
-BuildingScene = ExtResource("9_rp3ig")
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingScene = ExtResource("9_rp3ig")
 
 [node name="Label2" type="Label" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/Apartment2/VBoxContainer"]
 layout_mode = 2
@@ -623,8 +623,8 @@ theme_override_font_sizes/font_size = 24
 text = "x2"
 horizontal_alignment = 2
 script = ExtResource("7_xw3tc")
-BuildingIndex = 4
 Manager = NodePath("../../../../../../../BuildingManager")
+BuildingIndex = 4
 
 [node name="ShopUI" type="Control" parent="GameUI" node_paths=PackedStringArray("ToggleButton", "ShopPopup", "TargetBuildingManager")]
 layout_mode = 3
@@ -757,8 +757,8 @@ texture_pressed = SubResource("AtlasTexture_57116")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("5_3q8ur")
-BuildingTypeIndex = 1
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingTypeIndex = 1
 
 [node name="Office2" type="PanelContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer"]
 layout_mode = 2
@@ -790,8 +790,8 @@ texture_pressed = SubResource("AtlasTexture_57116")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("5_3q8ur")
-BuildingTypeIndex = 2
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingTypeIndex = 2
 
 [node name="Factory2" type="PanelContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer"]
 layout_mode = 2
@@ -823,8 +823,8 @@ texture_pressed = SubResource("AtlasTexture_57116")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("5_3q8ur")
-BuildingTypeIndex = 3
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingTypeIndex = 3
 
 [node name="Apartment2" type="PanelContainer" parent="GameUI/ShopUI/ShopPopup/ScrollContainer/GridContainer"]
 layout_mode = 2
@@ -856,8 +856,8 @@ texture_pressed = SubResource("AtlasTexture_57116")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("5_3q8ur")
-BuildingTypeIndex = 4
 TargetBuildingManager = NodePath("../../../../../../../../BuildingManager")
+BuildingTypeIndex = 4
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(2, 2)
