@@ -66,7 +66,7 @@ public partial class BuildingManager : Node2D
     [Export] public ConfirmationDialog SellDialog;
     [Export] public ConfirmationDialog UpgradeDialog;
     [Export] public Control InfoPanel;
-    [Export] public Label InfoLabel;
+    [Export] public RichTextLabel InfoLabel; // <--- Change this to RichTextLabel
 
     // -----------------------------------------
     // TILE IDENTIFIERS
@@ -133,7 +133,7 @@ public partial class BuildingManager : Node2D
         tooltipLabel.ZIndex = 100;
         tooltipLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
         tooltipLabel.AddThemeConstantOverride("outline_size", 4);
-        tooltipLabel.AddThemeFontSizeOverride("font_size", 6);
+        tooltipLabel.AddThemeFontSizeOverride("font_size", 4);
         tooltipLabel.ZIndex = 4090;
         tooltipLabel.Visible = false;
         AddChild(tooltipLabel);
@@ -391,15 +391,31 @@ public partial class BuildingManager : Node2D
     {
         if (targetActionTile == null) return;
 
-        // Dynamically change the dialog text based on what we are actually selling
+        // 1. Set fallback values just in case the dictionary is missing data
+        string buildingName = "this building";
+        string sellPrice = "Unknown amount";
+
+        // 2. Look up the building info using the tile's index
+        if (BuildingInfo.TryGetValue(targetActionTile.BuildingTypeIndex, out string[] infoArray))
+        {
+            // 3. Make sure the array actually has the data
+            if (infoArray.Length >= 4)
+            {
+                buildingName = infoArray[0]; // Grab the Name
+                sellPrice = infoArray[3];    // Grab the Sell Price
+            }
+        }
+
+        // 4. Inject BOTH the name and the price dynamically into the text
         if (targetActionTile.BuildingNode is UpgradableBuilding ub && ub.CanDowngrade())
         {
-            SellDialog.DialogText = "Sell the current upgrade for resources/cash?";
+            SellDialog.DialogText = $"Sell one upgrade for the {buildingName} for {sellPrice}?";
         }
         else
         {
-            SellDialog.DialogText = "Sell this base building for resources/cash?";
+            SellDialog.DialogText = $"Sell {buildingName} for {sellPrice}?";
         }
+
         SellDialog.PopupCentered();
     }
 
@@ -434,14 +450,102 @@ public partial class BuildingManager : Node2D
     private void OnInfoButtonPressed()
     {
         if (targetActionTile == null) return;
-        InfoLabel.Text = $"Building Info:\nName: {targetActionTile.BuildingNode.Name}\nType Index: {targetActionTile.BuildingTypeIndex}";
+
+        if (InfoLabel == null)
+        {
+            GD.PrintErr("InfoLabel reference is missing! Re-assign your RichTextLabel in the BuildingManager Inspector.");
+            return;
+        }
+
+        // 1. Force BBCode parsing directly in code
+        InfoLabel.BbcodeEnabled = true;
+
+        // --- TOGGLE CHECK: If panel is already open, hide it and close ---
+        if (InfoPanel != null && InfoPanel.Visible)
+        {
+            InfoPanel.Visible = false;
+            return;
+        }
+
+        int index = targetActionTile.BuildingTypeIndex;
+
+        // Safely pull the data from the dictionary
+        if (BuildingInfo.TryGetValue(index, out string[] infoArray))
+        {
+            if (infoArray.Length >= 4)
+            {
+                string buildingName = infoArray[0];
+                string sellPrice = infoArray[3];
+
+                // Default to the base stats (Index 1)
+                string rawStats = infoArray[1];
+
+                // --- THE MULTI-LEVEL UPGRADE CHECK ---
+                if (targetActionTile.BuildingNode is UpgradableBuilding ub)
+                {
+                    int level = ub.CurrentLevel;
+
+                    if (level > 0)
+                    {
+                        int targetStatsIndex = 4 + level;
+
+                        if (infoArray.Length > targetStatsIndex)
+                        {
+                            rawStats = infoArray[targetStatsIndex];
+                            buildingName = $"Lvl {level + 1} {buildingName}";
+                        }
+                        else
+                        {
+                            GD.PrintErr($"Building info array is missing stats for Level {level} at index {targetStatsIndex}!");
+                        }
+                    }
+                }
+
+                // Apply the comma replacement trick
+                string stats = rawStats.Replace(", ", "\n").Replace(",", "\n");
+
+                // Title = 16px font, Body/Price = 12px font
+                InfoLabel.Text = $"[center][font_size=5]{buildingName}[/font_size][/center][font_size=3]\n\n{stats}\n\nSell Price: {sellPrice}[/font_size]";
+            }
+            else
+            {
+                InfoLabel.Text = "[font_size=3]Error: Array doesn't have enough data.[/font_size]";
+            }
+        }
+        else
+        {
+            InfoLabel.Text = "[font_size=3]Data for this building not found.[/font_size]";
+        }
+
         InfoPanel.Visible = true;
     }
 
     private void OnUpgradeButtonPressed()
     {
         if (targetActionTile == null) return;
-        UpgradeDialog.DialogText = "Upgrade this building for X resources?";
+
+        // 1. Set fallback values just in case the dictionary is missing data
+        string buildingName = "this building";
+        string upgradeCost = "Unknown amount";
+
+        // 2. Look up the building info using the tile's index
+        if (BuildingInfo.TryGetValue(targetActionTile.BuildingTypeIndex, out string[] infoArray))
+        {
+            // 3. Make sure the array actually has the upgrade cost (Index 4 means Length must be >= 5)
+            if (infoArray.Length >= 5)
+            {
+                buildingName = infoArray[0]; // Grab the Name
+                upgradeCost = infoArray[4];  // Grab the Upgrade Cost
+            }
+            else
+            {
+                GD.PrintErr($"Building array for {buildingName} doesn't have an upgrade cost at index 4!");
+            }
+        }
+
+        // 4. Inject the name, cost, and warning note dynamically into the text
+        UpgradeDialog.DialogText = $"Upgrade {buildingName} for {upgradeCost}?\n\n(Note: Upgraded buildings cannot be stored in your inventory.)";
+
         UpgradeDialog.PopupCentered();
     }
 

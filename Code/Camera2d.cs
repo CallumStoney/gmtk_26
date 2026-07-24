@@ -14,6 +14,9 @@ public partial class Camera2d : Camera2D
     // How softly the camera tracks your mouse. Lower = softer, Higher = snappier.
     [Export] public float DragSmoothingSpeed = 20f;
 
+    // --- NEW: Cursor Manager Reference ---
+    [Export] public CursorManager CursorMgr;
+
     private bool _isDragging = false;
     private Vector2 _targetPosition;
 
@@ -54,6 +57,14 @@ public partial class Camera2d : Camera2D
                 if (_isDragging)
                 {
                     _targetPosition = Position;
+
+                    // --- NEW: Switch to Drag Cursor on press ---
+                    CursorMgr?.SetDragCursor();
+                }
+                else
+                {
+                    // --- NEW: Switch back to Default Cursor on release ---
+                    CursorMgr?.SetDefaultCursor();
                 }
             }
         }

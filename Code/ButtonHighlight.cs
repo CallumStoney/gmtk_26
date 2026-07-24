@@ -56,10 +56,10 @@ public partial class ButtonHighlight : TextureButton
             styleBox.BorderColor = new Color(1f, 1f, 1f, 1f);
 
             // --- UPDATED: Shrunk the padding to make the box tighter! ---
-            styleBox.ContentMarginLeft = 2;   // Used to be 6
-            styleBox.ContentMarginRight = 2;  // Used to be 6
-            styleBox.ContentMarginTop = 1;    // Used to be 3
-            styleBox.ContentMarginBottom = 1; // Used to be 3
+            styleBox.ContentMarginLeft = 2;
+            styleBox.ContentMarginRight = 2;
+            styleBox.ContentMarginTop = 1;
+            styleBox.ContentMarginBottom = 1;
             // ------------------------------------------------------------
 
             _tooltipLabel.AddThemeStyleboxOverride("normal", styleBox);

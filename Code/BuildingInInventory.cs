@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class BuildingInInventory : PanelContainer
+public partial class BuildingInInventory : Control
 {
     // Reference to your BuildingManager instance
     [Export] public BuildingManager Manager;
