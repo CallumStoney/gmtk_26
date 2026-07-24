@@ -1,3 +1,126 @@
-[gd_scene format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=4 format=3 uid="uid://l5ejk6qnrbk"]
 
-[node name="Node2D" type="Node2D"]
+[ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
+[ext_resource type="Theme" uid="uid://den3oap6m2s7s" path="res://Art/cozy_theme.tres" id="3_theme"]
+
+[node name="RoomScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.09, 0.08, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 20
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="StatsHUD" parent="MarginContainer/MainVBox" instance=ExtResource("2_statshud")]
+layout_mode = 2
+
+[node name="Sep1" type="HSeparator" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="AdvisorPortrait" type="ColorRect" parent="MarginContainer/MainVBox/ContentHBox"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_vertical = 0
+color = Color(0.35, 0.22, 0.19, 1)
+
+[node name="ContentVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="AdvisorNameLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/ContentVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Advisor Name"
+
+[node name="DialogueLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/ContentVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+text = "Dialogue text will appear here..."
+autowrap_mode = 3
+
+[node name="Sep2" type="HSeparator" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="ChoiceHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="AcceptButton" type="Button" parent="MarginContainer/MainVBox/ChoiceHBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Accept"
+
+[node name="DeclineButton" type="Button" parent="MarginContainer/MainVBox/ChoiceHBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Decline"
+
+[node name="ResponseLabel" type="Label" parent="MarginContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.85, 0.55, 1)
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 3
+
+[node name="BottomHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="Spacer" type="Control" parent="MarginContainer/MainVBox/BottomHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="MarginContainer/MainVBox/BottomHBox"]
+visible = false
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Next Advisor"
+
+[node name="EndTurnButton" type="Button" parent="MarginContainer/MainVBox/BottomHBox"]
+visible = false
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "End Day"
