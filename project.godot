@@ -11,20 +11,19 @@ config_version=5
 [application]
 
 config/name="GMTK_26"
-run/main_scene="uid://cn1sjd3e0rebi"
+run/main_scene="res://Scenes/HomeScreen.tscn"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameManager="*res://Scripts/GameManager.cs"
 
 [display]
 
 window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[autoload]
-
-GameManager="*res://Scripts/GameManager.cs"
-
 
 [dotnet]
 
