@@ -51,3 +51,30 @@ custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Quit"
+
+[node name="TopUI" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopUI"]
+layout_mode = 2
+
+[node name="AudioButton" type="Button" parent="TopUI/HBoxContainer"]
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+text = "Audio"
+
+[node name="Spacer" type="Control" parent="TopUI/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SettingsButton" type="Button" parent="TopUI/HBoxContainer"]
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+text = "Settings"
