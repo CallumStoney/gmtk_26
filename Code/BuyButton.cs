@@ -6,29 +6,88 @@ public partial class BuyButton : TextureButton
     // -----------------------------------------
     // INSPECTOR VARIABLES
     // -----------------------------------------
-    // Reference to your scene's BuildingManager node
     [Export] public BuildingManager TargetBuildingManager;
 
-    // The index of the building in BuildingManager's array (0 = first building, 1 = second building, etc.)
     [Export] public int BuildingTypeIndex = 0;
-
-    // How many of this building to add per click
     [Export] public int AmountToAdd = 1;
+
+    // Cache the price (-1 means not cached yet)
+    private int _buyPrice = -1;
 
     // -----------------------------------------
     // INITIALIZATION & CLEANUP
     // -----------------------------------------
+    public override void _Ready()
+    {
+        // Hook into the GameManager's signal so the button updates automatically!
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StatsChanged += UpdateButtonState;
+        }
+
+        // Wait until all nodes finish loading to run initial check
+        CallDeferred(nameof(UpdateButtonState));
+    }
+
     public override void _EnterTree()
     {
-        // Connect the TextureButton's built-in "Pressed" signal every time the scene enters the tree
-        Pressed -= OnButtonPressed; // Good practice to prevent double-connections
+        Pressed -= OnButtonPressed;
         Pressed += OnButtonPressed;
     }
 
     public override void _ExitTree()
     {
-        // Clean up signal connection when node is removed (stashed by SceneManager)
         Pressed -= OnButtonPressed;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StatsChanged -= UpdateButtonState;
+        }
+    }
+
+    // -----------------------------------------
+    // HELPER METHODS
+    // -----------------------------------------
+    private int GetBuyPrice()
+    {
+        // Return cached price if valid
+        if (_buyPrice > 0) return _buyPrice;
+
+        if (TargetBuildingManager != null &&
+            TargetBuildingManager.BuildingInfo != null &&
+            TargetBuildingManager.BuildingInfo.TryGetValue(BuildingTypeIndex, out string[] infoArray) &&
+            infoArray.Length >= 3)
+        {
+            // Index 2 is the Buy Price
+            int parsedPrice = TargetBuildingManager.ParsePrice(infoArray[2]);
+
+            // Only cache if parsing was successful (> 0)
+            if (parsedPrice > 0)
+            {
+                _buyPrice = parsedPrice;
+            }
+            return parsedPrice;
+        }
+
+        return 0; // Don't cache invalid results!
+    }
+
+    public void UpdateButtonState()
+    {
+        if (TargetBuildingManager == null || GameManager.Instance == null) return;
+
+        int price = GetBuyPrice();
+
+        // If price couldn't be loaded yet, don't update state
+        if (price <= 0) return;
+
+        bool canAfford = GameManager.Instance.Money >= price;
+
+        // 1. Tell Godot UI if button is disabled
+        Disabled = !canAfford;
+
+        // 2. Visually grey it out
+        Modulate = canAfford ? Colors.White : new Color(0.5f, 0.5f, 0.5f, 1.0f);
     }
 
     // -----------------------------------------
@@ -36,30 +95,48 @@ public partial class BuyButton : TextureButton
     // -----------------------------------------
     private void OnButtonPressed()
     {
-        // --- NEW: Drop focus so it doesn't block other UI or keyboard inputs! ---
         ReleaseFocus();
 
-        if (TargetBuildingManager == null)
+        if (TargetBuildingManager == null || GameManager.Instance == null)
         {
-            GD.PrintErr($"BuyButton on '{Name}' has no TargetBuildingManager assigned in the Inspector!");
+            GD.PrintErr($"BuyButton on '{Name}' has a missing manager reference!");
             return;
         }
 
-        // Verify index is valid before modifying inventory
+        int price = GetBuyPrice();
+
+        if (price <= 0)
+        {
+            GD.PrintErr($"BuyButton on '{Name}': Invalid buy price parsed!");
+            return;
+        }
+
+        // Safety check: Affordability
+        if (GameManager.Instance.Money < price)
+        {
+            GD.Print("Cannot afford this building!");
+            return;
+        }
+
         if (BuildingTypeIndex >= 0 && BuildingTypeIndex < TargetBuildingManager.BuildingCounts.Count)
         {
-            // 1. Add stock
+            // DEDUCT MONEY
+            GameManager.Instance.Money -= price;
+
+            // Add stock
             TargetBuildingManager.BuildingCounts[BuildingTypeIndex] += AmountToAdd;
 
-            // 2. Automatically select this building for active placement
+            // Automatically select building for placement
             TargetBuildingManager.CurrentSelectedIndex = BuildingTypeIndex;
 
             int currentStock = TargetBuildingManager.BuildingCounts[BuildingTypeIndex];
-            GD.Print($"Added {AmountToAdd} building(s) at index {BuildingTypeIndex}. New total stock: {currentStock}. Active selection updated!");
+            GD.Print($"Bought {AmountToAdd} building(s) at index {BuildingTypeIndex} for ${price}. New stock: {currentStock}.");
+
+            UpdateButtonState();
         }
         else
         {
-            GD.PrintErr($"Invalid BuildingTypeIndex ({BuildingTypeIndex}) on button '{Name}'. Check BuildingManager array bounds.");
+            GD.PrintErr($"Invalid BuildingTypeIndex ({BuildingTypeIndex}) on button '{Name}'.");
         }
     }
 }

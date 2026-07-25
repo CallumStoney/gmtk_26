@@ -25,16 +25,30 @@ public partial class RoomScene : Control
 	private AdvisorEvent _currentEvent;
 	private bool _awaitingChoice;
 
-	public override void _Ready()
-	{
-		GrabNodeReferences();
-		ConnectSignals();
-		BuildEventPool();
+    public override void _Ready()
+    {
+        // 1. Safe to do immediately (doesn't need GameManager)
+        GrabNodeReferences();
+        BuildEventPool();
 
-		StartTurn();
-	}
+        // 2. Wait until the end of the frame for GameManager to be ready
+        CallDeferred(MethodName.InitializeRoom);
+    }
 
-	private void GrabNodeReferences()
+    private void InitializeRoom()
+    {
+        if (GameManager.Instance == null)
+        {
+            GD.PrintErr("CRITICAL: RoomScene could not find GameManager.Instance!");
+            return;
+        }
+
+        // 3. Now it is safe to connect to GameManager and start the turn!
+        ConnectSignals();
+        StartTurn();
+    }
+
+    private void GrabNodeReferences()
 	{
 		var root = "MarginContainer/MainVBox";
 
