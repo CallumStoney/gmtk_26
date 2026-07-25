@@ -1,7 +1,8 @@
-[gd_scene load_steps=48 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=49 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
+[ext_resource type="Script" uid="uid://bh78vjp1puptt" path="res://Code/SmogManager.cs" id="1_m48b7"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
@@ -375,6 +376,7 @@ position = Vector2(583, 339)
 
 [node name="GameUI" type="CanvasLayer" parent="."]
 layer = 10
+script = ExtResource("1_m48b7")
 
 [node name="InventoryUI" type="Control" parent="GameUI" node_paths=PackedStringArray("ToggleButton", "InventoryPopup", "TargetBuildingManager")]
 layout_mode = 3
