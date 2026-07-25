@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
-[ext_resource type="Theme" uid="uid://den3oap6m2s7s" path="res://Art/cozy_theme.tres" id="3_theme"]
+[ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="3_theme"]
 [ext_resource type="PackedScene" uid="uid://edtprmbk77a4" path="res://Nodes/change_scenes_button.tscn" id="4_xfmv1"]
 
 [node name="RoomScene" type="Control"]

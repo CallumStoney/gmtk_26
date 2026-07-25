@@ -1,7 +1,8 @@
-[gd_scene load_steps=83 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=84 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
+[ext_resource type="Script" uid="uid://bh78vjp1puptt" path="res://Code/SmogManager.cs" id="1_ld7dv"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://b4jfet5jhhwp1" path="res://Code/CursorManager.cs" id="1_p3gyn"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
@@ -454,6 +455,9 @@ sources/0 = SubResource("TileSetAtlasSource_aobtk")
 
 [node name="CityScene" type="Node2D"]
 position = Vector2(583, 339)
+
+[node name="SmogManager" type="Node" parent="."]
+script = ExtResource("1_ld7dv")
 
 [node name="CursorManager" type="Node" parent="."]
 script = ExtResource("1_p3gyn")
