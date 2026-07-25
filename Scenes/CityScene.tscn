@@ -1,4 +1,4 @@
-[gd_scene load_steps=84 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=85 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
@@ -29,6 +29,7 @@
 [ext_resource type="Script" uid="uid://bphhq3v51b6m1" path="res://Code/UIShopName.cs" id="15_vya6f"]
 [ext_resource type="Script" uid="uid://dfjs67ynwmdld" path="res://Code/UIShopPriceLabel.cs" id="17_xobmb"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="18_hggrv"]
+[ext_resource type="Resource" uid="uid://b0q7r2mphchiy" path="res://DevMapPreset.tres" id="25_hnkv4"]
 [ext_resource type="PackedScene" uid="uid://cit31k5vjifus" path="res://Nodes/apartment_1.tscn" id="27_r1o1k"]
 [ext_resource type="PackedScene" uid="uid://dqc0xlq3xccgy" path="res://Nodes/nature_1.tscn" id="28_4xs4g"]
 [ext_resource type="PackedScene" uid="uid://b7wm1yg2bksbq" path="res://Nodes/statue_1.tscn" id="29_56atv"]
@@ -3224,6 +3225,7 @@ offset_bottom = 64.0
 zoom = Vector2(2, 2)
 script = ExtResource("1_ynusb")
 ZoomMax = Vector2(5, 5)
+DragSmoothingSpeed = 50.0
 CursorMgr = NodePath("../CursorManager")
 
 [node name="TileSets" type="Node2D" parent="."]
@@ -3241,6 +3243,7 @@ tile_set = SubResource("TileSet_ynusb")
 script = ExtResource("1_aobtk")
 GroundTileMap = NodePath("../TileSets/GroundTileMap")
 MainCamera = NodePath("../Camera2D")
+InitialMapStateRaw = ExtResource("25_hnkv4")
 BuildingInfo = Dictionary[int, PackedStringArray]({
 0: PackedStringArray("House", "Capacity: +4, Popularity +1/day,Upkeep Cost: $1k/day", "$5k", "$2.5k"),
 1: PackedStringArray("Office", "Money: +$5k/day,,Upkeep Cost: $1k/day", "$25k", "$12.5k", "$25k", "Money: +$10k/day,Upkeep Cost: $2k/day", "Money: +$15k/day,Upkeep Cost: $3k/day"),

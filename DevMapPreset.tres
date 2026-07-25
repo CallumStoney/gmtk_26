@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="MapSaveState" load_steps=6 format=3 uid="uid://b0q7r2mphchiy"]
+
+[ext_resource type="Script" uid="uid://cgd1rg2xqcdtq" path="res://Code/BuildingSaveData.cs" id="1_dj8ey"]
+[ext_resource type="Script" uid="uid://dcjqu0k84t6ch" path="res://Code/MapSaveState.cs" id="2_04q1o"]
+
+[sub_resource type="Resource" id="Resource_04q1o"]
+script = ExtResource("1_dj8ey")
+BuildingTypeIndex = 4
+GridPosition = Vector2i(1, 5)
+RotationIndex = 0
+CurrentLevel = 2
+
+[sub_resource type="Resource" id="Resource_k7e8u"]
+script = ExtResource("1_dj8ey")
+BuildingTypeIndex = 2
+GridPosition = Vector2i(2, 4)
+RotationIndex = 0
+CurrentLevel = 0
+
+[sub_resource type="Resource" id="Resource_1brud"]
+script = ExtResource("1_dj8ey")
+BuildingTypeIndex = 10
+GridPosition = Vector2i(2, -5)
+RotationIndex = 0
+CurrentLevel = 0
+
+[resource]
+script = ExtResource("2_04q1o")
+PlacedBuildings = Array[ExtResource("1_dj8ey")]([SubResource("Resource_04q1o"), SubResource("Resource_k7e8u"), SubResource("Resource_1brud")])

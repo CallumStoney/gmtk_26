@@ -12,6 +12,10 @@ public partial class UpgradableBuilding : Sprite2D
     public int CurrentLevel { get; private set; } = 0;
     private Tween currentTween;
 
+    // Inside UpgradableBuilding.cs
+    public int BuildingTypeIndex { get; set; }
+    public event System.Action<int, int, int> OnLevelChanged; // Sends: (BuildingTypeIndex, OldLevel, NewLevel)
+
     public override void _Ready()
     {
         if (BuildingSprite != null && UpgradeRegions.Count > 0)
@@ -44,7 +48,9 @@ public partial class UpgradableBuilding : Sprite2D
     {
         if (CurrentLevel < UpgradeRegions.Count - 1)
         {
+            int oldLevel = CurrentLevel;
             CurrentLevel++;
+            OnLevelChanged?.Invoke(BuildingTypeIndex, oldLevel, CurrentLevel); // NEW: Notify the manager!
             if (BuildingSprite != null)
                 BuildingSprite.RegionRect = UpgradeRegions[CurrentLevel];
             else
@@ -81,7 +87,9 @@ public partial class UpgradableBuilding : Sprite2D
     {
         if (CurrentLevel > 0)
         {
+            int oldLevel = CurrentLevel;
             CurrentLevel--;
+            OnLevelChanged?.Invoke(BuildingTypeIndex, oldLevel, CurrentLevel); // NEW: Notify the manager!
             if (BuildingSprite != null)
                 BuildingSprite.RegionRect = UpgradeRegions[CurrentLevel];
             else
@@ -105,5 +113,21 @@ public partial class UpgradableBuilding : Sprite2D
             return true;
         }
         return false; // At base level, ready to be deleted
+    }
+
+    // Called when loading the game to instantly set the level and sprite without animations
+    public void LoadSavedLevel(int level)
+    {
+        if (level >= 0 && level < UpgradeRegions.Count)
+        {
+            // Force the level variable to match the save file
+            CurrentLevel = level;
+
+            // Snap the sprite to the correct region
+            if (BuildingSprite != null)
+                BuildingSprite.RegionRect = UpgradeRegions[CurrentLevel];
+            else
+                RegionRect = UpgradeRegions[CurrentLevel];
+        }
     }
 }

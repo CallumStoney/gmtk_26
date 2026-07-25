@@ -22,12 +22,20 @@ public partial class BuildingManager : Node2D
         Apartment2x2
     }
 
+    public int[] PlacedBuildingCounts;
+    public int[,] PlacedBuildingLevelCounts;
+    private int maxBuildingLevel = 4; // Make sure this matches your highest possible upg
+
     // -----------------------------------------
     // INSPECTOR VARIABLES
     // -----------------------------------------
     [Export] public TileMapLayer GroundTileMap;
 
     [Export] public Camera2D MainCamera;
+
+    // --- PRESET MAP SETUP ---
+    [ExportGroup("Preset Map Setup")]
+    [Export] public Resource InitialMapStateRaw { get; set; }
 
     // Explicitly defining Godot.Collections so C# doesn't get confused
     [Export]
@@ -121,6 +129,11 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public override void _Ready()
     {
+        PlacedBuildingCounts = new int[BuildingScenes.Count];
+
+        // NEW: Initialize 2D array [Number of Types, Number of Levels (Max + 1)]
+        PlacedBuildingLevelCounts = new int[BuildingScenes.Count, maxBuildingLevel + 1];
+
         if (GroundTileMap == null ||
             BuildingScenes.Count != BuildingFootprints.Count ||
             BuildingScenes.Count != BuildingCounts.Count)
@@ -141,6 +154,8 @@ public partial class BuildingManager : Node2D
 
         ScanForBuildableTiles();
         ConnectNeighbors();
+        // ADD THIS LINE HERE:
+        LoadInitialSaveState();
         RefreshPreviewNode();
 
         // Connect UI Button Signals
@@ -215,6 +230,13 @@ public partial class BuildingManager : Node2D
         }
     }
 
+    // NEW: The method that updates the array when a building shouts that it leveled up
+    private void HandleBuildingLevelChanged(int typeIndex, int oldLevel, int newLevel)
+    {
+        PlacedBuildingLevelCounts[typeIndex, oldLevel]--; // Remove 1 from the old level
+        PlacedBuildingLevelCounts[typeIndex, newLevel]++; // Add 1 to the new level
+    }
+
     private void ConnectNeighbors()
     {
         Vector2I[] directions = { Vector2I.Up, Vector2I.Down, Vector2I.Left, Vector2I.Right };
@@ -250,6 +272,7 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public override void _UnhandledInput(InputEvent @event)
     {
+
         // 1. Keyboard Inputs
         if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
         {
@@ -258,6 +281,34 @@ public partial class BuildingManager : Node2D
             if (pressedNumber >= 0 && pressedNumber <= 9) SelectBuilding(pressedNumber);
             else if (keyEvent.Keycode == Key.R) RotateBuilding();
             else if (keyEvent.Keycode == Key.Escape) SelectBuilding(-1);
+
+            if (keyEvent.Keycode == Key.F9)
+            {
+                GenerateDevSaveFile();
+                return;
+            }
+
+            /*
+            if (keyEvent.Keycode == Key.P)
+            {
+                string summary = "--- PLACED BUILDINGS TRACKER ---\n";
+
+                int typeCount = PlacedBuildingLevelCounts.GetLength(0);
+                int levelCount = PlacedBuildingLevelCounts.GetLength(1);
+
+                for (int type = 0; type < typeCount; type++)
+                {
+                    summary += $"Building Type {type} (Total: {PlacedBuildingCounts[type]}):\n";
+
+                    for (int lvl = 0; lvl < levelCount; lvl++)
+                    {
+                        int countAtLevel = PlacedBuildingLevelCounts[type, lvl];
+                        summary += $"  - Level {lvl}: {countAtLevel}\n";
+                    }
+                }
+
+                GD.Print(summary);
+            } */
         }
 
         // 2. Mouse Click Input
@@ -965,6 +1016,21 @@ public partial class BuildingManager : Node2D
         CommitBuilding(tiles, pivotGridPos, null, TileSet.CellNeighbor.BottomRightSide);
     }
 
+    public void RemoveBuildingFromTracker(Node2D buildingToRemove, int typeIndex)
+    {
+        // 1. Subtract from the total count
+        PlacedBuildingCounts[typeIndex]--;
+
+        // 2. Subtract from the level tracker and unsubscribe
+        if (buildingToRemove is UpgradableBuilding ub)
+        {
+            PlacedBuildingLevelCounts[typeIndex, ub.CurrentLevel]--;
+
+            // CRITICAL: Stop listening to dead buildings so you don't cause memory leaks!
+            ub.OnLevelChanged -= HandleBuildingLevelChanged;
+        }
+    }
+
     private void CommitBuilding(List<CityTile> tilesToOccupy, Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
     {
         BuildingCounts[currentSelectedIndex]--;
@@ -980,6 +1046,16 @@ public partial class BuildingManager : Node2D
 
         Node2D newBuilding = BuildingScenes[currentSelectedIndex].Instantiate<Node2D>();
         AddChild(newBuilding);
+
+        // Make sure these are OUTSIDE of any foreach(CityTile) loops!
+        PlacedBuildingCounts[currentSelectedIndex]++;
+
+        if (newBuilding is UpgradableBuilding ub)
+        {
+            ub.BuildingTypeIndex = currentSelectedIndex;
+            ub.OnLevelChanged += HandleBuildingLevelChanged;
+            PlacedBuildingLevelCounts[currentSelectedIndex, 0]++;
+        }
 
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
 
@@ -1087,10 +1163,19 @@ public partial class BuildingManager : Node2D
             }
         }
 
-        if (refundToInventory && refundedIndex >= 0 && refundedIndex < BuildingCounts.Count)
+        // --- NEW: INVENTORY & TRACKER UPDATES ---
+        if (refundedIndex >= 0)
         {
-            BuildingCounts[refundedIndex]++;
+            // 1. Add it back to the player's UI inventory
+            if (refundToInventory && refundedIndex < BuildingCounts.Count)
+            {
+                BuildingCounts[refundedIndex]++;
+            }
+
+            // 2. Remove it from our map tracking arrays!
+            RemoveBuildingFromTracker(buildingToRemove, refundedIndex);
         }
+        // ----------------------------------------
 
         SpawnFootprintParticles(occupiedTiles, buildingToRemove, particleColor, true);
 
@@ -1297,5 +1382,167 @@ public partial class BuildingManager : Node2D
             particles.Emitting = true;
             GetTree().CreateTimer(0.6f).Timeout += () => particles.QueueFree();
         }
+    }
+
+    // -----------------------------------------
+    // SAVE & LOAD SYSTEM
+    // -----------------------------------------
+    private void LoadInitialSaveState()
+    {
+        // Wipe the slate clean before spawning the saved map
+        System.Array.Clear(PlacedBuildingCounts, 0, PlacedBuildingCounts.Length);
+        System.Array.Clear(PlacedBuildingLevelCounts, 0, PlacedBuildingLevelCounts.Length);
+
+        GD.Print("--- ATTEMPTING TO LOAD MAP PRESET ---");
+
+        MapSaveState mapState = InitialMapStateRaw as MapSaveState;
+
+        if (mapState == null || mapState.PlacedBuildings == null || mapState.PlacedBuildings.Count == 0)
+        {
+            GD.PrintErr("FAILED: Save file is missing or empty.");
+            return;
+        }
+
+        GD.Print($"SUCCESS: Found save file with {mapState.PlacedBuildings.Count} buildings. Spawning now...");
+
+        // 1. Cache the player's actual selection so we don't mess up their cursor
+        int cachedSelectedIndex = currentSelectedIndex;
+        int cachedRotation = buildingRotation;
+
+        foreach (BuildingSaveData bldData in mapState.PlacedBuildings)
+        {
+            if (buildableTiles.TryGetValue(bldData.GridPosition, out CityTile pivotTile))
+            {
+                if (!pivotTile.IsOccupied)
+                {
+                    // 2. SPOOF the selection state so your helper functions work for this specific building
+                    currentSelectedIndex = bldData.BuildingTypeIndex;
+                    buildingRotation = bldData.RotationIndex;
+                    FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
+
+                    // 3. Figure out all the tiles this footprint needs to occupy
+                    List<CityTile> tilesToOccupy = new List<CityTile> { pivotTile };
+                    CityTile secondTile = null;
+                    TileSet.CellNeighbor matchedNeighbor = TileSet.CellNeighbor.BottomRightSide;
+
+                    if (activeFootprint == FootprintType.DynamicHorizontal2x1)
+                    {
+                        secondTile = GetTwoByOneSecondaryTile(bldData.GridPosition, out matchedNeighbor);
+                        if (secondTile != null) tilesToOccupy.Add(secondTile);
+                    }
+                    else if (activeFootprint == FootprintType.Square2x2)
+                    {
+                        List<CityTile> sqTiles = GetSquare2x2Tiles(bldData.GridPosition);
+                        if (sqTiles != null) tilesToOccupy = sqTiles;
+                    }
+
+                    // 4. Lock the grid
+                    foreach (CityTile tile in tilesToOccupy)
+                    {
+                        tile.IsOccupied = true;
+                        tile.BuildingTypeIndex = bldData.BuildingTypeIndex;
+                    }
+
+                    // 5. Instantiate & Attach
+                    Node2D newBuilding = BuildingScenes[bldData.BuildingTypeIndex].Instantiate<Node2D>();
+                    AddChild(newBuilding);
+
+                    // NEW: Keep our tracker perfectly synced with the loaded map!
+                    PlacedBuildingCounts[bldData.BuildingTypeIndex]++;
+
+                    foreach (CityTile tile in tilesToOccupy)
+                    {
+                        tile.BuildingNode = newBuilding;
+                    }
+
+                    // 6. Apply EXACT visual setup using your existing calculations
+                    Vector2 finalWorldPos = CalculateBuildingWorldPosition(bldData.GridPosition, secondTile, matchedNeighbor);
+                    int finalDepth = CalculateDepth(bldData.GridPosition, secondTile);
+
+                    if (activeFootprint == FootprintType.Single1x1)
+                    {
+                        newBuilding.RotationDegrees = 0;
+                        newBuilding.Scale = (buildingRotation == 1) ? new Vector2(-1, 1) : new Vector2(1, 1);
+                    }
+                    else if (activeFootprint == FootprintType.DynamicHorizontal2x1)
+                    {
+                        GetTwoByOneCustomTransform(matchedNeighbor, out _, out Vector2 customScale, out float customRotation);
+                        newBuilding.Scale = customScale;
+                        newBuilding.RotationDegrees = customRotation;
+                    }
+                    else if (activeFootprint == FootprintType.Square2x2)
+                    {
+                        GetTwoByTwoCustomTransform(buildingRotation, out Vector2 customScale, out float customRotation);
+                        newBuilding.Scale = customScale;
+                        newBuilding.RotationDegrees = customRotation;
+                    }
+
+                    // THE MAGIC FIX: Assign the proper depth and position!
+                    newBuilding.ZIndex = finalDepth;
+                    newBuilding.GlobalPosition = finalWorldPos;
+
+                    // NEW: Apply the saved upgrade level and hook up the tracker!
+                    if (newBuilding is UpgradableBuilding loadedUb)
+                    {
+                        loadedUb.BuildingTypeIndex = bldData.BuildingTypeIndex;
+                        loadedUb.OnLevelChanged += HandleBuildingLevelChanged; // Subscribe
+
+                        loadedUb.LoadSavedLevel(bldData.CurrentLevel);
+
+                        // Log it directly to its loaded level
+                        PlacedBuildingLevelCounts[bldData.BuildingTypeIndex, loadedUb.CurrentLevel]++;
+                    }
+                }
+                else
+                {
+                    GD.PrintErr($"Tile {bldData.GridPosition} is already occupied! Skipping.");
+                }
+            }
+        }
+
+        // 7. Restore the player's cursor state to normal
+        currentSelectedIndex = cachedSelectedIndex;
+        buildingRotation = cachedRotation;
+    }
+
+    private void GenerateDevSaveFile()
+    {
+        MapSaveState newSaveState = new MapSaveState();
+        System.Collections.Generic.List<Node2D> processedBuildings = new System.Collections.Generic.List<Node2D>();
+
+        foreach (var kvp in buildableTiles)
+        {
+            CityTile tile = kvp.Value;
+
+            if (tile.IsOccupied && tile.BuildingNode != null && !processedBuildings.Contains(tile.BuildingNode))
+            {
+                processedBuildings.Add(tile.BuildingNode);
+
+                BuildingSaveData bldData = new BuildingSaveData
+                {
+                    GridPosition = tile.GridPosition,
+                    BuildingTypeIndex = tile.BuildingTypeIndex
+                };
+
+                // Save the upgrade level if applicable
+                if (tile.BuildingNode is UpgradableBuilding ub)
+                {
+                    bldData.CurrentLevel = ub.CurrentLevel;
+                }
+
+                // Note: If you added a RotationIndex to BuildingSaveData to save how the 
+                // player spun the building before placing it, you would assign that here too!
+                // bldData.RotationIndex = tile.RotationIndex; (or however you extract it)
+
+                newSaveState.PlacedBuildings.Add(bldData);
+            }
+        }
+
+        Error err = ResourceSaver.Save(newSaveState, "res://DevMapPreset.tres");
+
+        if (err == Error.Ok)
+            GD.Print("SUCCESS: Preset map saved to res://DevMapPreset.tres!");
+        else
+            GD.PrintErr("Failed to save map preset. Error code: " + err);
     }
 }
