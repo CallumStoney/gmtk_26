@@ -16,17 +16,18 @@ public partial class BuyButton : TextureButton
     [Export] public int AmountToAdd = 1;
 
     // -----------------------------------------
-    // INITIALIZATION
+    // INITIALIZATION & CLEANUP
     // -----------------------------------------
-    public override void _Ready()
+    public override void _EnterTree()
     {
-        // Connect the TextureButton's built-in "Pressed" signal to our custom method
+        // Connect the TextureButton's built-in "Pressed" signal every time the scene enters the tree
+        Pressed -= OnButtonPressed; // Good practice to prevent double-connections
         Pressed += OnButtonPressed;
     }
 
     public override void _ExitTree()
     {
-        // Clean up signal connection when node is removed
+        // Clean up signal connection when node is removed (stashed by SceneManager)
         Pressed -= OnButtonPressed;
     }
 
@@ -35,6 +36,9 @@ public partial class BuyButton : TextureButton
     // -----------------------------------------
     private void OnButtonPressed()
     {
+        // --- NEW: Drop focus so it doesn't block other UI or keyboard inputs! ---
+        ReleaseFocus();
+
         if (TargetBuildingManager == null)
         {
             GD.PrintErr($"BuyButton on '{Name}' has no TargetBuildingManager assigned in the Inspector!");

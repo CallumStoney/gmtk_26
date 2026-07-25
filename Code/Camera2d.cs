@@ -20,6 +20,12 @@ public partial class Camera2d : Camera2D
     private bool _isDragging = false;
     private Vector2 _targetPosition;
 
+    public override void _EnterTree()
+    {
+        // Forces this camera to take over the screen again every time the scene loads
+        MakeCurrent();
+    }
+
     public override void _Ready()
     {
         Zoom = Zoom.Clamp(ZoomMin, ZoomMax);

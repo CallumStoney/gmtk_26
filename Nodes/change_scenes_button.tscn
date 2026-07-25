@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://edtprmbk77a4"]
+
+[ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="1_jtvw1"]
+[ext_resource type="Script" uid="uid://bbw6u4dccpovh" path="res://Scenes/ChangeScenesButton.cs" id="2_jliua"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k54q2"]
+atlas = ExtResource("1_jtvw1")
+region = Rect2(65, 33, 14, 14)
+
+[node name="ChangeScenesButton" type="TextureButton"]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -21.0
+offset_right = 45.0
+offset_bottom = 21.0
+grow_vertical = 2
+texture_normal = SubResource("AtlasTexture_k54q2")
+ignore_texture_size = true
+stretch_mode = 5
+flip_h = true
+script = ExtResource("2_jliua")

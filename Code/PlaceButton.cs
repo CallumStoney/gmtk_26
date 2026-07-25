@@ -9,13 +9,30 @@ public partial class PlaceButton : TextureButton
     // 2. Type the ID of the building this button selects (0 for House, 1 for Office, etc.)
     [Export] public int BuildingIndex = 0;
 
-    public override void _Ready()
+    // -----------------------------------------
+    // INITIALIZATION & CLEANUP
+    // -----------------------------------------
+    public override void _EnterTree()
     {
+        // Connect the signal every time the scene enters the active tree
+        Pressed -= OnButtonPressed;
         Pressed += OnButtonPressed;
     }
 
+    public override void _ExitTree()
+    {
+        // Clean up signal connection when node is removed
+        Pressed -= OnButtonPressed;
+    }
+
+    // -----------------------------------------
+    // SIGNAL HANDLER
+    // -----------------------------------------
     private void OnButtonPressed()
     {
+        // Drop focus so it doesn't block inputs after clicking
+        ReleaseFocus();
+
         if (Manager == null)
         {
             GD.PrintErr("PlaceButton: BuildingManager reference is missing in the Inspector!");
@@ -26,10 +43,5 @@ public partial class PlaceButton : TextureButton
         Manager.SelectBuilding(BuildingIndex);
 
         GD.Print($"Selected building index updated to: {BuildingIndex}");
-    }
-
-    public override void _ExitTree()
-    {
-        Pressed -= OnButtonPressed;
     }
 }

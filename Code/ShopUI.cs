@@ -29,9 +29,31 @@ public partial class ShopUI : Control
         }
     }
 
+
+
+    // -----------------------------------------
+    // INITIALIZATION & CLEANUP
+    // -----------------------------------------
+    public override void _EnterTree()
+    {
+        // Ensure the popup is reset to hidden every time you enter the city
+        if (ShopPopup != null)
+        {
+            ShopPopup.Visible = false;
+        }
+
+        // Connect the button every time the scene is added to the screen
+        if (ToggleButton != null)
+        {
+            // Good practice: remove it first just in case, so it never double-connects
+            ToggleButton.Pressed -= OnToggleButtonPressed;
+            ToggleButton.Pressed += OnToggleButtonPressed;
+        }
+    }
+
     public override void _ExitTree()
     {
-        // Clean up signal connection when node is removed
+        // Clean up signal connection when the scene is stashed in the SceneManager
         if (ToggleButton != null)
         {
             ToggleButton.Pressed -= OnToggleButtonPressed;
