@@ -46,16 +46,22 @@ public partial class SellButtonInventory : TextureButton
             Manager.BuildingCounts[BuildingIndex]--;
 
             // 2. Read the sell price from the dictionary array (Index 3)
-            string sellPrice = "0";
+            string sellPriceString = "0";
             if (Manager.BuildingInfo.TryGetValue(BuildingIndex, out string[] infoArray) && infoArray.Length >= 4)
             {
-                sellPrice = infoArray[3];
+                sellPriceString = infoArray[3];
             }
 
-            // ADD YOUR CURRENCY / MONEY REWARD LOGIC HERE
-            // e.g. PlayerEconomy.AddCash(sellPrice);
+            // 3. Parse the price using the manager's public helper method
+            int parsedReward = Manager.ParsePrice(sellPriceString);
 
-            GD.Print($"Sold 1 stock of building index {BuildingIndex} for {sellPrice}. Remaining stock: {Manager.BuildingCounts[BuildingIndex]}");
+            // 4. Give the player the money!
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.Money += parsedReward;
+            }
+
+            GD.Print($"Sold 1 stock of building index {BuildingIndex} for {parsedReward}. Remaining stock: {Manager.BuildingCounts[BuildingIndex]}");
         }
         else
         {

@@ -22,8 +22,6 @@ public partial class BuildingManager : Node2D
         Apartment2x2
     }
 
-    public int[] PlacedBuildingCounts;
-    public int[,] PlacedBuildingLevelCounts;
     private int maxBuildingLevel = 4; // Make sure this matches your highest possible upg
 
     // -----------------------------------------
@@ -110,7 +108,9 @@ public partial class BuildingManager : Node2D
         public bool IsOccupied;
         public List<CityTile> Neighbors;
         public Node2D BuildingNode;
-        public int BuildingTypeIndex;
+        public int BuildingTypeIndex { get; set; } = -1;
+        public int RotationIndex { get; set; } = 0; // <-- ADD THIS
+
 
         public CityTile(Vector2I gridPosition)
         {
@@ -129,36 +129,61 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public override void _Ready()
     {
-        PlacedBuildingCounts = new int[BuildingScenes.Count];
+        // Tell Godot to wait until the end of the frame when ALL nodes 
+        // (including GameManager) are fully loaded and ready before running our setup.
+        CallDeferred(MethodName.InitializeAfterGameManager);
+    }
 
-        // NEW: Initialize 2D array [Number of Types, Number of Levels (Max + 1)]
-        PlacedBuildingLevelCounts = new int[BuildingScenes.Count, maxBuildingLevel + 1];
+    private void InitializeAfterGameManager()
+    {
+        if (GameManager.Instance == null)
+        {
+            GD.PrintErr("CRITICAL: GameManager.Instance is STILL null!");
+            return;
+        }
+
+        // 1. Pass Inspector data to GameManager
+        GameManager.Instance.BuildingInfo = this.BuildingInfo;
+        GameManager.Instance.BuildingInventory = this.BuildingCounts;
+
+        // Parse all building stats ONCE
+        GameManager.Instance.InitializeBuildingStats();
+
+        // 2. Setup tracking arrays inside GameManager
+        GameManager.Instance.PlacedBuildingCounts = new int[BuildingScenes.Count];
+        GameManager.Instance.PlacedBuildingLevelCounts = new int[BuildingScenes.Count, maxBuildingLevel + 1];
 
         if (GroundTileMap == null ||
             BuildingScenes.Count != BuildingFootprints.Count ||
             BuildingScenes.Count != BuildingCounts.Count)
         {
-            GD.PrintErr("CRITICAL: Check GroundTileMap reference and array sizes (Scenes, Footprints, Counts) in Inspector!");
+            GD.PrintErr("CRITICAL: Check GroundTileMap reference and array sizes!");
             return;
         }
 
-        // Setup the tooltip label
+        // Setup tooltip
         tooltipLabel = new Label();
         tooltipLabel.ZIndex = 100;
         tooltipLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
         tooltipLabel.AddThemeConstantOverride("outline_size", 4);
         tooltipLabel.AddThemeFontSizeOverride("font_size", 4);
-        tooltipLabel.ZIndex = 4090;
         tooltipLabel.Visible = false;
         AddChild(tooltipLabel);
 
         ScanForBuildableTiles();
         ConnectNeighbors();
-        // ADD THIS LINE HERE:
+
+        // --- 3. SPAWN PRESET BUILDINGS ---
         LoadInitialSaveState();
+
+        // --- 4. RECALCULATE CAPACITY IMMEDIATELY FOR DAY 1 ---
+        // Now that buildings are placed on the map, sync GameManager stats right away!
+        GameManager.Instance.RecalculateDailyYields();
+        GameManager.Instance.SyncInitialCapacity();
+
         RefreshPreviewNode();
 
-        // Connect UI Button Signals
+        // Connect UI Signals
         if (BtnSell != null) BtnSell.Pressed += OnSellButtonPressed;
         if (BtnInfo != null) BtnInfo.Pressed += OnInfoButtonPressed;
         if (BtnUpgrade != null) BtnUpgrade.Pressed += OnUpgradeButtonPressed;
@@ -233,8 +258,10 @@ public partial class BuildingManager : Node2D
     // NEW: The method that updates the array when a building shouts that it leveled up
     private void HandleBuildingLevelChanged(int typeIndex, int oldLevel, int newLevel)
     {
-        PlacedBuildingLevelCounts[typeIndex, oldLevel]--; // Remove 1 from the old level
-        PlacedBuildingLevelCounts[typeIndex, newLevel]++; // Add 1 to the new level
+        GameManager.Instance.PlacedBuildingLevelCounts[typeIndex, oldLevel]--;
+        GameManager.Instance.PlacedBuildingLevelCounts[typeIndex, newLevel]++;
+
+        GameManager.Instance.RecalculateDailyYields();
     }
 
     private void ConnectNeighbors()
@@ -260,8 +287,8 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     public bool HasAvailableBuilding(int index)
     {
-        if (index < 0 || index >= BuildingCounts.Count) return false;
-        return BuildingCounts[index] > 0;
+        if (index < 0 || index >= GameManager.Instance.BuildingInventory.Count) return false;
+        return GameManager.Instance.BuildingInventory[index] > 0;
     }
 
     // -----------------------------------------
@@ -284,25 +311,23 @@ public partial class BuildingManager : Node2D
 
             if (keyEvent.Keycode == Key.F9)
             {
-                GenerateDevSaveFile();
+               // GenerateDevSaveFile();
                 return;
-            }
+            } 
 
             /*
             if (keyEvent.Keycode == Key.P)
             {
                 string summary = "--- PLACED BUILDINGS TRACKER ---\n";
-
-                int typeCount = PlacedBuildingLevelCounts.GetLength(0);
-                int levelCount = PlacedBuildingLevelCounts.GetLength(1);
+                int typeCount = GameManager.Instance.PlacedBuildingLevelCounts.GetLength(0);
+                int levelCount = GameManager.Instance.PlacedBuildingLevelCounts.GetLength(1);
 
                 for (int type = 0; type < typeCount; type++)
                 {
-                    summary += $"Building Type {type} (Total: {PlacedBuildingCounts[type]}):\n";
-
+                    summary += $"Building Type {type} (Total: {GameManager.Instance.PlacedBuildingCounts[type]}):\n";
                     for (int lvl = 0; lvl < levelCount; lvl++)
                     {
-                        int countAtLevel = PlacedBuildingLevelCounts[type, lvl];
+                        int countAtLevel = GameManager.Instance.PlacedBuildingLevelCounts[type, lvl];
                         summary += $"  - Level {lvl}: {countAtLevel}\n";
                     }
                 }
@@ -476,13 +501,22 @@ public partial class BuildingManager : Node2D
         if (targetActionTile != null)
         {
             Node2D bld = targetActionTile.BuildingNode;
+            int typeIndex = targetActionTile.BuildingTypeIndex;
 
-            // 1. If it's upgradable AND has upgrades applied, we ONLY sell the upgrade.
+            // 1. Look up the sell price
+            int sellReward = 0;
+            if (BuildingInfo.TryGetValue(typeIndex, out string[] infoArray) && infoArray.Length >= 4)
+            {
+                sellReward = ParsePrice(infoArray[3]); // Index 3 is your Sell Price
+            }
+
+            // 2. If it's an upgraded building being downgraded:
             if (bld is UpgradableBuilding ub && ub.CanDowngrade())
             {
                 if (ub.TryDowngrade())
                 {
-                    // ADD CASH/RESOURCES FOR UPGRADE HERE
+                    // GIVE THE PLAYER THEIR MONEY
+                    if (GameManager.Instance != null) GameManager.Instance.Money += sellReward;
 
                     SpawnFootprintParticles(GetTilesForBuilding(ub), ub, SellParticleColor, false);
                     PlayBuildingJumpAnimation(ub, GetTilesForBuilding(ub));
@@ -491,8 +525,10 @@ public partial class BuildingManager : Node2D
                 }
             }
 
-            // 2. If it's a normal building, OR an upgradable building at its base level:
-            // ADD CASH/RESOURCES FOR BASE BUILDING HERE
+            // 3. If it's a base building being completely sold:
+
+            // GIVE THE PLAYER THEIR MONEY
+            if (GameManager.Instance != null) GameManager.Instance.Money += sellReward;
 
             DeleteOrStoreBuilding(bld, refundToInventory: false, particleColor: SellParticleColor);
             CloseActionMenu();
@@ -588,15 +624,60 @@ public partial class BuildingManager : Node2D
 
     private void OnUpgradeConfirmed()
     {
+        // Make sure we have a tile selected and that the building on it can actually be upgraded
         if (targetActionTile != null && targetActionTile.BuildingNode is UpgradableBuilding ub)
         {
-            // TryUpgrade() must be part of your UpgradableBuilding class
-            if (ub.TryUpgrade())
+            int typeIndex = targetActionTile.BuildingTypeIndex;
+
+            // 1. Are they already at max level?
+            if (!ub.CanUpgrade())
             {
-                SpawnFootprintParticles(GetTilesForBuilding(ub), ub, new Color(1.0f, 0.85f, 0.3f, 0.9f), false);
-                PlayBuildingJumpAnimation(ub, GetTilesForBuilding(ub));
+                GD.Print("Building is already at max level!");
+                return;
             }
-            CloseActionMenu();
+
+            // 2. Figure out the upgrade cost
+            int upgradeCost = 0;
+
+            // Assuming Index 4 in your dictionary is the Upgrade Price (e.g., "$15k")
+            if (BuildingInfo.TryGetValue(typeIndex, out string[] infoArray) && infoArray.Length >= 5)
+            {
+                upgradeCost = ParsePrice(infoArray[4]);
+            }
+            else
+            {
+                // Fallback: If you don't have it in the dictionary yet, make a default cost that scales with level
+                upgradeCost = 5000 * (ub.CurrentLevel + 1);
+            }
+
+            // 3. Check if the player can afford it
+            if (GameManager.Instance != null)
+            {
+                if (GameManager.Instance.Money >= upgradeCost)
+                {
+                    // 4. Deduct the money!
+                    GameManager.Instance.Money -= upgradeCost;
+
+                    // 5. Trigger the upgrade
+                    if (ub.TryUpgrade())
+                    {
+                        GD.Print($"Upgraded building to Level {ub.CurrentLevel} for {upgradeCost}!");
+
+                        // Add some juice! Reusing your existing particle/animation methods looks great here.
+                        PlayBuildingJumpAnimation(ub, GetTilesForBuilding(ub));
+
+                        // You could make a new color variable for upgrades, like Colors.Cyan or Colors.Gold
+                        SpawnFootprintParticles(GetTilesForBuilding(ub), ub, Colors.Gold, false);
+                    }
+
+                    CloseActionMenu();
+                }
+                else
+                {
+                    GD.Print("Not enough money to upgrade!");
+                    // Note: You could shake the UI or play an error buzzer sound here
+                }
+            }
         }
     }
 
@@ -1018,22 +1099,27 @@ public partial class BuildingManager : Node2D
 
     public void RemoveBuildingFromTracker(Node2D buildingToRemove, int typeIndex)
     {
-        // 1. Subtract from the total count
-        PlacedBuildingCounts[typeIndex]--;
+        // 1. Subtract from GameManager total count
+        GameManager.Instance.PlacedBuildingCounts[typeIndex]--;
 
         // 2. Subtract from the level tracker and unsubscribe
         if (buildingToRemove is UpgradableBuilding ub)
         {
-            PlacedBuildingLevelCounts[typeIndex, ub.CurrentLevel]--;
-
-            // CRITICAL: Stop listening to dead buildings so you don't cause memory leaks!
+            GameManager.Instance.PlacedBuildingLevelCounts[typeIndex, ub.CurrentLevel]--;
             ub.OnLevelChanged -= HandleBuildingLevelChanged;
+        }
+        else
+        {
+            // THE FIX: Remove basic buildings from the daily yield tracker when sold!
+            GameManager.Instance.PlacedBuildingLevelCounts[typeIndex, 0]--;
         }
     }
 
     private void CommitBuilding(List<CityTile> tilesToOccupy, Vector2I pivotGridPos, CityTile secondTile, TileSet.CellNeighbor matchedNeighbor)
     {
-        BuildingCounts[currentSelectedIndex]--;
+        // 1. Deduct from GameManager inventory
+        GameManager.Instance.BuildingInventory[currentSelectedIndex]--;
+
 
         Vector2 finalWorldPos = CalculateBuildingWorldPosition(pivotGridPos, secondTile, matchedNeighbor);
         int finalDepth = CalculateDepth(pivotGridPos, secondTile);
@@ -1042,19 +1128,27 @@ public partial class BuildingManager : Node2D
         {
             tile.IsOccupied = true;
             tile.BuildingTypeIndex = currentSelectedIndex;
+
+            tile.RotationIndex = buildingRotation;
         }
 
         Node2D newBuilding = BuildingScenes[currentSelectedIndex].Instantiate<Node2D>();
         AddChild(newBuilding);
 
-        // Make sure these are OUTSIDE of any foreach(CityTile) loops!
-        PlacedBuildingCounts[currentSelectedIndex]++;
+        // 2. Add 1 to the total count in GameManager
+        GameManager.Instance.PlacedBuildingCounts[currentSelectedIndex]++;
 
+        // 3. Track building levels in GameManager
         if (newBuilding is UpgradableBuilding ub)
         {
             ub.BuildingTypeIndex = currentSelectedIndex;
             ub.OnLevelChanged += HandleBuildingLevelChanged;
-            PlacedBuildingLevelCounts[currentSelectedIndex, 0]++;
+            GameManager.Instance.PlacedBuildingLevelCounts[currentSelectedIndex, 0]++; // <--- FIX HERE
+        }
+        else
+        {
+            // THE FIX: Basic buildings still need to be counted as Level 0!
+            GameManager.Instance.PlacedBuildingLevelCounts[currentSelectedIndex, 0]++;
         }
 
         FootprintType activeFootprint = BuildingFootprints[currentSelectedIndex];
@@ -1110,6 +1204,8 @@ public partial class BuildingManager : Node2D
         tween.TweenProperty(newBuilding, "scale", originalScale, reboundTime).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 
         if (!HasAvailableBuilding(currentSelectedIndex)) SelectBuilding(-1);
+
+        GameManager.Instance.RecalculateDailyYields();
     }
 
     // -----------------------------------------
@@ -1204,6 +1300,8 @@ public partial class BuildingManager : Node2D
         fadeTween.TweenInterval(totalShakeTime * 0.4f);
         fadeTween.TweenProperty(buildingToRemove, "modulate:a", 0.0f, totalShakeTime * 0.6f);
         fadeTween.Chain().TweenCallback(Callable.From(() => buildingToRemove.QueueFree()));
+
+        GameManager.Instance.RecalculateDailyYields();
     }
 
     private List<CityTile> GetTilesForBuilding(Node2D building)
@@ -1389,9 +1487,12 @@ public partial class BuildingManager : Node2D
     // -----------------------------------------
     private void LoadInitialSaveState()
     {
-        // Wipe the slate clean before spawning the saved map
-        System.Array.Clear(PlacedBuildingCounts, 0, PlacedBuildingCounts.Length);
-        System.Array.Clear(PlacedBuildingLevelCounts, 0, PlacedBuildingLevelCounts.Length);
+        // Wipe the slate clean on GameManager before spawning the saved map
+        if (GameManager.Instance.PlacedBuildingCounts != null)
+            System.Array.Clear(GameManager.Instance.PlacedBuildingCounts, 0, GameManager.Instance.PlacedBuildingCounts.Length);
+
+        if (GameManager.Instance.PlacedBuildingLevelCounts != null)
+            System.Array.Clear(GameManager.Instance.PlacedBuildingLevelCounts, 0, GameManager.Instance.PlacedBuildingLevelCounts.Length);
 
         GD.Print("--- ATTEMPTING TO LOAD MAP PRESET ---");
 
@@ -1436,7 +1537,13 @@ public partial class BuildingManager : Node2D
                         if (sqTiles != null) tilesToOccupy = sqTiles;
                     }
 
-                    // 4. Lock the grid
+                    // --- THE FIX ---
+                    // Calculate visual positions HERE, while the tiles are still marked as "empty" (IsOccupied = false).
+                    // This allows your calculators to correctly find the center of the 4x4 grid!
+                    Vector2 finalWorldPos = CalculateBuildingWorldPosition(bldData.GridPosition, secondTile, matchedNeighbor);
+                    int finalDepth = CalculateDepth(bldData.GridPosition, secondTile);
+
+                    // 4. Lock the grid (NOW we can safely mark them as occupied)
                     foreach (CityTile tile in tilesToOccupy)
                     {
                         tile.IsOccupied = true;
@@ -1447,18 +1554,14 @@ public partial class BuildingManager : Node2D
                     Node2D newBuilding = BuildingScenes[bldData.BuildingTypeIndex].Instantiate<Node2D>();
                     AddChild(newBuilding);
 
-                    // NEW: Keep our tracker perfectly synced with the loaded map!
-                    PlacedBuildingCounts[bldData.BuildingTypeIndex]++;
+                    GameManager.Instance.PlacedBuildingCounts[bldData.BuildingTypeIndex]++;
 
                     foreach (CityTile tile in tilesToOccupy)
                     {
                         tile.BuildingNode = newBuilding;
                     }
 
-                    // 6. Apply EXACT visual setup using your existing calculations
-                    Vector2 finalWorldPos = CalculateBuildingWorldPosition(bldData.GridPosition, secondTile, matchedNeighbor);
-                    int finalDepth = CalculateDepth(bldData.GridPosition, secondTile);
-
+                    // 6. Apply EXACT visual setup
                     if (activeFootprint == FootprintType.Single1x1)
                     {
                         newBuilding.RotationDegrees = 0;
@@ -1477,11 +1580,11 @@ public partial class BuildingManager : Node2D
                         newBuilding.RotationDegrees = customRotation;
                     }
 
-                    // THE MAGIC FIX: Assign the proper depth and position!
+                    // Assign the proper depth and position that we calculated earlier
                     newBuilding.ZIndex = finalDepth;
                     newBuilding.GlobalPosition = finalWorldPos;
 
-                    // NEW: Apply the saved upgrade level and hook up the tracker!
+                    // Apply the saved upgrade level and hook up the tracker in GameManager!
                     if (newBuilding is UpgradableBuilding loadedUb)
                     {
                         loadedUb.BuildingTypeIndex = bldData.BuildingTypeIndex;
@@ -1489,8 +1592,13 @@ public partial class BuildingManager : Node2D
 
                         loadedUb.LoadSavedLevel(bldData.CurrentLevel);
 
-                        // Log it directly to its loaded level
-                        PlacedBuildingLevelCounts[bldData.BuildingTypeIndex, loadedUb.CurrentLevel]++;
+                        // Log it directly to its loaded level in GameManager
+                        GameManager.Instance.PlacedBuildingLevelCounts[bldData.BuildingTypeIndex, loadedUb.CurrentLevel]++;
+                    }
+                    else
+                    {
+                        // Basic buildings loaded from the save file still need to be counted!
+                        GameManager.Instance.PlacedBuildingLevelCounts[bldData.BuildingTypeIndex, 0]++;
                     }
                 }
                 else
@@ -1503,6 +1611,9 @@ public partial class BuildingManager : Node2D
         // 7. Restore the player's cursor state to normal
         currentSelectedIndex = cachedSelectedIndex;
         buildingRotation = cachedRotation;
+
+        // 8. Recalculate statutory yields for the entire newly loaded map!
+        GameManager.Instance.RecalculateDailyYields();
     }
 
     private void GenerateDevSaveFile()
@@ -1521,7 +1632,9 @@ public partial class BuildingManager : Node2D
                 BuildingSaveData bldData = new BuildingSaveData
                 {
                     GridPosition = tile.GridPosition,
-                    BuildingTypeIndex = tile.BuildingTypeIndex
+                    BuildingTypeIndex = tile.BuildingTypeIndex,
+                    // --- ADDED THIS LINE HERE ---
+                    RotationIndex = tile.RotationIndex
                 };
 
                 // Save the upgrade level if applicable
@@ -1529,10 +1642,6 @@ public partial class BuildingManager : Node2D
                 {
                     bldData.CurrentLevel = ub.CurrentLevel;
                 }
-
-                // Note: If you added a RotationIndex to BuildingSaveData to save how the 
-                // player spun the building before placing it, you would assign that here too!
-                // bldData.RotationIndex = tile.RotationIndex; (or however you extract it)
 
                 newSaveState.PlacedBuildings.Add(bldData);
             }
@@ -1545,4 +1654,72 @@ public partial class BuildingManager : Node2D
         else
             GD.PrintErr("Failed to save map preset. Error code: " + err);
     }
+
+    public int ParsePrice(string priceString)
+    {
+        if (string.IsNullOrWhiteSpace(priceString)) return 0;
+
+        // Clean the string: remove '$', spaces, and make lowercase so 'K' and 'k' both work
+        string cleanPrice = priceString.Replace("$", "").Trim().ToLower();
+
+        if (cleanPrice.EndsWith("k"))
+        {
+            // Remove the 'k' and multiply by 1000
+            cleanPrice = cleanPrice.Replace("k", "");
+            if (float.TryParse(cleanPrice, out float floatValue))
+            {
+                return Mathf.RoundToInt(floatValue * 1000f);
+            }
+        }
+        else
+        {
+            // Just standard numbers
+            if (int.TryParse(cleanPrice, out int intValue))
+            {
+                return intValue;
+            }
+        }
+
+        GD.PrintErr($"Failed to parse price string: {priceString}");
+        return 0;
+    }
+
+    private void ParseStatValue(string statsString, ref int pop, ref int pol, ref int popu, ref int mon, ref int cap)
+    {
+        if (string.IsNullOrWhiteSpace(statsString)) return;
+
+        // Split by comma to handle strings like: "Money +50, Pollution -10"
+        string[] stats = statsString.Split(',', System.StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string stat in stats)
+        {
+            string cleanStat = stat.Trim();
+
+            // Split by space to separate the StatName and the Number
+            string[] parts = cleanStat.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length >= 2)
+            {
+                // Remove any colons just in case you wrote "Money: +50" instead of "Money +50"
+                string statName = parts[0].ToLower().Replace(":", "");
+
+                // Remove explicit plus signs because C# parsing can occasionally fail on them
+                string numberString = parts[1].Replace("+", "");
+
+                if (int.TryParse(numberString, out int value))
+                {
+                    switch (statName)
+                    {
+                        case "population": pop += value; break;
+                        case "pollution": pol += value; break;
+                        case "approval": popu += value; break; 
+                        case "money": mon += value; break;
+                        case "capacity": cap += value; break;
+                    }
+                }
+            }
+        }
+    }
+
+
 }

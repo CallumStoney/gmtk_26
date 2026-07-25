@@ -2,74 +2,121 @@ using Godot;
 
 public partial class StatsHUD : HBoxContainer
 {
-	//lables
-	private Label _turnLabel;
-	private Label _populationLabel;
-	private Label _pollutionLabel;
-	private Label _popularityLabel;
-	private Label _moneyLabel;
+    // -----------------------------------------
+    // UI NODE REFERENCES
+    // -----------------------------------------
+    // Main Labels
+    private Label _turnLabel;
+    private Label _populationLabel;
+    private Label _pollutionLabel;
+    private Label _popularityLabel;
+    private Label _moneyLabel;
 
-	//bar fills (sized via AnchorRight)
-	private ColorRect _dayBarFill;
-	private ColorRect _pollutionBarFill;
-	private ColorRect _approvalBarFill;
+    // Bar Fills
+    private ColorRect _dayBarFill;
+    private ColorRect _pollutionBarFill;
 
-	private ColorRect _pollutionThreshold;
-	private ColorRect _approvalThreshold;
+    // Thresholds
+    private ColorRect _pollutionThreshold;
 
-	public override void _Ready()
-	{
-		GrabNodeReferences();
+    // -----------------------------------------
+    // INITIALIZATION
+    // -----------------------------------------
+    public override void _Ready()
+    {
+        GrabNodeReferences();
+        CallDeferred(MethodName.InitializeHUD);
+    }
 
-		var gm = GameManager.Instance;
-		gm.StatsChanged  += UpdateDisplay;
-		gm.TurnAdvanced  += _ => UpdateDisplay();
+    private void InitializeHUD()
+    {
+        var gm = GameManager.Instance;
 
-		UpdateDisplay();
-	}
+        if (gm == null)
+        {
+            GD.PrintErr("CRITICAL: StatsHUD could not find GameManager.Instance!");
+            return;
+        }
 
-	private void GrabNodeReferences()
-	{
-		_turnLabel       = GetNode<Label>("DayBar/TurnLabel");
-		_populationLabel = GetNode<Label>("PopulationLabel");
-		_pollutionLabel  = GetNode<Label>("PollutionBar/PollutionLabel");
-		_popularityLabel = GetNode<Label>("ApprovalBar/PopularityLabel");
-		_moneyLabel      = GetNode<Label>("MoneyLabel");
+        gm.StatsChanged += UpdateDisplay;
+        gm.TurnAdvanced += _ => UpdateDisplay();
 
-		_dayBarFill         = GetNode<ColorRect>("DayBar/DayBarArea/Fill");
-		_pollutionBarFill   = GetNode<ColorRect>("PollutionBar/PollutionBarArea/Fill");
-		_approvalBarFill    = GetNode<ColorRect>("ApprovalBar/ApprovalBarArea/Fill");
+        UpdateDisplay();
+    }
 
-		_pollutionThreshold = GetNode<ColorRect>("PollutionBar/PollutionBarArea/Threshold");
-		_approvalThreshold  = GetNode<ColorRect>("ApprovalBar/ApprovalBarArea/Threshold");
-	}
+    private void GrabNodeReferences()
+    {
+        // Existing nodes
+        _turnLabel = GetNode<Label>("DayBar/TurnLabel");
+        _populationLabel = GetNode<Label>("PopulationLabel");
+        _pollutionLabel = GetNode<Label>("PollutionBar/PollutionLabel");
 
-	private void UpdateDisplay()
-	{
-		var gm = GameManager.Instance;
+        // NOTE: Path updated since the ApprovalBar is gone. 
+        // Ensure this matches where the label is now in your Godot Scene Tree!
+        _popularityLabel = GetNode<Label>("ApprovalBar/PopularityLabel");
 
+        _moneyLabel = GetNode<Label>("MoneyLabel");
 
-		int daysLeft = gm.MaxTurns - gm.CurrentTurn;
-		_turnLabel.Text       = daysLeft == 0 ? "Final Day!" : $"{daysLeft} Days Left";
-		_populationLabel.Text = $"Pop: {gm.Population}";
-		_pollutionLabel.Text  = $"Pollution: {gm.Pollution}";
-		_popularityLabel.Text = $"Approval: {gm.Popularity}%";
-		_moneyLabel.Text      = $"${gm.Money}";
+        // Bar nodes
+        _dayBarFill = GetNode<ColorRect>("DayBar/DayBarArea/Fill");
+        _pollutionBarFill = GetNode<ColorRect>("PollutionBar/PollutionBarArea/Fill");
+        _pollutionThreshold = GetNode<ColorRect>("PollutionBar/PollutionBarArea/Threshold");
+    }
 
+    // -----------------------------------------
+    // UI UPDATES
+    // -----------------------------------------
+    private void UpdateDisplay()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null) return; // Failsafe
 
-		float dayRatio = gm.MaxTurns > 1 ? 1f - ((float)(gm.CurrentTurn - 1) / (gm.MaxTurns - 1)) : 0f;
-		_dayBarFill.AnchorRight = dayRatio;
+        // 1. Update Turn
+        int daysLeft = gm.MaxTurns - gm.CurrentTurn;
+        _turnLabel.Text = daysLeft == 0 ? "Final Day!" : $"{daysLeft} Days Left";
 
-		_pollutionBarFill.AnchorRight = gm.Pollution / 100f;
-		_approvalBarFill.AnchorRight  = gm.Popularity / 100f;
+        // 2. Update Main Labels
+        // THE FIX: Removed the daily delta from the Population/Capacity label!
+        _populationLabel.Text = $"Pop: {gm.Population}/{gm.Capacity}";
 
+        _pollutionLabel.Text = $"Pollution: {gm.Pollution} ({FormatDelta(gm.ExpectedDailyPollution)})";
+        _popularityLabel.Text = $"Approval: {gm.Popularity} ({FormatDelta(gm.ExpectedDailyPopularity)})";
 
-		float pollThresh = gm.PollutionTarget / 100f;
-		_pollutionThreshold.AnchorLeft  = pollThresh;
-		_pollutionThreshold.AnchorRight = pollThresh;
+        // --- Custom formatting for Money ---
+        string moneyDeltaSign = gm.ExpectedDailyMoney >= 0 ? "+" : "-";
+        string moneyDeltaFormatted = FormatMoney(Mathf.Abs(gm.ExpectedDailyMoney));
+        _moneyLabel.Text = $"${FormatMoney(gm.Money)} ({moneyDeltaSign}${moneyDeltaFormatted})";
 
-		float apprThresh = gm.PopularityFloor / 100f;
-		_approvalThreshold.AnchorLeft  = apprThresh;
-		_approvalThreshold.AnchorRight = apprThresh;
-	}
+        // 3. Update Bars
+        float dayRatio = gm.MaxTurns > 1 ? 1f - ((float)(gm.CurrentTurn - 1) / (gm.MaxTurns - 1)) : 0f;
+        _dayBarFill.AnchorRight = dayRatio;
+
+        _pollutionBarFill.AnchorRight = gm.Pollution / 100f;
+
+        // 4. Update Thresholds
+        float pollThresh = gm.PollutionTarget / 100f;
+        _pollutionThreshold.AnchorLeft = pollThresh;
+        _pollutionThreshold.AnchorRight = pollThresh;
+    }
+
+    // Helper method to format the delta with a + or - sign for standard integers
+    private string FormatDelta(int value)
+    {
+        if (value > 0) return $"+{value}";
+        if (value < 0) return $"{value}"; // Negative numbers already include the minus sign automatically
+        return "+0"; // Shows +0 when nothing is changing
+    }
+
+    // Helper method to format large money values into k and M
+    private string FormatMoney(int value)
+    {
+        float absVal = Mathf.Abs(value);
+
+        if (absVal >= 1_000_000)
+            return (absVal / 1_000_000f).ToString("0.#") + "M";
+        else if (absVal >= 1_000)
+            return (absVal / 1_000f).ToString("0.#") + "k";
+        else
+            return absVal.ToString();
+    }
 }

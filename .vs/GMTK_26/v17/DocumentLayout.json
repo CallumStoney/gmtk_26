@@ -7,8 +7,48 @@
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\buildingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\statshud.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\statshud.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\placebutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\placebutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\sellbuttoninventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\sellbuttoninventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\buybutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\buybutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\roomscene.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\roomscene.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\buildingininventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\buildingininventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\advisorevent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\advisorevent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\advisormemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\advisormemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\homescreen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\homescreen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\scenemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\scenemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\upgradablebuilding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -35,28 +75,8 @@
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\inventoryui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\placebutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\placebutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\sellbuttoninventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\sellbuttoninventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\camera2d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\camera2d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\code\\scenemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:code\\scenemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|c:\\users\\callu\\gmtk_26\\gmtk_26\\scripts\\roomscene.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{738D05CA-7585-4518-B18A-B302A192050D}|GMTK_26.csproj|solutionrelative:scripts\\roomscene.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -66,7 +86,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 14,
+          "SelectedChildIndex": 19,
           "Children": [
             {
               "$type": "Bookmark",
@@ -74,7 +94,72 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
+              "Title": "StatsHUD.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\StatsHUD.cs",
+              "RelativeDocumentMoniker": "Scripts\\StatsHUD.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\StatsHUD.cs",
+              "RelativeToolTip": "Scripts\\StatsHUD.cs",
+              "ViewState": "AQIAAFoAAAAAAAAAAAAIwG4AAAApAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T16:54:06.758Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "HomeScreen.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\HomeScreen.cs",
+              "RelativeDocumentMoniker": "Scripts\\HomeScreen.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\HomeScreen.cs",
+              "RelativeToolTip": "Scripts\\HomeScreen.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T16:54:05.266Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AdvisorMemory.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\AdvisorMemory.cs",
+              "RelativeDocumentMoniker": "Scripts\\AdvisorMemory.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\AdvisorMemory.cs",
+              "RelativeToolTip": "Scripts\\AdvisorMemory.cs",
+              "ViewState": "AQIAABQAAAAAAAAAAAAmwDUAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T16:54:04.089Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AdvisorEvent.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\AdvisorEvent.cs",
+              "RelativeDocumentMoniker": "Scripts\\AdvisorEvent.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\AdvisorEvent.cs",
+              "RelativeToolTip": "Scripts\\AdvisorEvent.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAA3wCQAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T16:54:03.246Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BuildingInInventory.cs",
+              "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingInInventory.cs",
+              "RelativeDocumentMoniker": "Code\\BuildingInInventory.cs",
+              "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingInInventory.cs",
+              "RelativeToolTip": "Code\\BuildingInInventory.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-25T16:22:00.064Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "UpgradableBuilding.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\UpgradableBuilding.cs",
               "RelativeDocumentMoniker": "Code\\UpgradableBuilding.cs",
@@ -86,7 +171,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 14,
               "Title": "MapSaveState.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\MapSaveState.cs",
               "RelativeDocumentMoniker": "Code\\MapSaveState.cs",
@@ -98,7 +183,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 13,
               "Title": "BuildingSaveData.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingSaveData.cs",
               "RelativeDocumentMoniker": "Code\\BuildingSaveData.cs",
@@ -110,7 +195,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 15,
               "Title": "SmogManager.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\SmogManager.cs",
               "RelativeDocumentMoniker": "Code\\SmogManager.cs",
@@ -122,7 +207,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 3,
               "Title": "PlaceButton.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\PlaceButton.cs",
               "RelativeDocumentMoniker": "Code\\PlaceButton.cs",
@@ -130,23 +215,25 @@
               "RelativeToolTip": "Code\\PlaceButton.cs",
               "ViewState": "AQIAAAQAAAAAAAAAAAAQwBgAAAAjAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-25T04:22:05.108Z"
+              "WhenOpened": "2026-07-25T04:22:05.108Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 4,
               "Title": "SellButtonInventory.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\SellButtonInventory.cs",
               "RelativeDocumentMoniker": "Code\\SellButtonInventory.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\SellButtonInventory.cs",
               "RelativeToolTip": "Code\\SellButtonInventory.cs",
-              "ViewState": "AQIAACQAAAAAAAAAAAAYwDgAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAAjAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-25T04:21:42.293Z"
+              "WhenOpened": "2026-07-25T04:21:42.293Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 17,
               "Title": "InventoryUI.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\InventoryUI.cs",
               "RelativeDocumentMoniker": "Code\\InventoryUI.cs",
@@ -158,20 +245,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "BuyButton.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuyButton.cs",
               "RelativeDocumentMoniker": "Code\\BuyButton.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuyButton.cs",
               "RelativeToolTip": "Code\\BuyButton.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAACgAAAAAAAAAAAAuwH4AAABTAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-25T04:20:01.074Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 16,
               "Title": "ShopUI.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\ShopUI.cs",
               "RelativeDocumentMoniker": "Code\\ShopUI.cs",
@@ -183,7 +270,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 18,
               "Title": "Camera2d.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\Camera2d.cs",
               "RelativeDocumentMoniker": "Code\\Camera2d.cs",
@@ -195,19 +282,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 2,
               "Title": "GameManager.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\GameManager.cs",
               "RelativeDocumentMoniker": "Scripts\\GameManager.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\GameManager.cs",
               "RelativeToolTip": "Scripts\\GameManager.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAyAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAQAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-25T04:11:05.282Z"
+              "WhenOpened": "2026-07-25T04:11:05.282Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 11,
               "Title": "SceneManager.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\SceneManager.cs",
               "RelativeDocumentMoniker": "Code\\SceneManager.cs",
@@ -215,19 +303,21 @@
               "RelativeToolTip": "Code\\SceneManager.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAYAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-25T04:10:03.664Z"
+              "WhenOpened": "2026-07-25T04:10:03.664Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 6,
               "Title": "RoomScene.cs",
               "DocumentMoniker": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\RoomScene.cs",
               "RelativeDocumentMoniker": "Scripts\\RoomScene.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Scripts\\RoomScene.cs",
               "RelativeToolTip": "Scripts\\RoomScene.cs",
-              "ViewState": "AQIAAGMAAAAAAAAAAAAowAgAAABGAAAA",
+              "ViewState": "AQIAABQAAAAAAAAAAAAAwCMAAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-25T03:50:01.513Z"
+              "WhenOpened": "2026-07-25T03:50:01.513Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -237,7 +327,7 @@
               "RelativeDocumentMoniker": "Code\\BuildingManager.cs",
               "ToolTip": "C:\\Users\\callu\\gmtk_26\\gmtk_26\\Code\\BuildingManager.cs",
               "RelativeToolTip": "Code\\BuildingManager.cs",
-              "ViewState": "AQIAABABAAAAAAAAAAAxwCgBAAA1AAAA",
+              "ViewState": "AQIAACgBAAAAAAAAAAAgwDUBAABEAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-23T04:35:20.474Z",
               "EditorCaption": ""
