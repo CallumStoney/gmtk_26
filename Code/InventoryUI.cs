@@ -12,20 +12,25 @@ public partial class InventoryUI : Control
     [Export] public BuildingManager TargetBuildingManager;
 
     // -----------------------------------------
-    // INITIALIZATION & CLEANUP
+    // INITIALIZATION (Runs ONLY ONCE on initial boot)
     // -----------------------------------------
-    public override void _EnterTree()
+    public override void _Ready()
     {
-        // Ensure the popup is hidden every time the scene enters the active game tree
+        // Forces it to be closed when the game initially starts/boots up
         if (InventoryPopup != null)
         {
             InventoryPopup.Visible = false;
         }
+    }
 
-        // Connect the button
+    // -----------------------------------------
+    // TREE ENTRY & EXIT (Runs every time scenes swap)
+    // -----------------------------------------
+    public override void _EnterTree()
+    {
+        // Connect the button every time the scene enters the active game tree
         if (ToggleButton != null)
         {
-            // Good practice: remove it first just in case, so it never double-connects
             ToggleButton.Pressed -= OnToggleButtonPressed;
             ToggleButton.Pressed += OnToggleButtonPressed;
         }
@@ -45,7 +50,7 @@ public partial class InventoryUI : Control
     // -----------------------------------------
     private void OnToggleButtonPressed()
     {
-        // --- NEW: Drop focus from the button so it doesn't block keyboard/mouse inputs! ---
+        // Drop focus from the button so it doesn't block keyboard/mouse inputs
         if (ToggleButton != null)
         {
             ToggleButton.ReleaseFocus();

@@ -982,12 +982,14 @@ BuildingIndex = 11
 
 [node name="BG2" type="TextureRect" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/SolarPannels1"]
 custom_minimum_size = Vector2(210, 120)
+layout_mode = 0
 offset_right = 210.0
 offset_bottom = 120.0
 texture = SubResource("AtlasTexture_gcc31")
 
 [node name="TextureRect" type="TextureRect" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/SolarPannels1"]
 custom_minimum_size = Vector2(32, 32)
+layout_mode = 0
 offset_left = 16.0
 offset_top = 37.0
 offset_right = 75.0
@@ -1091,12 +1093,14 @@ BuildingIndex = 12
 
 [node name="BG" type="TextureRect" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/WindPower1"]
 custom_minimum_size = Vector2(210, 120)
+layout_mode = 0
 offset_right = 210.0
 offset_bottom = 120.0
 texture = SubResource("AtlasTexture_gcc31")
 
 [node name="TextureRect" type="TextureRect" parent="GameUI/InventoryUI/InventoryPopup/ScrollContainer2/GridContainer/WindPower1"]
 custom_minimum_size = Vector2(32, 32)
+layout_mode = 0
 offset_left = 14.0
 offset_top = 31.0
 offset_right = 73.0
@@ -3206,10 +3210,11 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="StatsHUD" parent="GameUI/StatsUI" instance=ExtResource("18_hggrv")]
-offset_left = 10.0
-offset_top = 12.0
-offset_right = 1139.0
-offset_bottom = 63.0
+layout_mode = 1
+offset_left = 33.0
+offset_top = 16.0
+offset_right = 1116.0
+offset_bottom = 64.0
 
 [node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("CursorMgr")]
 zoom = Vector2(2, 2)

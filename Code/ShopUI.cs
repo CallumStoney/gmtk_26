@@ -12,37 +12,23 @@ public partial class ShopUI : Control
     [Export] public BuildingManager TargetBuildingManager;
 
     // -----------------------------------------
-    // INITIALIZATION
+    // INITIALIZATION (Runs ONLY ONCE on initial boot)
     // -----------------------------------------
     public override void _Ready()
     {
-        // Ensure the popup is hidden when the game starts
+        // Ensure the popup is hidden when the game initially starts/boots up
         if (ShopPopup != null)
         {
             ShopPopup.Visible = false;
-        }
-
-        // Connect the button
-        if (ToggleButton != null)
-        {
-            ToggleButton.Pressed += OnToggleButtonPressed;
         }
     }
 
-
-
     // -----------------------------------------
-    // INITIALIZATION & CLEANUP
+    // TREE ENTRY & EXIT (Runs every time scenes swap)
     // -----------------------------------------
     public override void _EnterTree()
     {
-        // Ensure the popup is reset to hidden every time you enter the city
-        if (ShopPopup != null)
-        {
-            ShopPopup.Visible = false;
-        }
-
-        // Connect the button every time the scene is added to the screen
+        // Connect the button every time the scene enters the active game tree
         if (ToggleButton != null)
         {
             // Good practice: remove it first just in case, so it never double-connects
@@ -53,7 +39,7 @@ public partial class ShopUI : Control
 
     public override void _ExitTree()
     {
-        // Clean up signal connection when the scene is stashed in the SceneManager
+        // Clean up signal connection when the scene is stashed by SceneManager
         if (ToggleButton != null)
         {
             ToggleButton.Pressed -= OnToggleButtonPressed;
@@ -65,6 +51,12 @@ public partial class ShopUI : Control
     // -----------------------------------------
     private void OnToggleButtonPressed()
     {
+        // Drop focus from the button so it doesn't block keyboard/mouse inputs
+        if (ToggleButton != null)
+        {
+            ToggleButton.ReleaseFocus();
+        }
+
         // Flips the visibility back and forth
         if (ShopPopup != null)
         {
