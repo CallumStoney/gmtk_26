@@ -1,7 +1,8 @@
-[gd_scene load_steps=84 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=86 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
+[ext_resource type="Script" uid="uid://dhf71pvj6f0o4" path="res://Code/TrafficManager.cs" id="1_hnkv4"]
 [ext_resource type="Script" uid="uid://bh78vjp1puptt" path="res://Code/SmogManager.cs" id="1_ld7dv"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://b4jfet5jhhwp1" path="res://Code/CursorManager.cs" id="1_p3gyn"]
@@ -453,8 +454,15 @@ tile_shape = 1
 tile_size = Vector2i(28, 14)
 sources/0 = SubResource("TileSetAtlasSource_aobtk")
 
+[sub_resource type="Curve2D" id="Curve2D_ld7dv"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 58.5, 21, 0, 0, 0, 0, 98.475, 42, 0, 0, 0, 0, 84.825, 35, 0, 0, 0, 0, 124.8, 15, 0, 0, 0, 0, 97.9, -1, 0, 0, 0, 0, 58.9, 21, 0, 0, 0, 0, 31.6, 4, 0, 0, 0, 0, 57.925, 21, 0, 0, 0, 0, 17.95, 42, 0, 0, 0, 0, 58.9, 63, 0, 0, 0, 0, 98.875, 42, 0, 0, 0, 0, 133, 58)
+}
+point_count = 12
+
 [node name="CityScene" type="Node2D"]
 position = Vector2(583, 339)
+script = ExtResource("1_hnkv4")
 
 [node name="SmogManager" type="Node" parent="."]
 script = ExtResource("1_ld7dv")
@@ -3220,11 +3228,10 @@ offset_top = 16.0
 offset_right = 1116.0
 offset_bottom = 64.0
 
-[node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("CursorMgr")]
+[node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(2, 2)
 script = ExtResource("1_ynusb")
 ZoomMax = Vector2(5, 5)
-CursorMgr = NodePath("../CursorManager")
 
 [node name="TileSets" type="Node2D" parent="."]
 
@@ -3237,36 +3244,16 @@ tile_set = SubResource("TileSet_cv3rj")
 tile_map_data = PackedByteArray("AAABAP7/AAABAAUAAAABAAAAAAABAAYAAAAAAAEAAAAAAAQAAAAAAAAAAAABAAUAAAAAAP3/AAAAAAMAAAD/////AAABAAMAAAAAAP7/AAAAAAUAAAABAAEAAAABAAUAAAACAAIAAAAAAAYAAAABAP//AAABAAQAAAACAAMAAAABAAUAAAADAAQAAAABAAcAAAADAAUAAAAAAAYAAAAEAAYAAAABAAUAAAAEAAcAAAABAAUAAAADAAYAAAAAAAUAAAACAAcAAAAAAAUAAAACAAgAAAAAAAQAAAABAAcAAAABAAUAAAABAAYAAAABAAUAAAAAAAUAAAABAAcAAAAAAAQAAAABAAUAAAD//wMAAAABAAUAAAD//wIAAAABAAUAAAD+/wEAAAABAAUAAAD+/wAAAAABAAUAAAD9////AAABAAUAAAD9//7/AAABAAUAAAD8//3/AAABAAUAAAD8//z/AAABAAUAAAABAAQAAAAAAAUAAAABAAMAAAAAAAUAAAADAAMAAAAAAAUAAAAEAAIAAAAAAAUAAAAEAAEAAAABAAQAAAAEAAAAAAABAAUAAAADAP//AAAAAAYAAAADAAAAAAAAAAUAAAACAAEAAAAAAAUAAAADAP7/AAABAAUAAAACAP3/AAABAAcAAAACAPz/AAABAAUAAAADAPz/AAAAAAUAAAADAPv/AAAAAAYAAAADAPr/AAABAAUAAAACAPr/AAAAAAUAAAACAPn/AAAAAAMAAAABAPv/AAABAAMAAAA=")
 tile_set = SubResource("TileSet_ynusb")
 
-[node name="BuildingManager" type="Node2D" parent="." node_paths=PackedStringArray("GroundTileMap", "MainCamera", "ActionMenu", "BtnSell", "BtnInfo", "BtnUpgrade", "BtnStore", "SellDialog", "UpgradeDialog", "InfoPanel", "InfoTitleLabel", "InfoBodyLabel")]
+[node name="BuildingManager" type="Node2D" parent="." node_paths=PackedStringArray("GroundTileMap")]
 script = ExtResource("1_aobtk")
 GroundTileMap = NodePath("../TileSets/GroundTileMap")
-MainCamera = NodePath("../Camera2D")
-BuildingInfo = Dictionary[int, PackedStringArray]({
-0: PackedStringArray("House", "Capacity: +4, Popularity +1/day,Upkeep Cost: $1k/day", "$5k", "$2.5k"),
-1: PackedStringArray("Office", "Money: +$5k/day,,Upkeep Cost: $1k/day", "$25k", "$12.5k", "$25k", "Money: +$10k/day,Upkeep Cost: $2k/day", "Money: +$15k/day,Upkeep Cost: $3k/day"),
-2: PackedStringArray("Big Office", "Money: +$20k/day,Upkeep Cost: $3k/day", "$100k", "$50k"),
-3: PackedStringArray("Big Factory", "Money: +$40k/day,Pollution: +10/day,Popularity: -5/day,Upkeep Cost: $10k/day", "$40k", "$20k"),
-4: PackedStringArray("Big Apartment", "Capacity: +12,Popularity: -1/day,,Upkeep Cost: $2k/day", "$20k", "$10k", "$20k", "Capacity: +24,Popularity: -2/day,Upkeep Cost: $3k/day", "Capacity: +36,Popularity: -3/day,Upkeep Cost: $4k/day", "Capacity: +48,Popularity: -4/day,Upkeep Cost: $5k/day"),
-5: PackedStringArray("Apartment", "Capacity: +6,Popularity: -1/day,Upkeep Cost: $2k/day", "$7.5k", "$3.25k", "$7.5k", "Capacity: +12,Popularity: -2/day,Upkeep Cost: $3k/day", "Capacity: +18,Popularity: -3/day,Upkeep Cost: $4k/day", "Capacity: +24,Popularity: -4/day,Upkeep Cost: $5k/day", "Capacity: +30,Popularity: -5/day,Upkeep Cost: $6k/day"),
-6: PackedStringArray("Nature", "Pollution: -2/day,Popularity: +1/day,Upkeep Cost: $1k/day", "$5k", "$2.5k"),
-7: PackedStringArray("Statue", "Popularity: +4/day,Upkeep Cost: $3k/day", "$15k", "$7.5k"),
-8: PackedStringArray("Playground", "Popularity: +2/day,Upkeep Cost: $0.5k/day", "$1k", "$500"),
-9: PackedStringArray("Restaurant", "Money: +$3k/day,Popularity: +1/day,Upkeep Cost: $1k/day", "$10k", "$5k", "$10k", "Money: +$6k/day,Popularity: +2/day,Upkeep Cost: $2k/day"),
-10: PackedStringArray("Factory", "Money: +$10k/day,Pollution: +5/day,Popularity: -3/day,Upkeep Cost: $5k/day", "$16k", "$8k"),
-11: PackedStringArray("Solar Pannels", "Pollution: -2/day,Upkeep Cost: $2k/day", "$10k", "$5k"),
-12: PackedStringArray("Wind Turbines", "Pollution: -4/day,Upkeep Cost: $6k/day", "$20k", "$10k")
-})
 BuildingScenes = Array[PackedScene]([ExtResource("3_aobtk"), ExtResource("6_d46wb"), ExtResource("7_bdw28"), ExtResource("8_wen53"), ExtResource("9_rp3ig"), ExtResource("27_r1o1k"), ExtResource("28_4xs4g"), ExtResource("29_56atv"), ExtResource("30_uf26w"), ExtResource("31_iqlop"), ExtResource("32_4xs4g"), ExtResource("33_11u8x"), ExtResource("34_laldt")])
 BuildingFootprints = Array[int]([0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0])
 BuildingCounts = Array[int]([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 BuildingVisualOffset = Vector2(0, 9)
-ActionMenu = NodePath("../InCityUI/ActionMenu")
-BtnSell = NodePath("../InCityUI/ActionMenu/BtnSell")
-BtnInfo = NodePath("../InCityUI/ActionMenu/BtnInfo")
-BtnUpgrade = NodePath("../InCityUI/ActionMenu/BtnUpgrade")
-BtnStore = NodePath("../InCityUI/ActionMenu/BtnStore")
-SellDialog = NodePath("../InCityUI/ActionMenu/SellDialog")
-UpgradeDialog = NodePath("../InCityUI/ActionMenu/UpgradeDialog")
-InfoPanel = NodePath("../InCityUI/ActionMenu/InfoPanel")
-InfoTitleLabel = NodePath("../InCityUI/ActionMenu/InfoPanel/Label")
-InfoBodyLabel = NodePath("../InCityUI/ActionMenu/InfoPanel/Label2")
+
+[node name="Path2D" type="Path2D" parent="."]
+position = Vector2(13, 0)
+scale = Vector2(1.02564, 1)
+curve = SubResource("Curve2D_ld7dv")
+script = ExtResource("1_hnkv4")
