@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cit31k5vjifus"]
+
+[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="1_ss3ya"]
+[ext_resource type="Script" uid="uid://e8v3fx8iy8jg" path="res://Code/UpgradableBuilding.cs" id="2_oamgf"]
+
+[node name="House1" type="Sprite2D" node_paths=PackedStringArray("BuildingSprite")]
+texture = ExtResource("1_ss3ya")
+offset = Vector2(0, -28)
+region_enabled = true
+region_rect = Rect2(236, 128, 20, 48)
+script = ExtResource("2_oamgf")
+BuildingSprite = NodePath(".")
+UpgradeRegions = Array[Rect2]([Rect2(236, 128, 20, 48), Rect2(260, 128, 20, 48), Rect2(284, 128, 20, 48), Rect2(316, 128, 20, 48), Rect2(343, 128, 20, 48)])
+MaxLevel = 4

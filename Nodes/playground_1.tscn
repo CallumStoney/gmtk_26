@@ -1,0 +1,81 @@
+[gd_scene load_steps=12 format=3 uid="uid://p8bpsnib3xha"]
+
+[ext_resource type="Texture2D" uid="uid://brl78fuso3y37" path="res://Art/PlayGroundAnimation1-Sheet.png" id="1_15k8x"]
+[ext_resource type="Script" uid="uid://gw8wbokdh2y4" path="res://Code/AnimationBuilding.cs" id="2_yerqk"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_15k8x"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(25, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yerqk"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(0, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5rhj7"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(25, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j3q57"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(50, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ndfq"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(75, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jid0s"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(100, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qh0fk"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(125, 0, 25, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p5nfy"]
+atlas = ExtResource("1_15k8x")
+region = Rect2(150, 0, 25, 21)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rcku2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_15k8x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yerqk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5rhj7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j3q57")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0ndfq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jid0s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qh0fk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p5nfy")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="House1" type="Sprite2D"]
+position = Vector2(0, -11)
+offset = Vector2(0, -14)
+region_enabled = true
+region_rect = Rect2(85, 129, 21, 18)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_rcku2")
+frame = 7
+frame_progress = 0.123721
+offset = Vector2(0, -14)
+script = ExtResource("2_yerqk")

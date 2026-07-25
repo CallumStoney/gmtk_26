@@ -1,9 +1,60 @@
-[gd_scene load_steps=2 format=3 uid="uid://da0l0ksymkuka"]
+[gd_scene load_steps=9 format=3 uid="uid://da0l0ksymkuka"]
 
-[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="1_ppnb7"]
+[ext_resource type="Texture2D" uid="uid://vt7ungmws53e" path="res://Art/Factory2Animation-Sheet.png" id="1_epltk"]
+[ext_resource type="Script" uid="uid://gw8wbokdh2y4" path="res://Code/AnimationBuilding.cs" id="2_y3krb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_am5d1"]
+atlas = ExtResource("1_epltk")
+region = Rect2(0, 0, 48, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rplyi"]
+atlas = ExtResource("1_epltk")
+region = Rect2(48, 0, 48, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lj8aj"]
+atlas = ExtResource("1_epltk")
+region = Rect2(96, 0, 48, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qk6fr"]
+atlas = ExtResource("1_epltk")
+region = Rect2(144, 0, 48, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3nkmq"]
+atlas = ExtResource("1_epltk")
+region = Rect2(192, 0, 48, 53)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5dcsg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_am5d1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rplyi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lj8aj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qk6fr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3nkmq")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="House1" type="Sprite2D"]
-texture = ExtResource("1_ppnb7")
 offset = Vector2(0, -16)
 region_enabled = true
 region_rect = Rect2(139, 93, 38, 35)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(3, -9)
+sprite_frames = SubResource("SpriteFrames_5dcsg")
+frame = 2
+frame_progress = 0.757455
+offset = Vector2(0, -16)
+script = ExtResource("2_y3krb")

@@ -1,0 +1,44 @@
+[gd_scene load_steps=8 format=3 uid="uid://dvfulk14qpsx3"]
+
+[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="1_igbfk"]
+[ext_resource type="Script" uid="uid://e8v3fx8iy8jg" path="res://Code/UpgradableBuilding.cs" id="2_ppwx3"]
+[ext_resource type="Texture2D" uid="uid://7v2h8ncidfvm" path="res://Art/RestaurantAnimation-Sheet.png" id="3_1vhd5"]
+[ext_resource type="Script" uid="uid://gw8wbokdh2y4" path="res://Code/AnimationBuilding.cs" id="4_f5k7k"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k1mm7"]
+atlas = ExtResource("3_1vhd5")
+region = Rect2(0, 0, 25, 22)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubsn"]
+atlas = ExtResource("3_1vhd5")
+region = Rect2(25, 0, 25, 22)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_o2moa"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k1mm7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubsn")
+}],
+"loop": true,
+"name": &"default",
+"speed": 1.0
+}]
+
+[node name="Apartment2" type="Sprite2D" node_paths=PackedStringArray("BuildingSprite")]
+texture = ExtResource("1_igbfk")
+offset = Vector2(0, -15)
+region_enabled = true
+region_rect = Rect2(3, 105, 20, 20)
+script = ExtResource("2_ppwx3")
+BuildingSprite = NodePath(".")
+UpgradeRegions = Array[Rect2]([Rect2(0, 0, 0, 0), Rect2(0, 74, 20, 20)])
+MaxLevel = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_o2moa")
+frame_progress = 0.224723
+offset = Vector2(0, -15)
+script = ExtResource("4_f5k7k")

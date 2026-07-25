@@ -1,0 +1,60 @@
+[gd_scene load_steps=9 format=3 uid="uid://dh471xh5fegk1"]
+
+[ext_resource type="Texture2D" uid="uid://885f3bqqy7td" path="res://Art/BuildingSmokeAnimation1-Sheet.png" id="1_20c5p"]
+[ext_resource type="Script" uid="uid://gw8wbokdh2y4" path="res://Code/AnimationBuilding.cs" id="2_egujj"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_la5ce"]
+atlas = ExtResource("1_20c5p")
+region = Rect2(0, 0, 68, 33)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ilbsg"]
+atlas = ExtResource("1_20c5p")
+region = Rect2(68, 0, 68, 33)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ub8qj"]
+atlas = ExtResource("1_20c5p")
+region = Rect2(136, 0, 68, 33)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_33oq6"]
+atlas = ExtResource("1_20c5p")
+region = Rect2(204, 0, 68, 33)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_svcp3"]
+atlas = ExtResource("1_20c5p")
+region = Rect2(272, 0, 68, 33)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0py85"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_la5ce")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ilbsg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ub8qj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_33oq6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_svcp3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="House1" type="Sprite2D"]
+offset = Vector2(0, -17)
+region_enabled = true
+region_rect = Rect2(109, 103, 20, 25)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(5, -4)
+sprite_frames = SubResource("SpriteFrames_0py85")
+frame = 4
+frame_progress = 0.390831
+offset = Vector2(0, -17)
+script = ExtResource("2_egujj")

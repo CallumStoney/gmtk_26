@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3 uid="uid://dqc0xlq3xccgy"]
+
+[ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="1_7c1rl"]
+[ext_resource type="Script" uid="uid://gw8wbokdh2y4" path="res://Code/AnimationBuilding.cs" id="2_b5217"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b5217"]
+atlas = ExtResource("1_7c1rl")
+region = Rect2(198, 112, 22, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fvrex"]
+atlas = ExtResource("1_7c1rl")
+region = Rect2(223, 112, 22, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yvxq2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b5217")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fvrex")
+}],
+"loop": true,
+"name": &"default",
+"speed": 2.0
+}]
+
+[node name="House1" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_yvxq2")
+frame_progress = 0.352861
+offset = Vector2(0, -12)
+script = ExtResource("2_b5217")
