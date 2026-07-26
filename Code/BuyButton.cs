@@ -115,13 +115,11 @@ public partial class BuyButton : TextureButton
         if (GameManager.Instance.Money < price)
         {
             GD.Print("Cannot afford this building!");
-            AudioManager.Instance?.PlayCannotAfford();
             return;
         }
 
         if (BuildingTypeIndex >= 0 && BuildingTypeIndex < TargetBuildingManager.BuildingCounts.Count)
         {
-            AudioManager.Instance?.PlayClick();
             // DEDUCT MONEY
             GameManager.Instance.Money -= price;
 

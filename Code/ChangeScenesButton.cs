@@ -14,7 +14,6 @@ public partial class ChangeScenesButton : TextureButton
 
     private void OnButtonPressed()
     {
-        AudioManager.Instance?.PlayClick();
         ReleaseFocus();
         // Get the file path of the scene we are currently standing in
         string currentPath = GetTree().CurrentScene.SceneFilePath;

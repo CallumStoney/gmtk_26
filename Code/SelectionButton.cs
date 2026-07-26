@@ -32,8 +32,6 @@ public partial class SelectionButton : TextureButton
     // -----------------------------------------
     private void OnButtonPressed()
     {
-        AudioManager.Instance?.PlayClick();
-
         if (TargetBuildingManager == null)
         {
             GD.PrintErr($"SelectionButton on '{Name}' has no TargetBuildingManager assigned in the Inspector!");
