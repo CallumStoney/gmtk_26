@@ -58,8 +58,8 @@ public partial class GameManager : Node
 
     // --- CORE STAT FIELDS ---
     private int _population = 100;
-    private int _pollution = 500;    // Starts high
-    private int _popularity = 0;   // Default approval
+    private int _pollution = 80;    // Starts high
+    private int _popularity = 50000;   // Default approval
     private int _money = 50000;
     private int _capacity = 0;
 
