@@ -1,14 +1,12 @@
-[gd_scene load_steps=89 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=85 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
 [ext_resource type="Script" uid="uid://bh78vjp1puptt" path="res://Code/SmogManager.cs" id="1_ld7dv"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
-[ext_resource type="Script" uid="uid://b4jfet5jhhwp1" path="res://Code/CursorManager.cs" id="1_p3gyn"]
 [ext_resource type="Script" uid="uid://bia1xvnanqjjg" path="res://Code/Camera2d.cs" id="1_ynusb"]
 [ext_resource type="Texture2D" uid="uid://diq0mf7he5v0v" path="res://Art/roadTileMap.png" id="2_cv3rj"]
 [ext_resource type="Script" uid="uid://cddum4itly5ic" path="res://Code/ButtonHighlight.cs" id="2_m48b7"]
-[ext_resource type="Texture2D" uid="uid://d1hp8pogyyvuk" path="res://Art/light_cursor_spritesheet.png" id="2_r1o1k"]
 [ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="2_ri1kh"]
 [ext_resource type="Script" uid="uid://06f2f2puus5c" path="res://Code/BuildingInInventory.cs" id="3_57116"]
 [ext_resource type="PackedScene" uid="uid://ctvvgj0ta5t46" path="res://Nodes/house_1.tscn" id="3_aobtk"]
@@ -40,14 +38,6 @@
 [ext_resource type="PackedScene" uid="uid://dh471xh5fegk1" path="res://Nodes/factory_1.tscn" id="32_4xs4g"]
 [ext_resource type="PackedScene" uid="uid://chvx74arknvu8" path="res://Nodes/solarpannels_1.tscn" id="33_11u8x"]
 [ext_resource type="PackedScene" uid="uid://coowvlmltfhst" path="res://Nodes/windPower_1.tscn" id="34_laldt"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_k54q2"]
-atlas = ExtResource("2_r1o1k")
-region = Rect2(64, 80, 13, 15)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_urhxe"]
-atlas = ExtResource("2_r1o1k")
-region = Rect2(0, 96, 15, 15)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_iqlop"]
 atlas = ExtResource("2_ri1kh")
@@ -528,12 +518,6 @@ position = Vector2(583, 339)
 
 [node name="SmogManager" type="Node" parent="."]
 script = ExtResource("1_ld7dv")
-
-[node name="CursorManager" type="Node" parent="."]
-script = ExtResource("1_p3gyn")
-DefaultCursor = SubResource("AtlasTexture_k54q2")
-DragCursor = SubResource("AtlasTexture_urhxe")
-DragHotspot = Vector2(0, 0)
 
 [node name="InCityUI" type="CanvasLayer" parent="."]
 
@@ -3311,7 +3295,7 @@ layout_mode = 1
 offset_right = 821.0
 offset_bottom = 34.0
 
-[node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("CursorMgr")]
+[node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(2, 2)
 script = ExtResource("1_ynusb")
 ZoomMin = Vector2(2, 2)
@@ -3319,7 +3303,6 @@ ZoomMax = Vector2(5, 5)
 ZoomSpeed = Vector2(0.2, 0.2)
 MinBounds = Vector2(250, 75)
 MaxBounds = Vector2(950, 600)
-CursorMgr = NodePath("../CursorManager")
 
 [node name="TrafficManager" type="Node2D" parent="."]
 script = ExtResource("21_hnkv4")

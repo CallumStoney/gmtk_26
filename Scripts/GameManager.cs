@@ -59,7 +59,7 @@ public partial class GameManager : Node
     // --- CORE STAT FIELDS ---
     private int _population = 100;
     private int _pollution = 80;    // Starts high
-    private int _popularity = 50;   // Default approval
+    private int _popularity = 50000;   // Default approval
     private int _money = 50000;
     private int _capacity = 0;
 
@@ -134,7 +134,7 @@ public partial class GameManager : Node
     }
 
     public int MaxTurns { get; set; } = 15;
-    public int CurrentTurn { get; private set; } = 1;
+    public int CurrentTurn { get; private set; } = 0;
 
     public int PollutionTarget { get; set; } = 30;   // Must get pollution <= this
     public int PopularityFloor { get; set; } = 15;   // Lose if popularity drops below

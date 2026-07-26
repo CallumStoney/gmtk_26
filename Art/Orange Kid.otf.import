@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://cm23sc3yuwx1x"
-path="res://.godot/imported/NoiseBlock.ttf-f1b4e7686cdafe1c6bde0ddafb263dc1.fontdata"
+uid="uid://blganw1oiu3lk"
+path="res://.godot/imported/Orange Kid.otf-19f00e7694e11fc564e2763568238236.fontdata"
 
 [deps]
 
-source_file="res://Art/NoiseBlock.ttf"
-dest_files=["res://.godot/imported/NoiseBlock.ttf-f1b4e7686cdafe1c6bde0ddafb263dc1.fontdata"]
+source_file="res://Art/Orange Kid.otf"
+dest_files=["res://.godot/imported/Orange Kid.otf-19f00e7694e11fc564e2763568238236.fontdata"]
 
 [params]
 
@@ -16,7 +16,7 @@ Rendering=null
 antialiasing=1
 generate_mipmaps=false
 disable_embedded_bitmaps=true
-multichannel_signed_distance_field=false
+multichannel_signed_distance_field=true
 msdf_pixel_range=8
 msdf_size=48
 allow_system_fallback=true
@@ -29,7 +29,12 @@ Fallbacks=null
 fallbacks=[]
 Compress=null
 compress=true
-preload=[]
+preload=[{
+"chars": [],
+"glyphs": [],
+"name": "New Configuration",
+"size": Vector2i(16, 0)
+}]
 language_support={}
 script_support={}
 opentype_features={}

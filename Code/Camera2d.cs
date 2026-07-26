@@ -21,7 +21,7 @@ public partial class Camera2d : Camera2D
     [Export] public Vector2 MaxBounds = new Vector2(2000f, 2000f);  // Bottom-Right Edge Limit
 
     // --- Cursor Manager Reference ---
-    [Export] public CursorManager CursorMgr;
+    public CursorManager CursorMgr;
 
     private bool _isDragging = false;
     private Vector2 _targetPosition;
@@ -33,6 +33,7 @@ public partial class Camera2d : Camera2D
 
     public override void _Ready()
     {
+        CursorMgr = GetNode<CursorManager>("/root/CursorManager");
         PositionSmoothingEnabled = false;
         Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
         _targetPosition = GlobalPosition; // Use GlobalPosition just to be safe
