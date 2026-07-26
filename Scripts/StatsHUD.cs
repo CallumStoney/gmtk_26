@@ -63,36 +63,59 @@ public partial class StatsHUD : HBoxContainer
     // -----------------------------------------
     private void UpdateDisplay()
     {
+        // Guard clause: ensure this HUD node exists and is active in the scene tree
+        if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
         var gm = GameManager.Instance;
-        if (gm == null) return;
+        if (!IsInstanceValid(gm)) return;
+
+        int daysLeft = Mathf.Max(0, gm.MaxTurns - gm.CurrentTurn);
 
         // 1. Update Turn Text
-        int daysLeft = Mathf.Max(0, gm.MaxTurns - gm.CurrentTurn);
-        _turnLabel.Text = daysLeft == 0 ? "Final Day!" : $"{daysLeft} Days Left";
+        if (IsInstanceValid(_turnLabel))
+        {
+            _turnLabel.Text = daysLeft == 1 ? "Final Day!" : $"{daysLeft} Days Left";
+        }
 
         // 2. Update Main Labels
-        string popColor = gm.Capacity < gm.Population ? "#e57373" : "white";
-        _populationLabel.Text = $"[color={popColor}]Pop: {gm.Population}/{gm.Capacity}[/color]";
+        if (IsInstanceValid(_populationLabel))
+        {
+            string popColor = gm.Capacity < gm.Population ? "#e57373" : "white";
+            _populationLabel.Text = $"[color={popColor}]Pop: {gm.Population}/{gm.Capacity}[/color]";
+        }
 
-        _pollutionLabel.Text = $"[color=white]Pollution: {gm.Pollution}[/color] [color={GetInvertedDeltaColor(gm.ExpectedDailyPollution)}]({FormatDelta(gm.ExpectedDailyPollution)})[/color]";
-        _popularityLabel.Text = $"[color=white]Approval: {gm.Popularity}[/color] [color={GetDeltaColor(gm.ExpectedDailyPopularity)}]({FormatDelta(gm.ExpectedDailyPopularity)})[/color]";
+        if (IsInstanceValid(_pollutionLabel))
+        {
+            _pollutionLabel.Text = $"[color=white]Pollution: {gm.Pollution}[/color] [color={GetInvertedDeltaColor(gm.ExpectedDailyPollution)}]({FormatDelta(gm.ExpectedDailyPollution)})[/color]";
+        }
 
-        // --- NEW: Dynamic Formatting for Current Money ---
-        string currentMoneySign = gm.Money < 0 ? "-" : "";
-        string currentMoneyColor = gm.Money < 0 ? "#e57373" : "#ffd54f"; // Red if debt, yellow if positive/zero
+        if (IsInstanceValid(_popularityLabel))
+        {
+            _popularityLabel.Text = $"[color=white]Approval: {gm.Popularity}[/color] [color={GetDeltaColor(gm.ExpectedDailyPopularity)}]({FormatDelta(gm.ExpectedDailyPopularity)})[/color]";
+        }
 
-        string moneyDeltaSign = gm.ExpectedDailyMoney >= 0 ? "+" : "-";
-        string moneyDeltaFormatted = FormatMoney(Mathf.Abs(gm.ExpectedDailyMoney));
-        string moneyDeltaColor = GetDeltaColor(gm.ExpectedDailyMoney);
+        if (IsInstanceValid(_moneyLabel))
+        {
+            // --- Dynamic Formatting for Current Money ---
+            string currentMoneySign = gm.Money < 0 ? "-" : "";
+            string currentMoneyColor = gm.Money < 0 ? "#e57373" : "#ffd54f"; // Red if debt, yellow if positive/zero
 
-        // Inject the dynamic color and negative sign for the main money pool
-        _moneyLabel.Text = $"[color={currentMoneyColor}]{currentMoneySign}${FormatMoney(gm.Money)}[/color] [color={moneyDeltaColor}]({moneyDeltaSign}${moneyDeltaFormatted})[/color]";
+            string moneyDeltaSign = gm.ExpectedDailyMoney >= 0 ? "+" : "-";
+            string moneyDeltaFormatted = FormatMoney(Mathf.Abs(gm.ExpectedDailyMoney));
+            string moneyDeltaColor = GetDeltaColor(gm.ExpectedDailyMoney);
+
+            // Inject the dynamic color and negative sign for the main money pool
+            _moneyLabel.Text = $"[color={currentMoneyColor}]{currentMoneySign}${FormatMoney(gm.Money)}[/color] [color={moneyDeltaColor}]({moneyDeltaSign}${moneyDeltaFormatted})[/color]";
+        }
 
         // 3. Update Day Bar Fill (Bypassing Layout Engine with Scale)
-        float dayRatio = gm.MaxTurns > 1 ? (float)daysLeft / (gm.MaxTurns - 1) : 0f;
+        if (IsInstanceValid(_dayBarFill))
+        {
+            float dayRatio = gm.MaxTurns > 1 ? (float)daysLeft / (gm.MaxTurns - 1) : 0f;
 
-        // Scale.X shrinks the visual width perfectly without triggering container layout recalculations
-        _dayBarFill.Scale = new Vector2(dayRatio, 1f);
+            // Scale.X shrinks the visual width perfectly without triggering container layout recalculations
+            _dayBarFill.Scale = new Vector2(dayRatio, 1f);
+        }
     }
 
     // -----------------------------------------

@@ -96,10 +96,10 @@ ComputerTurnOn = NodePath("Monitor")
 [node name="BackToCityLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.9355
-anchor_top = 0.535741
-anchor_right = 0.9355
-anchor_bottom = 0.535741
+anchor_left = 0.920743
+anchor_top = 0.541914
+anchor_right = 0.920743
+anchor_bottom = 0.541914
 offset_left = 0.303955
 offset_top = -0.160004
 offset_right = 92.304
@@ -114,13 +114,13 @@ metadata/_edit_use_anchors_ = true
 [node name="ChangeScenesButton" parent="." instance=ExtResource("4_xfmv1")]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 1
-offset_left = 1172.0
+offset_left = 1084.0
 offset_top = 58.0
-offset_right = 1236.0
+offset_right = 1151.0
 offset_bottom = 122.0
 flip_h = false
 
-[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI", "TitleSpecialEvent", "MainTextSpecialEvent")]
+[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI", "TitleSpecialEvent", "MainTextSpecialEvent", "ContinueButton", "LabelToHide", "TextureButtonToHide")]
 position = Vector2(574.5, 360.5)
 scale = Vector2(0.992902, 0.998571)
 sprite_frames = SubResource("SpriteFrames_r6jfc")
@@ -129,6 +129,9 @@ NormalUI = NodePath("NormalUI")
 SpecialEventUI = NodePath("SpecialEventUI")
 TitleSpecialEvent = NodePath("SpecialEventUI/TitleSpecialEvent")
 MainTextSpecialEvent = NodePath("SpecialEventUI/MainTextSpecialEvent")
+ContinueButton = NodePath("SpecialEventUI/ContinueSpecialEventButton")
+LabelToHide = NodePath("../BackToCityLabel")
+TextureButtonToHide = NodePath("../ChangeScenesButton")
 
 [node name="NormalUI" type="Node2D" parent="Monitor"]
 visible = false
@@ -338,3 +341,7 @@ offset_left = 10.0
 offset_top = 10.0
 offset_right = 831.0
 offset_bottom = 44.0
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 323)
+offset = Vector2(0, 1)
