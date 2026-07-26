@@ -466,7 +466,6 @@ public partial class BuildingManager : Node2D
 	// --- BUTTON BINDINGS ---
 	private void OnSellButtonPressed()
 	{
-		AudioManager.Instance?.PlayClick();
 		if (targetActionTile == null) return;
 
 		// 1. Set fallback values just in case the dictionary is missing data
@@ -540,7 +539,6 @@ public partial class BuildingManager : Node2D
 
 	private void OnInfoButtonPressed()
 	{
-		AudioManager.Instance?.PlayClick();
 		if (targetActionTile == null) return;
 
 		if (InfoTitleLabel == null || InfoBodyLabel == null)
@@ -589,7 +587,6 @@ public partial class BuildingManager : Node2D
 
 	private void OnUpgradeButtonPressed()
 	{
-		AudioManager.Instance?.PlayClick();
 		if (targetActionTile == null) return;
 
 		// 1. Set fallback values just in case the dictionary is missing data
@@ -621,7 +618,6 @@ public partial class BuildingManager : Node2D
 
 	private void OnStoreButtonPressed()
 	{
-		AudioManager.Instance?.PlayClick();
 		if (targetActionTile == null) return;
 		// Store puts it in inventory (refund = true), uses normal deletion particles
 		DeleteOrStoreBuilding(targetActionTile.BuildingNode, refundToInventory: true, particleColor: DeletionParticleColor);
@@ -683,7 +679,7 @@ public partial class BuildingManager : Node2D
 				else
 				{
 					GD.Print("Not enough money to upgrade!");
-					AudioManager.Instance?.PlayCannotAfford();
+					// Note: You could shake the UI or play an error buzzer sound here
 				}
 			}
 		}
@@ -1207,11 +1203,7 @@ public partial class BuildingManager : Node2D
 
 		Tween tween = newBuilding.CreateTween();
 		tween.TweenProperty(newBuilding, "global_position", targetPos, dropTime).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
-		tween.TweenCallback(Callable.From(() =>
-		{
-			SpawnFootprintParticles(tilesToOccupy, newBuilding, ConstructionParticleColor, false);
-			AudioManager.Instance?.PlayBuildingPlace();
-		}));
+		tween.TweenCallback(Callable.From(() => SpawnFootprintParticles(tilesToOccupy, newBuilding, ConstructionParticleColor, false)));
 		tween.TweenProperty(newBuilding, "scale", landScale, 0.04f);
 		tween.TweenProperty(newBuilding, "scale", originalScale, reboundTime).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 
@@ -1255,8 +1247,6 @@ public partial class BuildingManager : Node2D
 	private void DeleteOrStoreBuilding(Node2D buildingToRemove, bool refundToInventory, Color particleColor)
 	{
 		if (buildingToRemove == null) return;
-
-		AudioManager.Instance?.PlayBuildingDestroy();
 
 		int refundedIndex = -1;
 		List<CityTile> occupiedTiles = new List<CityTile>();

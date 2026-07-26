@@ -30,8 +30,6 @@ public partial class SellButtonInventory : TextureButton
     // -----------------------------------------
     private void OnButtonPressed()
     {
-        AudioManager.Instance?.PlayClick();
-
         // Drop focus so it doesn't block inputs after clicking
         ReleaseFocus();
 
