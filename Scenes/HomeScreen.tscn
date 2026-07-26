@@ -1,8 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://bv107oefhsh4k"]
+[gd_scene load_steps=7 format=3 uid="uid://bv107oefhsh4k"]
 
 [ext_resource type="Script" uid="uid://cf1vs1kc5yqjk" path="res://Scripts/HomeScreen.cs" id="1_script"]
 [ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="2_theme"]
-[ext_resource type="PackedScene" uid="uid://b3qjae4nu5uhb" path="res://Nodes/cursor_manager.tscn" id="3_kvy12"]
+[ext_resource type="Script" uid="uid://b4jfet5jhhwp1" path="res://Code/CursorManager.cs" id="3_lnpt4"]
+[ext_resource type="Texture2D" uid="uid://d1hp8pogyyvuk" path="res://Art/light_cursor_spritesheet.png" id="4_toqq7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_satmt"]
+atlas = ExtResource("4_toqq7")
+region = Rect2(64, 80, 13, 15)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t0bo2"]
+atlas = ExtResource("4_toqq7")
+region = Rect2(0, 96, 15, 15)
 
 [node name="HomeScreen" type="Control"]
 layout_mode = 3
@@ -14,7 +23,10 @@ grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_script")
 
-[node name="CursorManager" parent="." instance=ExtResource("3_kvy12")]
+[node name="CursorManager" type="Node" parent="."]
+script = ExtResource("3_lnpt4")
+DefaultCursor = SubResource("AtlasTexture_satmt")
+DragCursor = SubResource("AtlasTexture_t0bo2")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

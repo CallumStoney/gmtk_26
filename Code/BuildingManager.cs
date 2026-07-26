@@ -163,7 +163,7 @@ public partial class BuildingManager : Node2D
 
 		// Setup tooltip
 		tooltipLabel = new Label();
-		tooltipLabel.ZIndex = 100;
+		tooltipLabel.ZIndex = 4090;
 		tooltipLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
 		tooltipLabel.AddThemeConstantOverride("outline_size", 4);
 		tooltipLabel.AddThemeFontSizeOverride("font_size", 4);
