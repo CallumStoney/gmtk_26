@@ -3328,19 +3328,19 @@ GroundTileMap = NodePath("../TileSets/GroundTileMap")
 MainCamera = NodePath("../Camera2D")
 InitialMapStateRaw = ExtResource("25_hnkv4")
 BuildingInfo = Dictionary[int, PackedStringArray]({
-0: PackedStringArray("House", "Capacity: +4, Approval: +1/day,Upkeep Cost: $1k/day", "$5k", "$2.5k"),
-1: PackedStringArray("Office", "Money: +$5k/day,Upkeep Cost: $1k/day", "$25k", "$12.5k", "$25k", "Money: +$10k/day,Upkeep Cost: $2k/day", "Money: +$15k/day,Upkeep Cost: $3k/day"),
-2: PackedStringArray("Big Office", "Money: +$20k/day,Upkeep Cost: $3k/day", "$100k", "$50k"),
-3: PackedStringArray("Big Factory", "Money: +$40k/day,Pollution: +10/day,Approval: -5/day,Upkeep Cost: $10k/day", "$40k", "$20k"),
-4: PackedStringArray("Big Apartment", "Capacity: +12,Approval: -1/day,Upkeep Cost: $2k/day", "$20k", "$10k", "$20k", "Capacity: +24,Approval: -2/day,Upkeep Cost: $3k/day", "Capacity: +36,Approval: -3/day,Upkeep Cost: $4k/day", "Capacity: +48,Approval: -4/day,Upkeep Cost: $5k/day"),
-5: PackedStringArray("Apartment", "Capacity: +6,Approval: -1/day,Upkeep Cost: $2k/day", "$7.5k", "$3.25k", "$7.5k", "Capacity: +12,Approval: -2/day,Upkeep Cost: $3k/day", "Capacity: +18,Approval: -3/day,Upkeep Cost: $4k/day", "Capacity: +24,Approval: -4/day,Upkeep Cost: $5k/day", "Capacity: +30,Approval: -5/day,Upkeep Cost: $6k/day"),
-6: PackedStringArray("Nature Park", "Pollution: -1/day,Approval: +1/day,Upkeep Cost: $1k/day", "$7.5k", "$3.25k"),
-7: PackedStringArray("Statue", "Approval: +4/day,Upkeep Cost: $3k/day", "$15k", "$7.5k"),
-8: PackedStringArray("Playground", "Approval: +2/day,Upkeep Cost: $0.5k/day", "$1k", "$500"),
-9: PackedStringArray("Restaurant", "Money: +$3k/day,Approval: +1/day,Upkeep Cost: $1k/day", "$10k", "$5k", "$10k", "Money: +$6k/day,Approval: +2/day,Upkeep Cost: $2k/day"),
-10: PackedStringArray("Factory", "Money: +$10k/day,Pollution: +5/day,Approval: -3/day,Upkeep Cost: $5k/day", "$16k", "$8k"),
-11: PackedStringArray("Solar Pannels", "Pollution: -2/day,Upkeep Cost: $2k/day", "$10k", "$5k"),
-12: PackedStringArray("Wind Turbines", "Pollution: -4/day,Upkeep Cost: $6k/day", "$20k", "$10k")
+0: PackedStringArray("House", "Capacity: +4, Approval: +1/day,Upkeep Cost: $0.5k/day", "$5k", "$1k"),
+1: PackedStringArray("Office", "Money: +$5k/day,Upkeep Cost: $0.5k/day", "$25k", "$5k", "$25k", "Money: +$10k/day,Upkeep Cost: $2k/day", "Money: +$15k/day,Upkeep Cost: $3k/day"),
+2: PackedStringArray("Big Office", "Money: +$20k/day,Upkeep Cost: $1.5k/day", "$100k", "$20k"),
+3: PackedStringArray("Big Factory", "Money: +$40k/day,Pollution: +10/day,Approval: -5/day,Upkeep Cost: $5k/day", "$40k", "$8k"),
+4: PackedStringArray("Big Apartment", "Capacity: +12,Approval: -1/day,Upkeep Cost: $1k/day", "$20k", "$4k", "$20k", "Capacity: +24,Approval: -2/day,Upkeep Cost: $1k/day", "Capacity: +36,Approval: -3/day,Upkeep Cost: $1k/day", "Capacity: +48,Approval: -4/day,Upkeep Cost: $1k/day"),
+5: PackedStringArray("Apartment", "Capacity: +6,Approval: -1/day,Upkeep Cost: $1k/day", "$7.5k", "$2k", "$7.5k", "Capacity: +12,Approval: -2/day,Upkeep Cost: $1k/day", "Capacity: +18,Approval: -3/day,Upkeep Cost: $1k/day", "Capacity: +24,Approval: -4/day,Upkeep Cost: $1k/day", "Capacity: +30,Approval: -5/day,Upkeep Cost: $1k/day"),
+6: PackedStringArray("Nature Park", "Pollution: -1/day,Approval: +1/day,Upkeep Cost: $0.5k/day", "$10k", "$2k"),
+7: PackedStringArray("Statue", "Approval: +4/day,Upkeep Cost: $1.5k/day", "$15k", "$3k"),
+8: PackedStringArray("Playground", "Approval: +2/day,Upkeep Cost: $0.25k/day", "$1k", "$200"),
+9: PackedStringArray("Restaurant", "Money: +$3k/day,Approval: +1/day,Upkeep Cost: $0.5k/day", "$10k", "$2k", "$10k", "Money: +$6k/day,Approval: +2/day,Upkeep Cost: $1k/day"),
+10: PackedStringArray("Factory", "Money: +$10k/day,Pollution: +5/day,Approval: -3/day,Upkeep Cost: $2.5k/day", "$15k", "$3k"),
+11: PackedStringArray("Solar Pannels", "Pollution: -2/day,Upkeep Cost: $1k/day", "$10k", "$2k"),
+12: PackedStringArray("Wind Turbines", "Pollution: -4/day,Upkeep Cost: $3k/day", "$20k", "$4k")
 })
 BuildingScenes = Array[PackedScene]([ExtResource("3_aobtk"), ExtResource("6_d46wb"), ExtResource("7_bdw28"), ExtResource("8_wen53"), ExtResource("9_rp3ig"), ExtResource("27_r1o1k"), ExtResource("28_4xs4g"), ExtResource("29_56atv"), ExtResource("30_uf26w"), ExtResource("31_iqlop"), ExtResource("32_4xs4g"), ExtResource("33_11u8x"), ExtResource("34_laldt")])
 BuildingFootprints = Array[int]([0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0])

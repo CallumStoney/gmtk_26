@@ -1,7 +1,8 @@
-[gd_scene load_steps=28 format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=29 format=3 uid="uid://l5ejk6qnrbk"]
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
+[ext_resource type="Texture2D" uid="uid://7swcdrxhufeq" path="res://Art/BGOffice.png" id="3_h8ggs"]
 [ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="3_theme"]
 [ext_resource type="Texture2D" uid="uid://cblbn0r8wm6ff" path="res://Art/Computer_Monitor-Sheet.png" id="3_vkblu"]
 [ext_resource type="Script" uid="uid://b43oy1budju3w" path="res://Scenes/ComputerTurnOn.cs" id="4_cslvj"]
@@ -93,13 +94,18 @@ theme = ExtResource("3_theme")
 script = ExtResource("1_script")
 ComputerTurnOn = NodePath("Monitor")
 
+[node name="BgOffice" type="Sprite2D" parent="."]
+position = Vector2(576, 324)
+scale = Vector2(0.64574, 0.716814)
+texture = ExtResource("3_h8ggs")
+
 [node name="BackToCityLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.920743
-anchor_top = 0.541914
-anchor_right = 0.920743
-anchor_bottom = 0.541914
+anchor_left = 0.914667
+anchor_top = 0.534198
+anchor_right = 0.914667
+anchor_bottom = 0.534198
 offset_left = 0.303955
 offset_top = -0.160004
 offset_right = 92.304

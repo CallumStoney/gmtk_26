@@ -428,8 +428,8 @@ public partial class BuildingManager : Node2D
 				Vector2 targetCenterPixel = screenPosition + worldOffset;
 				ActionMenu.Position = targetCenterPixel - (ActionMenu.Size / 2.0f);
 			}
-
-			ActionMenu.Visible = true;
+			AudioManager.Instance?.PlayCannotAfford();
+            ActionMenu.Visible = true;
 
 			// 3. Evaluate Buttons & Apply Alpha Greying
 			UpgradableBuilding ub = bld as UpgradableBuilding;

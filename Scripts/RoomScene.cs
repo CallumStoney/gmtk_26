@@ -474,7 +474,7 @@ public partial class RoomScene : Control
                 DeclineText     = "We lack the budget",
                 AcceptResponse  = "Thank you! The streets look a bit brighter today.",
                 DeclineResponse = "They protest outside city hall instead.",
-                AcceptMoney     = -10000, AcceptPollution = -5, AcceptPopularity = 5,
+                AcceptMoney     = -10000, AcceptPollution = -10, AcceptPopularity = 10,
                 DeclinePopularity = -5
             },
             new()
@@ -486,7 +486,7 @@ public partial class RoomScene : Control
                 DeclineText     = "Keep it paved",
                 AcceptResponse  = "The community celebrates as the saplings arrive.",
                 DeclineResponse = "Concrete wins again. We won't forget this.",
-                AcceptMoney     = -5000, AcceptPopularity = 8, AcceptPollution = -2,
+                AcceptMoney     = -10000, AcceptPopularity = 8, AcceptPollution = -2,
                 AcceptBuildingIndex = 6, AcceptBuildingCount = 1, // Nature Park
                 DeclinePopularity = -3
             },
@@ -499,7 +499,7 @@ public partial class RoomScene : Control
                 DeclineText     = "Send the police",
                 AcceptResponse  = "The blockade lifts, but the treasury takes a hit.",
                 DeclineResponse = "The strike is broken up forcefully. The public is furious.",
-                AcceptMoney     = -25000, AcceptPollution = -8, AcceptPopularity = 5,
+                AcceptMoney     = -25000, AcceptPollution = -20, AcceptPopularity = 5,
                 DeclinePopularity = -15
             },
 
@@ -515,7 +515,7 @@ public partial class RoomScene : Control
                 DeclineText     = "No extra hours",
                 AcceptResponse  = "The boys work through the night! Houses are ready to place.",
                 DeclineResponse = "The materials just sit in the yard then.",
-                AcceptMoney     = -15000, AcceptPopularity = 3,
+                AcceptMoney     = -15000, AcceptPopularity = 6,
                 AcceptBuildingIndex = 0, AcceptBuildingCount = 2, // 2 Houses
                 DeclinePopularity = -2
             },
@@ -528,7 +528,7 @@ public partial class RoomScene : Control
                 DeclineText     = "Too expensive",
                 AcceptResponse  = "A massive crane arrives downtown.",
                 DeclineResponse = "Shame. The crew goes looking for private contracts instead.",
-                AcceptMoney     = -35000, AcceptPollution = 5,
+                AcceptMoney     = -5000, AcceptPollution = 5,
                 AcceptBuildingIndex = 5, AcceptBuildingCount = 1, // Apartment
                 DeclinePopularity = -4
             },
@@ -557,8 +557,8 @@ public partial class RoomScene : Control
                 DeclineText     = "I cannot be bought",
                 AcceptResponse  = "Your bank account swells, but the working class sees right through it.",
                 DeclineResponse = "You keep your integrity. He smirks and leaves.",
-                AcceptMoney     = 40000, AcceptPopularity = -8,
-                DeclinePopularity = 5
+                AcceptMoney     = 40000, AcceptPopularity = -15,
+                DeclinePopularity = 1
             },
             new()
             {
@@ -569,7 +569,7 @@ public partial class RoomScene : Control
                 DeclineText     = "No handouts",
                 AcceptResponse  = "The elite have a new place to dine.",
                 DeclineResponse = "He threatens to build it in the next town over.",
-                AcceptMoney     = -15000,
+                AcceptMoney     = -8000,
                 AcceptBuildingIndex = 9, AcceptBuildingCount = 1, // Restaurant
                 DeclinePopularity = 2
             },
@@ -577,12 +577,12 @@ public partial class RoomScene : Control
             {
                 Id              = "rm_tax_break",
                 AdvisorName     = "Rich Man",
-                DialogueText    = "Mayor, my colleagues and I are feeling the squeeze. Grant us a corporate tax break, and we will stimulate the economy.",
+                DialogueText    = "Mayor, my colleagues and I are feeling the squeeze. Grant us a corporate tax break, and we will stimulate the economy for you.",
                 AcceptText      = "Grant the break",
                 DeclineText     = "Pay your taxes",
                 AcceptResponse  = "The wealthy get wealthier. The public notices the budget cuts.",
                 DeclineResponse = "He huffs. 'We will remember this at re-election.'",
-                AcceptMoney     = -30000, AcceptPopularity = -10, AcceptPollution = 5,
+                AcceptMoney     = -1000, AcceptPopularity = -10, AcceptPollution = 5,
                 DeclineMoney    = 15000, DeclinePopularity = 5
             },
 
@@ -598,7 +598,7 @@ public partial class RoomScene : Control
                 DeclineText     = "Turn it over to police",
                 AcceptResponse  = "The budget looks great. The public trust? Not so much.",
                 DeclineResponse = "A boring, but safe, choice.",
-                AcceptMoney     = 50000, AcceptPopularity = -15,
+                AcceptMoney     = 50000, AcceptPopularity = -25,
                 DeclinePopularity = 2
             },
             new()
@@ -610,8 +610,8 @@ public partial class RoomScene : Control
                 DeclineText     = "I don't play dirty",
                 AcceptResponse  = "The strike is quietly dismantled before it begins.",
                 DeclineResponse = "The workers strike the next day, halting production.",
-                AcceptMoney     = -15000, AcceptPopularity = -5,
-                DeclineMoney    = -25000, DeclinePopularity = -5
+                AcceptMoney     = -25000, AcceptPopularity = -3,
+                DeclineMoney    = -15000, DeclinePopularity = -15
             },
 
             // ==========================================
@@ -650,7 +650,7 @@ public partial class RoomScene : Control
                 DeclineText     = "Deny the shift",
                 AcceptResponse  = "The gears grind all night long. The citizens are exhausted.",
                 DeclineResponse = "We lose the contract. Bad for business.",
-                AcceptMoney     = 45000, AcceptPollution = 12, AcceptPopularity = -12,
+                AcceptMoney     = 45000, AcceptPollution = 25, AcceptPopularity = -8,
                 DeclineMoney    = -10000
             },
 
@@ -689,7 +689,7 @@ public partial class RoomScene : Control
                 AcceptResponse   = "You cave to his demands. The city loses a fortune, but the jobs stay.",
                 DeclineResponse  = "He wasn't bluffing. A plant closes, jobs vanish, and the economy takes a massive hit.",
                 AcceptMoney      = -60000, AcceptPopularity = -5,
-                DeclineMoney     = -15000, DeclinePopulation = -25, DeclinePopularity = -15
+                DeclineMoney     = -30000, DeclinePopulation = -5, DeclinePopularity = -15
             },
             new()
             {
@@ -726,8 +726,8 @@ public partial class RoomScene : Control
                 DeclineText     = "Safety is non-negotiable",
                 AcceptResponse  = "Hammers swing 24/7. People are flooding into the city!",
                 DeclineResponse = "Growth stays steady and safe.",
-                AcceptPopularity = 5,
-                AcceptPopulation = 40, // --- CHANGED: Instant net gain instead of daily modifier ---
+                AcceptPopularity = 15,
+                AcceptPopulation = 25, // --- CHANGED: Instant net gain instead of daily modifier ---
                 DeclinePopularity = 2
             },
             new()
@@ -743,8 +743,8 @@ public partial class RoomScene : Control
                 DeclineText      = "Not my problem",
                 AcceptResponse   = "You drain the treasury to save his portfolio. The public is furious.",
                 DeclineResponse  = "His portfolio crashes. He uses his influence to ruin your daily approval.",
-                AcceptMoney      = -75000, AcceptPopularity = -15,
-                DeclinePopularity = -5,
+                AcceptMoney      = -25000, AcceptPopularity = -5,
+                DeclinePopularity = -20,
                 DeclineModifierId = "angry_elite_nerf",
                 DeclineModifierName = "Elite Smear Campaign",
                 DeclineModifierType = GameManager.ModifierType.Popularity,
@@ -768,7 +768,7 @@ public partial class RoomScene : Control
                 AcceptModifierType = GameManager.ModifierType.Popularity,
                 AcceptModifierValue = 2, // +2 Popularity per day
                 AcceptMoney      = -15000,
-                DeclinePopularity = -20
+                DeclinePopularity = -10
             }
         };
     }

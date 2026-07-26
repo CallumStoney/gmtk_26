@@ -58,9 +58,9 @@ public partial class GameManager : Node
 
     // --- CORE STAT FIELDS ---
     private int _population = 100;
-    private int _pollution = 500;    // Starts high
-    private int _popularity = 0;   // Default approval
-    private int _money = 50000;
+    private int _pollution = 300;    // Starts high
+    private int _popularity = 150;   // Default approval
+    private int _money = 25000;
     private int _capacity = 0;
 
     private int _expectedDailyPopulation = 0;
@@ -477,9 +477,9 @@ public partial class GameManager : Node
     public void ResetGame()
     {
         _population = 100;
-        _pollution = 80;
-        _popularity = 50;
-        _money = 500;
+        _pollution = 250;
+        _popularity = 150;
+        _money = 25000;
         _capacity = 0;
 
         _expectedDailyPopulation = 0;
