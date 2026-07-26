@@ -493,7 +493,9 @@ public partial class BuildingManager : Node2D
 			SellDialog.DialogText = $"Sell {buildingName} for {sellPrice}?";
 		}
 
-		SellDialog.PopupCentered();
+        SellDialog.Size = Vector2I.Zero;
+
+        SellDialog.PopupCentered();
 	}
 
 	private void OnSellConfirmed()
@@ -609,7 +611,9 @@ public partial class BuildingManager : Node2D
 		// 4. Inject the name, cost, and warning note dynamically into the text
 		UpgradeDialog.DialogText = $"Upgrade {buildingName} for {upgradeCost}?\n\n(Note: Upgraded buildings cannot be stored in your inventory.)";
 
-		UpgradeDialog.PopupCentered();
+        UpgradeDialog.Size = Vector2I.Zero;
+
+        UpgradeDialog.PopupCentered();
 	}
 
 	private void OnStoreButtonPressed()
