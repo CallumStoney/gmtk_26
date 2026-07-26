@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ds0y14pqa4rp8"
+path="res://.godot/imported/Homescreen Sound.wav-b2c00fc217176d54b66e93339d553b8a.sample"
+
+[deps]
+
+source_file="res://Sound/Homescreen Sound.wav"
+dest_files=["res://.godot/imported/Homescreen Sound.wav-b2c00fc217176d54b66e93339d553b8a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

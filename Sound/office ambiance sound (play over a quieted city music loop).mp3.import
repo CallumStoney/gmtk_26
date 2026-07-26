@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://xiyj40thy0if"
+path="res://.godot/imported/office ambiance sound (play over a quieted city music loop).mp3-60f24eb1285c1753d7e1a2e2919a7f6b.mp3str"
+
+[deps]
+
+source_file="res://Sound/office ambiance sound (play over a quieted city music loop).mp3"
+dest_files=["res://.godot/imported/office ambiance sound (play over a quieted city music loop).mp3-60f24eb1285c1753d7e1a2e2919a7f6b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

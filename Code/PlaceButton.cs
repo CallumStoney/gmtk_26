@@ -30,6 +30,7 @@ public partial class PlaceButton : TextureButton
     // -----------------------------------------
     private void OnButtonPressed()
     {
+        AudioManager.Instance?.PlayClick();
         // Drop focus so it doesn't block inputs after clicking
         ReleaseFocus();
 
