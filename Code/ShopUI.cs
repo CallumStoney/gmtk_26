@@ -51,6 +51,8 @@ public partial class ShopUI : Control
     // -----------------------------------------
     private void OnToggleButtonPressed()
     {
+        AudioManager.Instance?.PlayClick();
+
         // Drop focus from the button so it doesn't block keyboard/mouse inputs
         if (ToggleButton != null)
         {

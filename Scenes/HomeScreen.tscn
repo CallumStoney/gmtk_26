@@ -837,10 +837,10 @@ theme_override_constants/margin_right = 20
 [node name="HBoxContainer" type="HBoxContainer" parent="TopUI"]
 layout_mode = 2
 
-[node name="AudioButton" type="Button" parent="TopUI/HBoxContainer"]
+[node name="Mute" type="Button" parent="TopUI/HBoxContainer"]
 custom_minimum_size = Vector2(80, 40)
 layout_mode = 2
-text = "Audio"
+text = "Mute"
 
 [node name="Spacer" type="Control" parent="TopUI/HBoxContainer"]
 layout_mode = 2

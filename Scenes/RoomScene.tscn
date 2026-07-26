@@ -82,7 +82,7 @@ region = Rect2(292, 18, 30, 30)
 atlas = ExtResource("7_ojyf7")
 region = Rect2(333, 19, 29, 29)
 
-[node name="RoomScene" type="Control" node_paths=PackedStringArray("ComputerTurnOn")]
+[node name="RoomScene" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -91,7 +91,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
-ComputerTurnOn = NodePath("Monitor")
 
 [node name="BackToCityLabel" type="Label" parent="."]
 layout_mode = 1

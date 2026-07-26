@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameManager="*res://Scripts/GameManager.cs"
 SceneManager="*res://Code/SceneManager.cs"
 CursorManager="*res://Nodes/CursorManager.tscn"
+AudioManager="*res://Code/AudioManager.cs"
 
 [display]
 
