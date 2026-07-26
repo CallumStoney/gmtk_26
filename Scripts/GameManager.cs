@@ -70,6 +70,8 @@ public partial class GameManager : Node
     private int _expectedDailyCapacity = 0;
     private int _lastTurnCapacity = 0;
 
+    public static bool _firstTime = true;
+
     // --- ACTUAL STAT PROPERTIES ---
     public int Population
     {
@@ -496,8 +498,9 @@ public partial class GameManager : Node
         IsPollutionDropdownOpen = false;
         IsPopularityDropdownOpen = false;
         IsMoneyDropdownOpen = false;
+        _firstTime = true;
 
-        CurrentTurn = 1;
+        CurrentTurn = 0;
         Memory.Reset();
 
         PersistentModifiers.Clear();

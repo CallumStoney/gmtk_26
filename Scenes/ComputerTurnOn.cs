@@ -3,8 +3,12 @@ using System;
 
 public partial class ComputerTurnOn : AnimatedSprite2D
 {
-    [Export] public Node NormalUI;
-    [Export] public Node SpecialEventUI;
+    [Export] public Node2D NormalUI;
+    [Export] public Node2D SpecialEventUI;
+
+    [ExportGroup("Special Event References")]
+    [Export] public Label TitleSpecialEvent;
+    [Export] public Label MainTextSpecialEvent;
 
     private enum ScreenPhase
     {
@@ -17,11 +21,13 @@ public partial class ComputerTurnOn : AnimatedSprite2D
     }
 
     private ScreenPhase _currentPhase = ScreenPhase.TurningOnNormal;
+    private string _activeEventType = "";
+
+    public string ActiveEventType => _activeEventType;
 
     public override void _EnterTree()
     {
         base._EnterTree();
-        // Hide EVERYTHING immediately when entering the tree before frame 1 renders
         SetUIState(showNormal: false, showSpecial: false);
     }
 
@@ -30,36 +36,70 @@ public partial class ComputerTurnOn : AnimatedSprite2D
         AnimationFinished += OnAnimationFinished;
         VisibilityChanged += OnVisibilityChanged;
 
-        // Start the turn-on sequence immediately on launch
-        StartNormalTurnOn();
+        // Auto-find labels inside SpecialEventUI if not assigned in Inspector
+        if (SpecialEventUI != null)
+        {
+            TitleSpecialEvent ??= SpecialEventUI.FindChild("TitleSpecialEvent", recursive: true) as Label;
+            MainTextSpecialEvent ??= SpecialEventUI.FindChild("MainTextSpecialEvent", recursive: true) as Label;
+        }
+
+        if (GameManager._firstTime)
+        {
+            StartSpecialEvent("firstTime");
+        }
+        else
+        {
+            StartNormalTurnOn();
+        }
     }
 
     private void OnVisibilityChanged()
     {
         if (Visible && IsInsideTree())
         {
-            StartNormalTurnOn();
+            if (GameManager._firstTime)
+            {
+                StartSpecialEvent("firstTime");
+            }
+            else
+            {
+                StartNormalTurnOn();
+            }
         }
     }
 
     private void StartNormalTurnOn()
     {
         _currentPhase = ScreenPhase.TurningOnNormal;
+        _activeEventType = "";
         SetUIState(showNormal: false, showSpecial: false);
 
         Frame = 0;
         Play();
     }
 
-    public void StartSpecialEvent()
+    public void StartSpecialEvent(string eventType = "endDay")
     {
-        if (_currentPhase != ScreenPhase.NormalActive) return;
+        _activeEventType = eventType;
 
-        _currentPhase = ScreenPhase.TurningOffForEvent;
-        SetUIState(showNormal: false, showSpecial: false);
+        // If computer is already active, turn off first before booting into event
+        if (_currentPhase == ScreenPhase.NormalActive)
+        {
+            _currentPhase = ScreenPhase.TurningOffForEvent;
+            SetUIState(showNormal: false, showSpecial: false);
 
-        Frame = SpriteFrames.GetFrameCount(Animation) - 1;
-        PlayBackwards();
+            Frame = SpriteFrames.GetFrameCount(Animation) - 1;
+            PlayBackwards();
+        }
+        // If computer is starting from cold boot (e.g. firstTime in _Ready)
+        else
+        {
+            _currentPhase = ScreenPhase.TurningOnForEvent;
+            SetUIState(showNormal: false, showSpecial: false);
+
+            Frame = 0;
+            Play();
+        }
     }
 
     public void EndSpecialEvent()
@@ -90,48 +130,105 @@ public partial class ComputerTurnOn : AnimatedSprite2D
 
             case ScreenPhase.TurningOnForEvent:
                 _currentPhase = ScreenPhase.EventActive;
-                SetUIState(showNormal: false, showSpecial: true);
+
+                switch (_activeEventType)
+                {
+                    case "firstTime":
+                        SetupFirstTimeUI();
+                        SetUIState(showNormal: false, showSpecial: true);
+                        break;
+
+                    case "endDay":
+                    default:
+                        SetupEndDayUI();
+                        SetUIState(showNormal: false, showSpecial: true);
+                        break;
+                }
                 break;
 
             case ScreenPhase.TurningOffToEndEvent:
                 _currentPhase = ScreenPhase.TurningOnNormal;
+                _activeEventType = "";
                 Frame = 0;
                 Play();
                 break;
         }
     }
 
+    private void SetupFirstTimeUI()
+    {
+        if (TitleSpecialEvent != null)
+        {
+            TitleSpecialEvent.Text = "New Mayor";
+        }
+
+        if (MainTextSpecialEvent != null)
+        {
+            MainTextSpecialEvent.Text = "Instructions:";
+        }
+    }
+
+    private void SetupEndDayUI()
+    {
+        int currentDay = GameManager.Instance.CurrentTurn;
+
+        // Pull yields from GameManager
+        int pollutionChange = GameManager.Instance.BuildingDailyPollution;
+        int approvalChange = GameManager.Instance.BuildingDailyPopularity;
+        int moneyChange = GameManager.Instance.BuildingDailyMoney;
+
+        // Set Title to "Day #"
+        if (TitleSpecialEvent != null)
+        {
+            TitleSpecialEvent.Text = $"Day {currentDay + 1}";
+        }
+
+        // Set Main Text Yield Report
+        if (MainTextSpecialEvent != null)
+        {
+            MainTextSpecialEvent.Text =
+                $"=== END OF DAY {currentDay + 1} YIELD REPORT ===\n" +
+                $"Pollution:  {FormatStat(pollutionChange)}\n" +
+                $"Approval:   {FormatStat(approvalChange)}\n" +
+                $"Money:      {FormatMoney(moneyChange)}\n" +
+                $"===================================";
+        }
+    }
+
+    private string FormatStat(int value)
+    {
+        return value >= 0 ? $"+{value}" : $"{value}";
+    }
+
+    private string FormatMoney(int value)
+    {
+        string sign = value >= 0 ? "+" : "-";
+        int absVal = Math.Abs(value);
+
+        if (absVal >= 1000000)
+        {
+            return $"{sign}${absVal / 1000000}M";
+        }
+        else if (absVal >= 1000)
+        {
+            return $"{sign}${absVal / 1000}k";
+        }
+
+        return $"{sign}${absVal}";
+    }
+
     private void SetUIState(bool showNormal, bool showSpecial)
     {
-        SetContainerVisible(NormalUI, showNormal);
-        SetContainerVisible(SpecialEventUI, showSpecial);
-    }
-
-    private void SetContainerVisible(Node container, bool isVisible)
-    {
-        if (container == null) return;
-
-        container.ProcessMode = isVisible ? ProcessModeEnum.Inherit : ProcessModeEnum.Disabled;
-        ToggleChildrenVisibility(container, isVisible);
-    }
-
-    private void ToggleChildrenVisibility(Node parent, bool isVisible)
-    {
-        foreach (Node child in parent.GetChildren())
+        if (NormalUI != null)
         {
-            if (child is CanvasItem canvasItem)
-            {
-                canvasItem.Visible = isVisible;
-            }
-            else if (child is CanvasLayer canvasLayer)
-            {
-                canvasLayer.Visible = isVisible;
-            }
+            NormalUI.Visible = showNormal;
+            NormalUI.ProcessMode = showNormal ? ProcessModeEnum.Inherit : ProcessModeEnum.Disabled;
+        }
 
-            if (child.GetChildCount() > 0)
-            {
-                ToggleChildrenVisibility(child, isVisible);
-            }
+        if (SpecialEventUI != null)
+        {
+            SpecialEventUI.Visible = showSpecial;
+            SpecialEventUI.ProcessMode = showSpecial ? ProcessModeEnum.Inherit : ProcessModeEnum.Disabled;
         }
     }
 }

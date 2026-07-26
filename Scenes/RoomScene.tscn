@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=28 format=3 uid="uid://l5ejk6qnrbk"]
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://8h0i0tqpv7y1" path="res://Art/advisorImages.png" id="8_0belv"]
 [ext_resource type="Texture2D" uid="uid://cx2o0cr3roy6x" path="res://Art/townTileMap.png" id="8_r6jfc"]
 [ext_resource type="Texture2D" uid="uid://dlhatsfl1v4k5" path="res://Art/UIPop-upSpecial.png" id="11_pdqre"]
+[ext_resource type="Script" uid="uid://b7hjb7mch7w82" path="res://Code/ContinueSpecialEventButton.cs" id="13_u81j5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_71ly4"]
 atlas = ExtResource("3_vkblu")
@@ -81,7 +82,7 @@ region = Rect2(292, 18, 30, 30)
 atlas = ExtResource("7_ojyf7")
 region = Rect2(333, 19, 29, 29)
 
-[node name="RoomScene" type="Control"]
+[node name="RoomScene" type="Control" node_paths=PackedStringArray("ComputerTurnOn")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,8 +91,9 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
+ComputerTurnOn = NodePath("Monitor")
 
-[node name="Label" type="Label" parent="."]
+[node name="BackToCityLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.9355
@@ -118,49 +120,52 @@ offset_right = 1236.0
 offset_bottom = 122.0
 flip_h = false
 
-[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI")]
+[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI", "TitleSpecialEvent", "MainTextSpecialEvent")]
 position = Vector2(574.5, 360.5)
 scale = Vector2(0.992902, 0.998571)
 sprite_frames = SubResource("SpriteFrames_r6jfc")
 script = ExtResource("4_cslvj")
 NormalUI = NodePath("NormalUI")
 SpecialEventUI = NodePath("SpecialEventUI")
+TitleSpecialEvent = NodePath("SpecialEventUI/TitleSpecialEvent")
+MainTextSpecialEvent = NodePath("SpecialEventUI/MainTextSpecialEvent")
 
-[node name="NormalUI" type="Node" parent="Monitor"]
+[node name="NormalUI" type="Node2D" parent="Monitor"]
+visible = false
 
 [node name="WindowHeaderResizableInactive" type="Sprite2D" parent="Monitor/NormalUI"]
-position = Vector2(569.535, 312.569)
+position = Vector2(-3.21282, -48.2483)
 scale = Vector2(8.86372, 7.04201)
 texture = ExtResource("5_71ly4")
 
 [node name="TextureRect" type="TextureRect" parent="Monitor/NormalUI"]
-offset_left = 385.849
-offset_top = 166.777
-offset_right = 448.849
-offset_bottom = 241.777
+offset_left = -186.9
+offset_top = -194.04
+offset_right = -123.9
+offset_bottom = -119.04
 texture = SubResource("AtlasTexture_qqbp6")
 
 [node name="AdvisorPortrait" type="Sprite2D" parent="Monitor/NormalUI"]
-position = Vector2(417, 207)
+position = Vector2(-155.748, -153.817)
 scale = Vector2(0.992902, 0.998571)
 texture = ExtResource("8_0belv")
 region_enabled = true
 region_rect = Rect2(117, 24, 54, 75)
 
 [node name="AdvisorNameLabel" type="Label" parent="Monitor/NormalUI"]
-offset_left = 458.33
-offset_top = 167.776
-offset_right = 754.33
-offset_bottom = 219.776
+offset_left = -114.418
+offset_top = -193.041
+offset_right = 181.582
+offset_bottom = -141.041
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 24
 text = "Advisor's name here..."
 
 [node name="DialogueLabel" type="Label" parent="Monitor/NormalUI"]
-offset_left = 459.323
-offset_top = 195.736
-offset_right = 754.323
-offset_bottom = 318.736
+offset_left = -113.425
+offset_top = -165.081
+offset_right = 181.575
+offset_bottom = -42.0811
 size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 15
@@ -169,10 +174,10 @@ autowrap_mode = 3
 
 [node name="AcceptButton" type="TextureButton" parent="Monitor/NormalUI"]
 custom_minimum_size = Vector2(24, 24)
-offset_left = 385.0
-offset_top = 330.0
-offset_right = 409.0
-offset_bottom = 354.0
+offset_left = -187.748
+offset_top = -30.8169
+offset_right = -163.748
+offset_bottom = -6.81686
 texture_normal = SubResource("AtlasTexture_r6jfc")
 texture_pressed = SubResource("AtlasTexture_pdqre")
 ignore_texture_size = true
@@ -180,20 +185,20 @@ stretch_mode = 5
 
 [node name="DeclineButton" type="TextureButton" parent="Monitor/NormalUI"]
 custom_minimum_size = Vector2(24, 24)
-offset_left = 384.0
-offset_top = 371.0
-offset_right = 408.0
-offset_bottom = 395.0
+offset_left = -188.748
+offset_top = 10.1831
+offset_right = -164.748
+offset_bottom = 34.1831
 texture_normal = SubResource("AtlasTexture_u81j5")
 texture_pressed = SubResource("AtlasTexture_h8ggs")
 ignore_texture_size = true
 stretch_mode = 5
 
 [node name="AcceptEffectsLabel" type="Label" parent="Monitor/NormalUI"]
-offset_left = 412.657
-offset_top = 329.544
-offset_right = 762.657
-offset_bottom = 364.544
+offset_left = -160.091
+offset_top = -31.2726
+offset_right = 189.909
+offset_bottom = 3.72742
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 15
@@ -201,10 +206,10 @@ text = "Accept TExt here..."
 autowrap_mode = 3
 
 [node name="DeclineEffectsLabel" type="Label" parent="Monitor/NormalUI"]
-offset_left = 411.664
-offset_top = 370.486
-offset_right = 707.664
-offset_bottom = 424.486
+offset_left = -161.084
+offset_top = 9.66886
+offset_right = 134.916
+offset_bottom = 63.6689
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 15
@@ -213,10 +218,10 @@ autowrap_mode = 3
 
 [node name="ResponseLabel" type="Label" parent="Monitor/NormalUI"]
 custom_minimum_size = Vector2(0, 28)
-offset_left = 384.856
-offset_top = 329.544
-offset_right = 707.856
-offset_bottom = 421.544
+offset_left = -187.893
+offset_top = -31.2726
+offset_right = 135.107
+offset_bottom = 60.7274
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 15
@@ -224,10 +229,10 @@ autowrap_mode = 3
 
 [node name="NextButton" type="TextureButton" parent="Monitor/NormalUI"]
 custom_minimum_size = Vector2(24, 24)
-offset_left = 382.0
-offset_top = 438.0
-offset_right = 406.0
-offset_bottom = 462.0
+offset_left = -190.748
+offset_top = 77.1831
+offset_right = -166.748
+offset_bottom = 101.183
 texture_normal = SubResource("AtlasTexture_lb4jd")
 texture_pressed = SubResource("AtlasTexture_fwo70")
 ignore_texture_size = true
@@ -235,10 +240,10 @@ stretch_mode = 5
 
 [node name="EndTurnButton" type="Button" parent="Monitor/NormalUI"]
 custom_minimum_size = Vector2(80, 32)
-offset_left = 784.995
-offset_top = 386.463
-offset_right = 883.995
-offset_bottom = 419.463
+offset_left = 212.247
+offset_top = 25.646
+offset_right = 311.247
+offset_bottom = 58.646
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 20
 text = "End Day"
@@ -252,60 +257,58 @@ mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [node name="WindowsBackground2" type="Sprite2D" parent="Monitor/NormalUI"]
-position = Vector2(857.263, 171.296)
+position = Vector2(284.515, -189.521)
 scale = Vector2(0.322287, 0.26691)
 texture = ExtResource("6_so1ys")
 region_enabled = true
 region_rect = Rect2(398, 21, 100, 242)
 
 [node name="WindowsBackground" type="Sprite2D" parent="Monitor/NormalUI"]
-position = Vector2(291.246, 171.296)
+position = Vector2(-281.502, -189.521)
 scale = Vector2(0.25727, 0.269671)
 texture = ExtResource("6_so1ys")
 region_enabled = true
 region_rect = Rect2(53, 36, 274, 235)
 
-[node name="SpecialEventUI" type="Node" parent="Monitor"]
+[node name="SpecialEventUI" type="Node2D" parent="Monitor"]
 
 [node name="Sprite2D" type="Sprite2D" parent="Monitor/SpecialEventUI"]
-visible = false
-position = Vector2(570, 315)
+position = Vector2(-2.74822, -45.8369)
 scale = Vector2(0.812698, 0.76)
 texture = ExtResource("11_pdqre")
 
 [node name="TitleSpecialEvent" type="Label" parent="Monitor/SpecialEventUI"]
-visible = false
-offset_left = 367.0
-offset_top = 152.0
-offset_right = 772.0
-offset_bottom = 179.0
+offset_left = -205.748
+offset_top = -208.837
+offset_right = 199.252
+offset_bottom = -181.837
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 20
-text = "Decline Text here..."
+text = "Title text here for special event.."
 
 [node name="MainTextSpecialEvent" type="Label" parent="Monitor/SpecialEventUI"]
-visible = false
-offset_left = 368.0
-offset_top = 188.0
-offset_right = 710.0
-offset_bottom = 424.0
+offset_left = -204.748
+offset_top = -172.837
+offset_right = 137.252
+offset_bottom = 63.1631
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 15
 text = "Decline Text here..."
 autowrap_mode = 3
 
-[node name="ContinueSpecialEventButton" type="Button" parent="Monitor/SpecialEventUI"]
-visible = false
+[node name="ContinueSpecialEventButton" type="Button" parent="Monitor/SpecialEventUI" node_paths=PackedStringArray("ComputerController")]
 custom_minimum_size = Vector2(80, 32)
-offset_left = 784.995
-offset_top = 386.463
-offset_right = 883.995
-offset_bottom = 419.463
+offset_left = 212.247
+offset_top = 25.6259
+offset_right = 311.247
+offset_bottom = 58.6259
 theme_override_fonts/font = ExtResource("7_so1ys")
 theme_override_font_sizes/font_size = 20
 text = "Continue"
+script = ExtResource("13_u81j5")
+ComputerController = NodePath("../..")
 
 [node name="ColorRect" type="ColorRect" parent="Monitor/SpecialEventUI/ContinueSpecialEventButton"]
 show_behind_parent = true
@@ -316,16 +319,14 @@ mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [node name="WindowsBackground2" type="Sprite2D" parent="Monitor/SpecialEventUI"]
-visible = false
-position = Vector2(857.263, 171.296)
+position = Vector2(284.515, -189.541)
 scale = Vector2(0.322287, 0.26691)
 texture = ExtResource("6_so1ys")
 region_enabled = true
 region_rect = Rect2(398, 21, 100, 242)
 
 [node name="WindowsBackground" type="Sprite2D" parent="Monitor/SpecialEventUI"]
-visible = false
-position = Vector2(291.246, 171.296)
+position = Vector2(-281.502, -189.541)
 scale = Vector2(0.25727, 0.269671)
 texture = ExtResource("6_so1ys")
 region_enabled = true

@@ -4,7 +4,9 @@ using System.Linq;
 
 public partial class RoomScene : Control
 {
+    [Export] ComputerTurnOn ComputerTurnOn;
     private static readonly int[] EventCountWeights = { 0, 45, 35, 20 };
+
 
     // --- ADDED: Exported array for the 5 advisor regions ---
     public Rect2[] AdvisorPortraitRegions = new Rect2[]
@@ -87,7 +89,7 @@ public partial class RoomScene : Control
         GameManager.Instance.GameOver += OnGameOver;
     }
 
-    private void StartTurn()
+    public void StartTurn()
     {
         _turnEvents.Clear();
         var gm = GameManager.Instance;
@@ -414,38 +416,9 @@ public partial class RoomScene : Control
     {
         _endTurnButton.ReleaseFocus();
 
-        var gm = GameManager.Instance;
-
-        gm.AdvanceTurn();
-        gm.RecalculateDailyYields();
-        gm.NotifyStatsChanged();
-
-        if (gm.Popularity <= 0)
-        {
-            GD.Print("you lost due to popularity");
-            gm.ResetGame();
-            GetTree().ChangeSceneToFile("res://Scenes/HomeScreen.tscn");
-            return;
-        }
-
-        if (gm.CurrentTurn == 15)
-        {
-            if (gm.Pollution <= 0)
-            {
-                GD.Print("u won");
-            }
-            else
-            {
-                GD.Print("u lose");
-            }
-            gm.ResetGame();
-            GetTree().ChangeSceneToFile("res://Scenes/HomeScreen.tscn");
-            return;
-        }
-
         StartTurn();
 
-        GD.Print(gm.CurrentTurn);
+        ComputerTurnOn.StartSpecialEvent("endDay");
     }
 
     private void OnGameOver(string reason)
