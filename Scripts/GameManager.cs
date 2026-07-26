@@ -35,15 +35,20 @@ public partial class GameManager : Node
     {
         Popularity,
         Pollution,
-        Money
+        Money,
+        Population // Added Population so advisors can boost growth
     }
 
     public struct StatModifier
     {
         public string SourceName;  // e.g., "Smog & Pollution", "Overcrowding"
-        public ModifierType Type;  // Popularity, Pollution, or Money
+        public ModifierType Type;  // Popularity, Pollution, Money, or Population
         public int Value;          // Negative for Nerfs, Positive for Buffs
     }
+
+    // --- NEW: PERSISTENT MODIFIERS DICTIONARY ---
+    // Stores ongoing buffs/nerfs granted by advisors (Key: Unique ID)
+    public Dictionary<string, StatModifier> PersistentModifiers = new Dictionary<string, StatModifier>();
 
     // --- RAW BUILDING YIELDS (For UI Dropdowns) ---
     public int BuildingDailyPopulation { get; private set; } = 0;
@@ -55,7 +60,7 @@ public partial class GameManager : Node
     private int _population = 100;
     private int _pollution = 80;    // Starts high
     private int _popularity = 50;   // Default approval
-    private int _money = 50000000;
+    private int _money = 50000;
     private int _capacity = 0;
 
     private int _expectedDailyPopulation = 0;
@@ -87,7 +92,8 @@ public partial class GameManager : Node
     public int Money
     {
         get => _money;
-        set { _money = Mathf.Max(value, 0); EmitSignal(SignalName.StatsChanged); }
+        // REMOVED Mathf.Max so money can drop below 0!
+        set { _money = value; EmitSignal(SignalName.StatsChanged); }
     }
 
     public int Capacity
@@ -139,6 +145,34 @@ public partial class GameManager : Node
         Memory = new AdvisorMemory();
     }
 
+    // --- STACKABLE DAILY BUFFS ---
+    public void AddPersistentModifier(string id, string sourceName, ModifierType type, int value)
+    {
+        // If the buff already exists, add the new value to the old one so it stacks!
+        if (PersistentModifiers.ContainsKey(id))
+        {
+            StatModifier existingMod = PersistentModifiers[id];
+            existingMod.Value += value;
+            PersistentModifiers[id] = existingMod; // Save it back into the dictionary
+        }
+        else
+        {
+            // Otherwise, create a brand new one
+            PersistentModifiers[id] = new StatModifier { SourceName = sourceName, Type = type, Value = value };
+        }
+
+        RecalculateDailyYields();
+    }
+
+    public void RemovePersistentModifier(string id)
+    {
+        if (PersistentModifiers.ContainsKey(id))
+        {
+            PersistentModifiers.Remove(id);
+            RecalculateDailyYields();
+        }
+    }
+
     // -----------------------------------------
     // DYNAMIC MODIFIER CALCULATIONS
     // -----------------------------------------
@@ -146,6 +180,7 @@ public partial class GameManager : Node
     {
         var modifiers = new List<StatModifier>();
 
+        // 1. Pollution Penalty
         if (Pollution > 0)
         {
             int pollutionPenalty = -(Pollution / 10);
@@ -161,6 +196,7 @@ public partial class GameManager : Node
             }
         }
 
+        // 2. Overcrowding Penalty
         int overflow = Population - Capacity;
         if (overflow > 0)
         {
@@ -179,6 +215,24 @@ public partial class GameManager : Node
             });
         }
 
+        // --- 3. NEW: DEBT PENALTY ---
+        // --- 3. NEW: DEBT PENALTY ---
+        if (Money < 0)
+        {
+            int debtPenalty = Money / 5000;
+            if (debtPenalty == 0) debtPenalty = -1;
+
+            modifiers.Add(new StatModifier
+            {
+                SourceName = "City Debt", // <--- CHANGED HERE
+                Type = ModifierType.Popularity,
+                Value = debtPenalty
+            });
+        }
+
+        // Add the persistent advisor buffs to the list
+        modifiers.AddRange(PersistentModifiers.Values);
+
         return modifiers;
     }
 
@@ -194,13 +248,15 @@ public partial class GameManager : Node
         _population = Mathf.Max(_population + population, 0);
         _pollution = Mathf.Max(_pollution + pollution, 0);
         _popularity = Mathf.Max(_popularity + popularity, 0);
-        _money = Mathf.Max(_money + money, 0);
+
+        // REMOVED Mathf.Max here so money can drop negative from events
+        _money = _money + money;
+
         _capacity = Mathf.Max(_capacity + capacity, 0);
 
         EmitSignal(SignalName.StatsChanged);
     }
 
-    // --- NEW: SAFE INVENTORY ADDITION ---
     public void AddBuildingToInventory(int buildingIndex, int amount)
     {
         if (buildingIndex >= 0 && buildingIndex < BuildingInventory.Count)
@@ -396,15 +452,16 @@ public partial class GameManager : Node
         Capacity = totalCap;
         ExpectedDailyCapacity = Capacity - _lastTurnCapacity;
 
-        int modPopu = 0, modPol = 0, modMon = 0;
+        int modPop = 0, modPopu = 0, modPol = 0, modMon = 0;
         foreach (var mod in GetActiveModifiers())
         {
+            if (mod.Type == ModifierType.Population) modPop += mod.Value;
             if (mod.Type == ModifierType.Popularity) modPopu += mod.Value;
             if (mod.Type == ModifierType.Pollution) modPol += mod.Value;
             if (mod.Type == ModifierType.Money) modMon += mod.Value;
         }
 
-        ExpectedDailyPopulation = totalPop;
+        ExpectedDailyPopulation = totalPop + modPop;
         ExpectedDailyPollution = totalPol + modPol;
         ExpectedDailyPopularity = totalPopu + modPopu;
         ExpectedDailyMoney = totalMon + modMon;
@@ -442,6 +499,8 @@ public partial class GameManager : Node
 
         CurrentTurn = 1;
         Memory.Reset();
+
+        PersistentModifiers.Clear();
 
         RecalculateDailyYields();
         EmitSignal(SignalName.StatsChanged);

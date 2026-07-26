@@ -10,11 +10,15 @@ public partial class RoomScene : Control
     private Label _advisorNameLabel;
     private Label _dialogueLabel;
 
-    private Button _acceptButton;
-    private Button _declineButton;
+    private TextureButton _acceptButton;
+    private TextureButton _declineButton;
+
+    private Label _acceptEffectsLabel;
+    private Label _declineEffectsLabel;
+
     private Label _responseLabel;
 
-    private Button _nextButton;
+    private TextureButton _nextButton;
     private Button _endTurnButton;
 
     //state
@@ -43,18 +47,20 @@ public partial class RoomScene : Control
 
     private void GrabNodeReferences()
     {
-        var root = "MarginContainer/MainVBox";
+        _advisorPortrait = GetNode<ColorRect>("Monitor/AdvisorPortrait");
+        _advisorNameLabel = GetNode<Label>("Monitor/AdvisorNameLabel");
+        _dialogueLabel = GetNode<Label>("Monitor/DialogueLabel");
 
-        _advisorPortrait = GetNode<ColorRect>("AdvisorPortrait");
-        _advisorNameLabel = GetNode<Label>("AdvisorNameLabel");
-        _dialogueLabel = GetNode<Label>("DialogueLabel");
+        _acceptButton = GetNode<TextureButton>("Monitor/AcceptButton");
+        _declineButton = GetNode<TextureButton>("Monitor/DeclineButton");
 
-        _acceptButton = GetNode<Button>("AcceptButton");
-        _declineButton = GetNode<Button>("DeclineButton");
-        _responseLabel = GetNode<Label>("ResponseLabel");
+        _acceptEffectsLabel = GetNode<Label>("Monitor/AcceptEffectsLabel");
+        _declineEffectsLabel = GetNode<Label>("Monitor/DeclineEffectsLabel");
 
-        _nextButton = GetNode<Button>("BottomHBox/NextButton");
-        _endTurnButton = GetNode<Button>("BottomHBox/EndTurnButton");
+        _responseLabel = GetNode<Label>("Monitor/ResponseLabel");
+
+        _nextButton = GetNode<TextureButton>("Monitor/NextButton");
+        _endTurnButton = GetNode<Button>("Monitor/EndTurnButton");
     }
 
     private void ConnectSignals()
@@ -141,24 +147,31 @@ public partial class RoomScene : Control
         _advisorNameLabel.Text = _currentEvent.AdvisorName;
         _dialogueLabel.Text = _currentEvent.DialogueText;
 
-        // --- PASS BUILDING REWARDS TO BUTTON TEXT FORMATTER ---
-        _acceptButton.Text = AppendEffectsToButtonText(_currentEvent.AcceptText, _currentEvent.AcceptPopulation, _currentEvent.AcceptPollution, _currentEvent.AcceptPopularity, _currentEvent.AcceptMoney, _currentEvent.AcceptBuildingIndex, _currentEvent.AcceptBuildingCount);
-        _declineButton.Text = AppendEffectsToButtonText(_currentEvent.DeclineText, _currentEvent.DeclinePopulation, _currentEvent.DeclinePollution, _currentEvent.DeclinePopularity, _currentEvent.DeclineMoney, _currentEvent.DeclineBuildingIndex, _currentEvent.DeclineBuildingCount);
+        _acceptEffectsLabel.Text = GetEffectsString(
+            _currentEvent.AcceptPopulation, _currentEvent.AcceptPollution,
+            _currentEvent.AcceptPopularity, _currentEvent.AcceptMoney, _currentEvent.AcceptBuildingIndex,
+            _currentEvent.AcceptBuildingCount, _currentEvent.AcceptModifierName, _currentEvent.AcceptModifierType, _currentEvent.AcceptModifierValue);
+
+        _declineEffectsLabel.Text = GetEffectsString(
+            _currentEvent.DeclinePopulation, _currentEvent.DeclinePollution,
+            _currentEvent.DeclinePopularity, _currentEvent.DeclineMoney, _currentEvent.DeclineBuildingIndex,
+            _currentEvent.DeclineBuildingCount, _currentEvent.DeclineModifierName, _currentEvent.DeclineModifierType, _currentEvent.DeclineModifierValue);
 
         _acceptButton.Visible = true;
         _declineButton.Visible = true;
+        _acceptEffectsLabel.Visible = true;
+        _declineEffectsLabel.Visible = true;
+
         _responseLabel.Text = "";
         _nextButton.Visible = false;
         _endTurnButton.Visible = false;
         _awaitingChoice = true;
     }
 
-    // --- NEW FORMATTING HELPER METHOD (WITH BUILDINGS) ---
-    private string AppendEffectsToButtonText(string baseText, int pop, int pol, int popu, int mon, int bldIndex, int bldCount)
+    private string GetEffectsString(int pop, int pol, int popu, int mon, int bldIndex, int bldCount, string modName = "", GameManager.ModifierType modType = GameManager.ModifierType.Popularity, int modValue = 0)
     {
         List<string> effects = new List<string>();
 
-        // Fetch building name dynamically from GameManager
         if (bldCount > 0 && bldIndex >= 0)
         {
             string buildingName = "Building";
@@ -183,20 +196,34 @@ public partial class RoomScene : Control
                 effects.Add($"Money: {sign}{mon}");
         }
 
-        if (effects.Count > 0)
+        if (modValue != 0 && !string.IsNullOrEmpty(modName))
         {
-            return $"{baseText}\n[{string.Join(", ", effects)}]";
+            string sign = modValue > 0 ? "+" : "";
+            string categoryName = modType switch
+            {
+                GameManager.ModifierType.Popularity => "Approval",
+                GameManager.ModifierType.Pollution => "Pollution",
+                GameManager.ModifierType.Money => "Income",
+                GameManager.ModifierType.Population => "Pop Growth",
+                _ => modType.ToString()
+            };
+
+            effects.Add($"Daily {categoryName}: {sign}{modValue}");
         }
 
-        return baseText;
+        if (effects.Count > 0)
+        {
+            return $"[{string.Join(", ", effects)}]";
+        }
+
+        return "";
     }
 
     private void ShowNoEvents()
     {
         _advisorNameLabel.Text = "";
         _dialogueLabel.Text = "A quiet day. Nothing demands your attention for better or worse.";
-        _acceptButton.Visible = false;
-        _declineButton.Visible = false;
+        HideChoiceUI();
         _responseLabel.Text = "";
         _nextButton.Visible = false;
         _endTurnButton.Visible = true;
@@ -206,8 +233,7 @@ public partial class RoomScene : Control
     {
         _advisorNameLabel.Text = "";
         _dialogueLabel.Text = "Nothing else demands your attention today. End the day when you are ready.";
-        _acceptButton.Visible = false;
-        _declineButton.Visible = false;
+        HideChoiceUI();
         _responseLabel.Text = "";
         _nextButton.Visible = false;
         _endTurnButton.Visible = true;
@@ -215,6 +241,8 @@ public partial class RoomScene : Control
 
     private void OnAcceptPressed()
     {
+        _acceptButton.ReleaseFocus();
+
         if (!_awaitingChoice || _currentEvent == null) return;
         _awaitingChoice = false;
 
@@ -227,19 +255,33 @@ public partial class RoomScene : Control
             money: _currentEvent.AcceptMoney
         );
 
-        // --- NEW: ADD BUILDINGS TO INVENTORY ---
         if (_currentEvent.AcceptBuildingCount > 0 && _currentEvent.AcceptBuildingIndex >= 0)
         {
             gm.AddBuildingToInventory(_currentEvent.AcceptBuildingIndex, _currentEvent.AcceptBuildingCount);
         }
 
+        if (!string.IsNullOrEmpty(_currentEvent.AcceptModifierId) && _currentEvent.AcceptModifierValue != 0)
+        {
+            gm.AddPersistentModifier(_currentEvent.AcceptModifierId, _currentEvent.AcceptModifierName, _currentEvent.AcceptModifierType, _currentEvent.AcceptModifierValue);
+        }
+
+        if (!string.IsNullOrEmpty(_currentEvent.AcceptRemoveModifierId))
+        {
+            gm.RemovePersistentModifier(_currentEvent.AcceptRemoveModifierId);
+        }
+
         gm.Memory.RecordDecision(_currentEvent.Id, accepted: true, gm.CurrentTurn);
         ExecuteTags(_currentEvent.AcceptTags);
         ShowResponse(_currentEvent.AcceptResponse);
+
+        gm.RecalculateDailyYields();
+        gm.NotifyStatsChanged();
     }
 
     private void OnDeclinePressed()
     {
+        _declineButton.ReleaseFocus();
+
         if (!_awaitingChoice || _currentEvent == null) return;
         _awaitingChoice = false;
 
@@ -252,15 +294,27 @@ public partial class RoomScene : Control
             money: _currentEvent.DeclineMoney
         );
 
-        // --- NEW: ADD BUILDINGS TO INVENTORY ---
         if (_currentEvent.DeclineBuildingCount > 0 && _currentEvent.DeclineBuildingIndex >= 0)
         {
             gm.AddBuildingToInventory(_currentEvent.DeclineBuildingIndex, _currentEvent.DeclineBuildingCount);
         }
 
+        if (!string.IsNullOrEmpty(_currentEvent.DeclineModifierId) && _currentEvent.DeclineModifierValue != 0)
+        {
+            gm.AddPersistentModifier(_currentEvent.DeclineModifierId, _currentEvent.DeclineModifierName, _currentEvent.DeclineModifierType, _currentEvent.DeclineModifierValue);
+        }
+
+        if (!string.IsNullOrEmpty(_currentEvent.DeclineRemoveModifierId))
+        {
+            gm.RemovePersistentModifier(_currentEvent.DeclineRemoveModifierId);
+        }
+
         gm.Memory.RecordDecision(_currentEvent.Id, accepted: false, gm.CurrentTurn);
         ExecuteTags(_currentEvent.DeclineTags);
         ShowResponse(_currentEvent.DeclineResponse);
+
+        gm.RecalculateDailyYields();
+        gm.NotifyStatsChanged();
     }
 
     private void ExecuteTags(List<string> tags)
@@ -278,12 +332,10 @@ public partial class RoomScene : Control
     private void ShowResponse(string text)
     {
         _responseLabel.Text = text;
-        _acceptButton.Visible = false;
-        _declineButton.Visible = false;
+        HideChoiceUI();
 
         if (_turnEvents.Count > 0)
         {
-            _nextButton.Text = "Next";
             _nextButton.Visible = true;
         }
         else
@@ -292,11 +344,60 @@ public partial class RoomScene : Control
         }
     }
 
-    private void OnNextPressed() => ShowNextEvent();
+    private void HideChoiceUI()
+    {
+        _acceptButton.Visible = false;
+        _declineButton.Visible = false;
+        _acceptEffectsLabel.Visible = false;
+        _declineEffectsLabel.Visible = false;
+    }
 
+    private void OnNextPressed()
+    {
+        _nextButton.ReleaseFocus();
+        ShowNextEvent();
+    }
+
+    // --- UPDATED: Win and Loss Conditions added here! ---
     private void OnEndTurnPressed()
     {
-        GameManager.Instance.AdvanceTurn();
+        _endTurnButton.ReleaseFocus();
+
+        var gm = GameManager.Instance;
+
+        // 1. Apply the end of day logic and calculate new stats first
+        gm.AdvanceTurn();
+        gm.RecalculateDailyYields();
+        gm.NotifyStatsChanged();
+
+        // 2. LOSS CONDITION: Check if Popularity (Approval) hit 0 or below
+        if (gm.Popularity <= 0)
+        {
+            GD.Print("you lost due to popularity");
+            // Change to HomeScreen. Ensure the path matches your project structure exactly!
+            gm.ResetGame();
+            GetTree().ChangeSceneToFile("res://Scenes/HomeScreen.tscn");
+            return; // Exit the method early so the turn doesn't continue
+        }
+
+        // 3. END OF GAME CONDITION: Check if days have run out
+        // NOTE: Replace "Days" with "DaysLeft" or whatever your variable is named!
+        if (gm.CurrentTurn == 0)
+        {
+            if (gm.Pollution <= 0)
+            {
+                GD.Print("u won");
+            }
+            else
+            {
+                GD.Print("u lose"); // Lost because pollution wasn't cleaned up in time
+            }
+            gm.ResetGame();
+            GetTree().ChangeSceneToFile("res://Scenes/HomeScreen.tscn");
+            return; // Exit the method early
+        }
+
+        // 4. If no game-ending conditions were met, start the next day normally
         StartTurn();
     }
 
@@ -304,8 +405,7 @@ public partial class RoomScene : Control
     {
         _advisorNameLabel.Text = "GAME OVER";
         _dialogueLabel.Text = reason;
-        _acceptButton.Visible = false;
-        _declineButton.Visible = false;
+        HideChoiceUI();
         _responseLabel.Text = "";
         _nextButton.Visible = false;
         _endTurnButton.Visible = false;
@@ -320,241 +420,444 @@ public partial class RoomScene : Control
         }
     }
 
-    private void BuildEventPool()
+private void BuildEventPool()
     {
         _eventPool = new List<AdvisorEvent>
         {
             // ==========================================
-            // BUILDING REWARD EVENTS
+            // RECURRING: ACTIVIST
             // ==========================================
             new()
             {
-                Id              = "surplus_materials",
-                AdvisorName     = "Head of Construction",
-                DialogueText    = "Mayor, we ended up with surplus concrete from the highway expansion. If you can cover the labor costs, my crew can throw up a couple of extra houses this week.",
-                AcceptText      = "Build the houses",
-                DeclineText     = "Too expensive right now",
-                AcceptResponse  = "The crew works overtime. The houses are ready to place!",
-                DeclineResponse = "The surplus concrete is left to rot in the yard.",
-                AcceptMoney = -25000, AcceptPollution = 4,
-                AcceptBuildingIndex = 0, AcceptBuildingCount = 2, // Gives 2 Houses
-                DeclinePopularity = -2
-            },
-            new()
-            {
-                Id              = "urban_renewal",
-                AdvisorName     = "Local Environmentalist",
-                DialogueText    = "The concrete jungle is suffocating us! Please dedicate some space for a Nature Park. My organization will provide the saplings if the city helps clear the land.",
-                AcceptText      = "Clear the land",
-                DeclineText     = "We need the space for industry",
-                AcceptResponse  = "The community celebrates as the saplings arrive. Place your new park wisely.",
-                DeclineResponse = "The activist leaves in frustration.",
-                AcceptMoney = -15000, AcceptPopularity = 10,
-                AcceptBuildingIndex = 6, AcceptBuildingCount = 1, // Gives 1 Nature Park
+                Id              = "act_clean_up",
+                AdvisorName     = "Activist",
+                DialogueText    = "Mayor, our people can barely breathe! We organized a volunteer cleanup crew, but we need city funds for supplies. Help us out!",
+                AcceptText      = "Fund the cleanup",
+                DeclineText     = "We lack the budget",
+                AcceptResponse  = "Thank you! The streets look a bit brighter today.",
+                DeclineResponse = "They protest outside city hall instead.",
+                AcceptMoney     = -10000, AcceptPollution = -5, AcceptPopularity = 5,
                 DeclinePopularity = -5
             },
             new()
             {
-                Id              = "clean_energy_grant",
-                AdvisorName     = "Clean Energy Rep",
-                DialogueText    = "The state is offering a grant for green infrastructure. We can secure a shipment of solar panels if you cover the heavy transport fees.",
-                AcceptText      = "Pay for transport",
-                DeclineText     = "Pass on the grant",
-                AcceptResponse  = "The shipment arrives safely. Time to go green.",
-                DeclineResponse = "Another city scoops up the grant money.",
-                AcceptMoney = -50000, AcceptPopularity = 5,
-                AcceptBuildingIndex = 11, AcceptBuildingCount = 1, // Gives 1 Solar Panel
-                DeclinePollution = 2, DeclinePopularity = -3
-            },
-
-            // ==========================================
-            // ORIGINAL EVENTS (Cleaned of hyphens)
-            // ==========================================
-            new()
-            {
-                Id              = "solar_panels",
-                AdvisorName     = "Environment Minister",
-                DialogueText    = "Mayor, we can install solar panels across the industrial district. It will cost us, but pollution will drop significantly.",
-                AcceptText      = "Fund the project",
-                DeclineText     = "Too expensive right now",
-                AcceptResponse  = "Workers begin installing panels. Pollution drops, but it was not cheap.",
-                DeclineResponse = "The minister leaves, clearly disappointed.",
-                AcceptPollution = -10, AcceptPopularity = 5, AcceptMoney = -15000,
+                Id              = "act_park_grant",
+                AdvisorName     = "Activist",
+                DialogueText    = "We secured a grassroots grant to build a Nature Park, but the city needs to approve the zoning and clear the concrete first.",
+                AcceptText      = "Approve zoning",
+                DeclineText     = "Keep it paved",
+                AcceptResponse  = "The community celebrates as the saplings arrive.",
+                DeclineResponse = "Concrete wins again. We won't forget this.",
+                AcceptMoney     = -5000, AcceptPopularity = 8, AcceptPollution = -2,
+                AcceptBuildingIndex = 6, AcceptBuildingCount = 1, // Nature Park
                 DeclinePopularity = -3
             },
             new()
             {
-                Id              = "factory_lease",
-                AdvisorName     = "City Treasurer",
-                DialogueText    = "There is an opportunity to lease public land to a factory. Big money, but the residents will not like the extra smoke.",
-                AcceptText      = "Sign the lease",
-                DeclineText     = "Protect the land",
-                AcceptResponse  = "The factory moves in. Cash flows, but so does the smog.",
-                DeclineResponse = "The land stays green. People are pleased.",
-                AcceptPollution = 15, AcceptPopularity = -10, AcceptMoney = 30000, AcceptPopulation = 10,
+                Id              = "act_protest",
+                AdvisorName     = "Activist",
+                DialogueText    = "The smog is suffocating our children! We are blocking the main industrial highway until you commit funds to clean air subsidies!",
+                AcceptText      = "Pay the subsidies",
+                DeclineText     = "Send the police",
+                AcceptResponse  = "The blockade lifts, but the treasury takes a hit.",
+                DeclineResponse = "The strike is broken up forcefully. The public is furious.",
+                AcceptMoney     = -25000, AcceptPollution = -8, AcceptPopularity = 5,
+                DeclinePopularity = -15
+            },
+
+            // ==========================================
+            // RECURRING: CONSTRUCTION WORKER
+            // ==========================================
+            new()
+            {
+                Id              = "cw_surplus_houses",
+                AdvisorName     = "Construction Worker",
+                DialogueText    = "Hey boss, we got extra lumber and brick from the last job. Pay our overtime and my boys can throw up a couple houses real quick.",
+                AcceptText      = "Pay overtime",
+                DeclineText     = "No extra hours",
+                AcceptResponse  = "The boys work through the night! Houses are ready to place.",
+                DeclineResponse = "The materials just sit in the yard then.",
+                AcceptMoney     = -15000, AcceptPopularity = 3,
+                AcceptBuildingIndex = 0, AcceptBuildingCount = 2, // 2 Houses
+                DeclinePopularity = -2
+            },
+            new()
+            {
+                Id              = "cw_apartments",
+                AdvisorName     = "Construction Worker",
+                DialogueText    = "There's a high demand for dense housing downtown. My crew is ready to build a massive Apartment complex if you greenlight the funds.",
+                AcceptText      = "Greenlight it",
+                DeclineText     = "Too expensive",
+                AcceptResponse  = "A massive crane arrives downtown.",
+                DeclineResponse = "Shame. The crew goes looking for private contracts instead.",
+                AcceptMoney     = -35000, AcceptPollution = 5,
+                AcceptBuildingIndex = 5, AcceptBuildingCount = 1, // Apartment
+                DeclinePopularity = -4
+            },
+            new()
+            {
+                Id              = "cw_repair",
+                AdvisorName     = "Construction Worker",
+                DialogueText    = "Hey boss. The industrial pipes are crumbling. We either spend the money to fix them now, or the smog leaks are gonna get way worse.",
+                AcceptText      = "Fix the pipes",
+                DeclineText     = "Ignore it",
+                AcceptResponse  = "Pipes patched. Crisis averted.",
+                DeclineResponse = "The pipes burst a few days later, spewing thick black smoke.",
+                AcceptMoney     = -20000,
+                DeclinePollution = 15, DeclinePopularity = -5
+            },
+
+            // ==========================================
+            // RECURRING: RICH MAN
+            // ==========================================
+            new()
+            {
+                Id              = "rm_donation",
+                AdvisorName     = "Rich Man",
+                DialogueText    = "Mayor. I'm hosting a charity gala and I'm willing to make a generous 'donation' to the city... provided you publicly praise my businesses.",
+                AcceptText      = "Take the money",
+                DeclineText     = "I cannot be bought",
+                AcceptResponse  = "Your bank account swells, but the working class sees right through it.",
+                DeclineResponse = "You keep your integrity. He smirks and leaves.",
+                AcceptMoney     = 40000, AcceptPopularity = -8,
                 DeclinePopularity = 5
             },
             new()
             {
-                Id              = "build_apartments",
-                AdvisorName     = "Housing Director",
-                DialogueText    = "We have families waiting for affordable housing. Building apartments will attract more people but costs money.",
-                AcceptText      = "Build apartments",
-                DeclineText     = "We cannot afford it",
-                AcceptResponse  = "Construction begins. New residents are moving in!",
-                DeclineResponse = "The housing crisis continues. People are not happy.",
-                AcceptPopulation = 20, AcceptPopularity = 5, AcceptMoney = -20000, AcceptPollution = 5,
-                DeclinePopulation = -5, DeclinePopularity = -5
+                Id              = "rm_restaurant",
+                AdvisorName     = "Rich Man",
+                DialogueText    = "I want to open a high-end Restaurant downtown. Subsidize the permits, and it's yours to place. We need the *right* demographic in this city.",
+                AcceptText      = "Subsidize it",
+                DeclineText     = "No handouts",
+                AcceptResponse  = "The elite have a new place to dine.",
+                DeclineResponse = "He threatens to build it in the next town over.",
+                AcceptMoney     = -15000,
+                AcceptBuildingIndex = 9, AcceptBuildingCount = 1, // Restaurant
+                DeclinePopularity = 2
             },
             new()
             {
-                Id              = "relax_standards",
-                AdvisorName     = "Industry Lobbyist",
-                DialogueText    = "I represent several manufacturing firms. Relax emission standards and we will bring jobs and revenue to your city.",
-                AcceptText      = "Relax the standards",
-                DeclineText     = "Standards stay as they are",
-                AcceptResponse  = "Factories ramp up production. The air quality drops but the economy booms.",
-                DeclineResponse = "The lobbyist storms out. You will regret this, he mutters.",
-                AcceptPollution = 20, AcceptMoney = 25000, AcceptPopularity = -8, AcceptPopulation = 10,
-                DeclinePopularity = 3, DeclineMoney = -5000
+                Id              = "rm_tax_break",
+                AdvisorName     = "Rich Man",
+                DialogueText    = "Mayor, my colleagues and I are feeling the squeeze. Grant us a corporate tax break, and we will stimulate the economy.",
+                AcceptText      = "Grant the break",
+                DeclineText     = "Pay your taxes",
+                AcceptResponse  = "The wealthy get wealthier. The public notices the budget cuts.",
+                DeclineResponse = "He huffs. 'We will remember this at re-election.'",
+                AcceptMoney     = -30000, AcceptPopularity = -10, AcceptPollution = 5,
+                DeclineMoney    = 15000, DeclinePopularity = 5
+            },
+
+            // ==========================================
+            // RECURRING: ANONYMOUS
+            // ==========================================
+            new()
+            {
+                Id              = "anon_slush_fund",
+                AdvisorName     = "Anonymous",
+                DialogueText    = "Psst. Found a misplaced briefcase full of cash. It can go into the treasury, but people might ask where it came from. No names.",
+                AcceptText      = "Deposit it quietly",
+                DeclineText     = "Turn it over to police",
+                AcceptResponse  = "The budget looks great. The public trust? Not so much.",
+                DeclineResponse = "A boring, but safe, choice.",
+                AcceptMoney     = 50000, AcceptPopularity = -15,
+                DeclinePopularity = 2
             },
             new()
             {
-                Id              = "electric_buses",
-                AdvisorName     = "Public Transit Chief",
-                DialogueText    = "Mayor, investing in electric buses would reduce commuter emissions and boost your public image.",
-                AcceptText      = "Fund electric buses",
-                DeclineText     = "Not a priority",
-                AcceptResponse  = "New electric buses hit the roads. Citizens approve!",
-                DeclineResponse = "Diesel buses keep rumbling along.",
-                AcceptPollution = -8, AcceptPopularity = 8, AcceptMoney = -18000,
-                DeclinePopularity = -2, DeclinePollution = 2
+                Id              = "anon_info_broker",
+                AdvisorName     = "Anonymous",
+                DialogueText    = "Information is power. I have dirt on a local union leader. Pay my fee, and I'll make sure a planned strike never happens.",
+                AcceptText      = "Buy the dirt",
+                DeclineText     = "I don't play dirty",
+                AcceptResponse  = "The strike is quietly dismantled before it begins.",
+                DeclineResponse = "The workers strike the next day, halting production.",
+                AcceptMoney     = -15000, AcceptPopularity = -5,
+                DeclineMoney    = -25000, DeclinePopularity = -5
+            },
+
+            // ==========================================
+            // RECURRING: FACTORY OWNER
+            // ==========================================
+            new()
+            {
+                Id              = "fo_deregulation",
+                AdvisorName     = "Factory Owner",
+                DialogueText    = "These emission filters are killing my margins. Let me bypass them this week, and I'll kick a cut of the profits to the city.",
+                AcceptText      = "Look the other way",
+                DeclineText     = "Keep filters on",
+                AcceptResponse  = "The smokestacks turn black. The treasury turns green.",
+                DeclineResponse = "My costs go up, mayor. Don't forget who pays taxes here.",
+                AcceptMoney     = 35000, AcceptPollution = 15, AcceptPopularity = -5,
+                DeclinePollution = -2, DeclineMoney = -5000
             },
             new()
             {
-                Id              = "shady_deal",
+                Id              = "fo_new_factory",
+                AdvisorName     = "Factory Owner",
+                DialogueText    = "I want to expand operations. Waive the environmental review, and I'll give you the deed to a brand new Factory. Look at the bottom line.",
+                AcceptText      = "Waive the review",
+                DeclineText     = "Follow the rules",
+                AcceptResponse  = "Industry expands! Just try not to breathe too deeply.",
+                DeclineResponse = "Bureaucracy slows progress once again.",
+                AcceptMoney     = 15000, AcceptPollution = 10, AcceptPopularity = -8,
+                AcceptBuildingIndex = 10, AcceptBuildingCount = 1 // Factory
+            },
+            new()
+            {
+                Id              = "fo_overtime",
+                AdvisorName     = "Factory Owner",
+                DialogueText    = "I need to run the coal plants through the night to meet a quota. The noise will keep the locals awake, but the revenue is huge.",
+                AcceptText      = "Authorize night shift",
+                DeclineText     = "Deny the shift",
+                AcceptResponse  = "The gears grind all night long. The citizens are exhausted.",
+                DeclineResponse = "We lose the contract. Bad for business.",
+                AcceptMoney     = 45000, AcceptPollution = 12, AcceptPopularity = -12,
+                DeclineMoney    = -10000
+            },
+
+            // ==========================================
+            // STORYLINE 1: THE GREEN VS GREED WAR
+            // Activist vs Factory Owner
+            // ==========================================
+            new()
+            {
+                Id              = "story_green_push",
                 IsOneShot       = true,
-                AdvisorName     = "Shady Businessman",
-                DialogueText    = "Psst. I can make your pollution numbers look better on paper. Nobody will know. For a small fee, of course.",
-                AcceptText      = "Take the deal",
-                DeclineText     = "Get out of my office",
-                AcceptResponse  = "The numbers look better for now. Let us hope nobody audits.",
-                DeclineResponse = "You feel good about your integrity. The people notice.",
-                AcceptPollution = -5, AcceptMoney = -10000, AcceptPopularity = -15,
-                DeclinePopularity = 5
+                AdvisorName     = "Activist",
+                DialogueText    = "Mayor, this is our chance. Commit to a permanent Green City Initiative. It will lower pollution every day, but industry leaders will fight you.",
+                AcceptText      = "Commit to the Initiative",
+                DeclineText     = "Industry comes first",
+                AcceptResponse  = "The city goes green! Daily pollution will drop.",
+                DeclineResponse = "The Activist leaves, vowing to fight you at the polls.",
+                AcceptPopularity = 10, AcceptMoney = -25000,
+                AcceptModifierId = "green_initiative",
+                AcceptModifierName = "Green City",
+                AcceptModifierType = GameManager.ModifierType.Pollution,
+                AcceptModifierValue = -3, // -3 Pollution every day forever
+                DeclinePopularity = -15
             },
             new()
             {
-                Id              = "community_park",
-                AdvisorName     = "Community Organizer",
-                DialogueText    = "The citizens are demanding a park in the old industrial lot. It would be a symbol of change!",
-                AcceptText      = "Build the park",
-                DeclineText     = "We need that lot for industry",
-                AcceptResponse  = "A beautiful green space springs up. The people love it!",
-                DeclineResponse = "Protests erupt at the industrial lot.",
-                AcceptPollution = -5, AcceptPopularity = 12, AcceptMoney = -10000,
-                DeclinePopularity = -8
-            },
-            new()
-            {
-                Id              = "sell_power",
-                AdvisorName     = "Foreign Trade Minister",
-                DialogueText    = "A neighbouring city wants to buy our excess power at a premium. It would mean running our coal plants harder.",
-                AcceptText      = "Sell the power",
-                DeclineText     = "Decline the offer",
-                AcceptResponse  = "The coal plants roar. Money pours in, but at what cost?",
-                DeclineResponse = "A missed opportunity, but the skies stay clearer.",
-                AcceptPollution = 12, AcceptMoney = 20000, AcceptPopularity = -5,
-                DeclinePopularity = 2, DeclinePollution = -2
-            },
-
-            // ==========================================
-            // CONSEQUENCE CHAIN EVENTS
-            // ==========================================
-            new()
-            {
-                Id               = "corruption_scandal",
+                Id               = "story_fo_retaliation",
                 IsOneShot        = true,
-                PrerequisiteId   = "shady_deal",
-                RequiresAccepted = true,
+                PrerequisiteId   = "story_green_push",
+                RequiresAccepted = true, // If you chose the Activist
                 MinTurnDelay     = 2,
-                AdvisorName      = "Investigative Journalist",
-                DialogueText     = "Mayor! We have uncovered falsified pollution records. The public is outraged, someone leaked the paper trail.",
-                AcceptText       = "Come clean publicly",
-                DeclineText      = "Deny everything",
-                AcceptResponse   = "Your honesty costs you politically, but the cover up ends. Pollution data is corrected.",
-                DeclineResponse  = "The scandal deepens. Trust plummets, and the real pollution numbers resurface anyway.",
-                AcceptPopularity = -10, AcceptPollution = 10,
-                DeclinePopularity = -20, DeclinePollution = 8
+                AdvisorName      = "Factory Owner",
+                DialogueText     = "That 'Green Initiative' of yours is bleeding me dry. Compensate my losses out of the city treasury right now, or I'm shutting down a plant.",
+                AcceptText       = "Pay him off",
+                DeclineText      = "Call his bluff",
+                AcceptResponse   = "You cave to his demands. The city loses a fortune, but the jobs stay.",
+                DeclineResponse  = "He wasn't bluffing. A plant closes, jobs vanish, and the economy takes a massive hit.",
+                AcceptMoney      = -60000, AcceptPopularity = -5,
+                DeclineMoney     = -15000, DeclinePopulation = -25, DeclinePopularity = -15
             },
-
             new()
             {
-                Id               = "factory_strike",
+                Id               = "story_fo_bribe",
                 IsOneShot        = true,
-                PrerequisiteId   = "relax_standards",
-                RequiresAccepted = true,
-                MinTurnDelay     = 3,
-                AdvisorName      = "Workers Union Rep",
-                DialogueText     = "The factory workers are on strike! Poor air quality is making them sick. They demand safer conditions or they walk.",
-                AcceptText       = "Tighten standards back up",
-                DeclineText      = "Bring in replacement workers",
-                AcceptResponse   = "Standards are restored. The factories slow down, but workers return.",
-                DeclineResponse  = "Replacement workers keep the factories going, but the city reputation takes a hit.",
-                AcceptPollution  = -12, AcceptMoney = -10000, AcceptPopularity = 8,
-                DeclinePopularity = -15, DeclineMoney = 5000, DeclinePopulation = -10
-            },
-
-            new()
-            {
-                Id               = "green_award",
-                IsOneShot        = true,
-                PrerequisiteId   = "solar_panels",
-                RequiresAccepted = true,
-                MinTurnDelay     = 2,
-                AdvisorName      = "International Observer",
-                DialogueText     = "Your solar initiative has been nominated for a Global Green City award! Winning would attract ecotourists and investors.",
-                AcceptText       = "Campaign for the award",
-                DeclineText      = "We do not need recognition",
-                AcceptResponse   = "You win the award! Ecotourism booms and investors take notice.",
-                DeclineResponse  = "A humble choice. The citizens appreciate the focus on substance over spectacle.",
-                AcceptMoney = 20000, AcceptPopularity = 10, AcceptPopulation = 15, AcceptPollution = -3,
-                DeclinePopularity = 5
-            },
-
-            new()
-            {
-                Id               = "housing_crisis_worsens",
-                IsOneShot        = true,
-                PrerequisiteId   = "build_apartments",
-                RequiresAccepted = false,
-                MinTurnDelay     = 2,
-                AdvisorName      = "Emergency Dispatcher",
-                DialogueText     = "Families are camping in the streets. The housing shortage has become a full blown crisis. Media coverage is brutal.",
-                AcceptText       = "Emergency housing fund",
-                DeclineText      = "Issue a public statement",
-                AcceptResponse   = "Temporary shelters go up. It is not a fix, but it stops the bleeding.",
-                DeclineResponse  = "Words without action. The protests intensify.",
-                AcceptPopulation = 10, AcceptPopularity = 5, AcceptMoney = -25000,
-                DeclinePopularity = -12, DeclinePopulation = -15
-            },
-
-            new()
-            {
-                Id               = "lobbyist_returns",
-                IsOneShot        = true,
-                PrerequisiteId   = "relax_standards",
-                RequiresAccepted = false,
+                PrerequisiteId   = "story_green_push",
+                RequiresAccepted = false, // If you rejected the Activist
                 MinTurnDelay     = 1,
-                AdvisorName      = "Industry Lobbyist",
-                DialogueText     = "I told you you would regret it. Three factories are threatening to leave the city entirely. Last chance, sweeten the deal or lose the jobs.",
-                AcceptText       = "Offer tax incentives",
-                DeclineText      = "Let them leave",
-                AcceptResponse   = "The factories stay, but the tax break hurts the budget. At least jobs are safe.",
-                DeclineResponse  = "The factories pack up. Jobs are lost, but the air is cleaner.",
-                AcceptMoney = -15000, AcceptPopularity = -3, AcceptPollution = 8,
-                DeclinePopulation = -20, DeclinePollution = -10, DeclinePopularity = -5, DeclineMoney = -8000
+                AdvisorName      = "Factory Owner",
+                DialogueText     = "I heard you told that dirt-hugging activist to take a hike. Smart business. Let's make this an industrial utopia. I'll boost your daily income.",
+                AcceptText       = "Accept the partnership",
+                DeclineText      = "I don't work for you",
+                AcceptResponse   = "The factories roar to life. Money pours in, but the smog thickens.",
+                DeclineResponse  = "He scoffs and walks away.",
+                AcceptModifierId = "industrial_utopia",
+                AcceptModifierName = "Industrial Utopia",
+                AcceptModifierType = GameManager.ModifierType.Money,
+                AcceptModifierValue = 2500, // +2500 Money every day forever
+                AcceptPollution  = 20, AcceptPopularity = -10
             },
+            new()
+            {
+                Id               = "story_act_sabotage",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_fo_bribe",
+                RequiresAccepted = true, // If you took the FO's bribe
+                MinTurnDelay     = 2,
+                AdvisorName      = "Activist",
+                DialogueText     = "You sold our lungs for a quick buck! We are shutting down the Big Factory unless you build us a massive solar grid immediately!",
+                AcceptText       = "Fund the solar grid",
+                DeclineText      = "Let them protest",
+                AcceptResponse   = "You pay a fortune to calm them down and go green. (Solar Panels added)",
+                DeclineResponse  = "They break into the factory and smash the equipment.",
+                AcceptMoney      = -75000, AcceptPollution = -15,
+                AcceptBuildingIndex = 11, AcceptBuildingCount = 2, // 2 Solar Panels
+                DeclineMoney     = -40000, DeclinePopularity = -20
+            },
+
+            // ==========================================
+            // STORYLINE 2: GENTRIFICATION
+            // Rich Man vs Construction Worker
+            // ==========================================
+            new()
+            {
+                Id              = "story_rm_buyout",
+                IsOneShot       = true,
+                AdvisorName     = "Rich Man",
+                DialogueText    = "Mayor. This city is utterly devoid of class. Let me bulldoze a poor neighborhood for high-rises. It'll bring in the *right* kind of money permanently.",
+                AcceptText      = "Bulldoze it",
+                DeclineText     = "Protect the neighborhood",
+                AcceptResponse  = "The bulldozers arrive. Your daily income rises, but approval crashes.",
+                DeclineResponse = "He glares at you. 'You lack vision.'",
+                AcceptMoney     = 20000, AcceptPopulation = -15, AcceptPopularity = -20,
+                AcceptModifierId = "gentrification_buff",
+                AcceptModifierName = "Elite Taxes",
+                AcceptModifierType = GameManager.ModifierType.Money,
+                AcceptModifierValue = 3000, // +3000 Money every day
+                DeclinePopularity = 10
+            },
+            new()
+            {
+                Id               = "story_cw_pushback",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_rm_buyout",
+                RequiresAccepted = true, // If you let the RM bulldoze
+                MinTurnDelay     = 1,
+                AdvisorName      = "Construction Worker",
+                DialogueText     = "Hey boss. That suit is kicking my guys out of their homes. Fund a massive Apartment block for us, or my entire crew is walking off the job forever.",
+                AcceptText       = "Fund the Apartments",
+                DeclineText      = "Let them walk",
+                AcceptResponse   = "You spend heavily to keep the crew happy. (Big Apartment added)",
+                DeclineResponse  = "The crew strikes. City construction grinds to a halt.",
+                AcceptMoney      = -60000, AcceptPopularity = 15,
+                AcceptBuildingIndex = 4, AcceptBuildingCount = 1, // Big Apartment
+                DeclinePopularity = -25, DeclinePopulation = -20
+            },
+            new()
+            {
+                Id               = "story_anon_blackmail_rm",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_rm_buyout",
+                RequiresAccepted = true, // If you let the RM bulldoze
+                MinTurnDelay     = 3,
+                AdvisorName      = "Anonymous",
+                DialogueText     = "Psst. That Rich Man? His zoning permits are completely fake. Pay me, and I bury the evidence. Don't, and he goes down... taking you with him.",
+                AcceptText       = "Bury the evidence",
+                DeclineText      = "Let the truth out",
+                AcceptResponse   = "You pay the bribe. The secret is safe.",
+                DeclineResponse  = "The scandal hits the news. The Rich Man is furious, and the public feels betrayed.",
+                AcceptMoney      = -40000,
+                DeclinePopularity = -35, DeclineMoney = -20000
+            },
+
+            // ==========================================
+            // STORYLINE 3: THE SKETCHY COVERUP
+            // Anonymous -> Activist / Factory Owner
+            // ==========================================
+            new()
+            {
+                Id              = "story_anon_coverup",
+                IsOneShot       = true,
+                AdvisorName     = "Anonymous",
+                DialogueText    = "Your pollution numbers are scaring away investors. For a fee, I can wipe the servers. The smog will still be there, but the official records will say it's gone.",
+                AcceptText      = "Wipe the servers",
+                DeclineText     = "Absolutely not",
+                AcceptResponse  = "The data vanishes. The city looks clean on paper... for now.",
+                DeclineResponse = "You refuse the shady deal. The public appreciates the honesty.",
+                AcceptMoney     = -20000, AcceptPollution = -30, AcceptPopularity = 5,
+                DeclinePopularity = 10
+            },
+            new()
+            {
+                Id               = "story_act_leak",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_anon_coverup",
+                RequiresAccepted = true, // If you wiped the servers
+                MinTurnDelay     = 2,
+                AdvisorName      = "Activist",
+                DialogueText    = "We found the real air quality reports! You lied to the whole city! We are going to the press unless you build us Wind Turbines immediately!",
+                AcceptText       = "Build the Turbines",
+                DeclineText      = "Call their bluff",
+                AcceptResponse   = "You panic and fund the green energy. (Wind Turbines added)",
+                DeclineResponse  = "The scandal breaks. Your approval rating plummets instantly and the real pollution returns.",
+                AcceptMoney      = -60000, AcceptPollution = -10,
+                AcceptBuildingIndex = 12, AcceptBuildingCount = 2, // 2 Wind Turbines
+                DeclinePopularity = -40, DeclinePollution = 30 // Pollution jumps back up
+            },
+            new()
+            {
+                Id               = "story_fo_leverage",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_anon_coverup",
+                RequiresAccepted = true, // If you wiped the servers
+                MinTurnDelay     = 4,
+                AdvisorName      = "Factory Owner",
+                DialogueText    = "Mayor, I know exactly what you did with those pollution records. Give me a permanent daily tax exemption, or I tell the press.",
+                AcceptText       = "Grant the exemption",
+                DeclineText      = "I will not be blackmailed",
+                AcceptResponse   = "You are trapped. The city bleeds money every day to keep him quiet.",
+                DeclineResponse  = "He leaks the documents. Your career takes a massive hit.",
+                AcceptPopularity = -5,
+                AcceptModifierId = "blackmail_tax",
+                AcceptModifierName = "Blackmail Payout",
+                AcceptModifierType = GameManager.ModifierType.Money,
+                AcceptModifierValue = -2000, // Lose 2000 money every day
+                DeclinePopularity = -35, DeclinePollution = 30
+            },
+
+            // ==========================================
+            // STORYLINE 4: THE CONSTRUCTION BOOM
+            // Construction Worker -> Rich Man / Factory Owner
+            // ==========================================
+            new()
+            {
+                Id              = "story_cw_deregulation",
+                IsOneShot       = true,
+                AdvisorName     = "Construction Worker",
+                DialogueText    = "Hey boss, if we cut safety regulations, my crew can build twice as fast. We'll get a massive wave of people moving in immediately!",
+                AcceptText      = "Cut the regulations",
+                DeclineText     = "Safety is non-negotiable",
+                AcceptResponse  = "Hammers swing 24/7. People are flooding into the city!",
+                DeclineResponse = "Growth stays steady and safe.",
+                AcceptPopularity = 5,
+                AcceptPopulation = 40, // --- CHANGED: Instant net gain instead of daily modifier ---
+                DeclinePopularity = 2
+            },
+            new()
+            {
+                Id               = "story_rm_crash",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_cw_deregulation",
+                RequiresAccepted = true, // If you cut regulations
+                MinTurnDelay     = 3,
+                AdvisorName      = "Rich Man",
+                DialogueText     = "Those quickly-built houses are falling apart, and my real estate investments are tanking! I demand a city buyout to cover my losses!",
+                AcceptText       = "Bail him out",
+                DeclineText      = "Not my problem",
+                AcceptResponse   = "You drain the treasury to save his portfolio. The public is furious.",
+                DeclineResponse  = "His portfolio crashes. He uses his influence to ruin your daily approval.",
+                AcceptMoney      = -75000, AcceptPopularity = -15,
+                DeclinePopularity = -5,
+                DeclineModifierId = "angry_elite_nerf",
+                DeclineModifierName = "Elite Smear Campaign",
+                DeclineModifierType = GameManager.ModifierType.Popularity,
+                DeclineModifierValue = -2 // -2 Popularity every day forever
+            },
+            new()
+            {
+                Id               = "story_cw_union",
+                IsOneShot        = true,
+                PrerequisiteId   = "story_cw_deregulation",
+                RequiresAccepted = false, // If you KEPT the regulations (Declined)
+                MinTurnDelay     = 2,
+                AdvisorName      = "Construction Worker",
+                DialogueText     = "Since you stood up for our safety, the boys formed a union. We'll do higher quality work, boosting daily approval, but we cost a little more.",
+                AcceptText       = "Recognize the Union",
+                DeclineText      = "Bust the Union",
+                AcceptResponse   = "The workers are thrilled. Daily approval goes up, but money goes down.",
+                DeclineResponse  = "You send in the strike-breakers. Approval plummets.",
+                AcceptModifierId = "union_quality",
+                AcceptModifierName = "Union Quality",
+                AcceptModifierType = GameManager.ModifierType.Popularity,
+                AcceptModifierValue = 2, // +2 Popularity per day
+                AcceptMoney      = -15000,
+                DeclinePopularity = -20
+            }
         };
     }
 }

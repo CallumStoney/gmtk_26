@@ -40,4 +40,18 @@ public class AdvisorEvent
     // empty stubs to be hooked in later
     public List<string> AcceptTags { get; set; } = new();
     public List<string> DeclineTags { get; set; } = new();
+
+    // --- ONGOING DAILY BUFFS / NERFS ---
+    // (If the event grants a permanent daily change)
+    public string AcceptModifierId { get; set; } = "";
+    public string AcceptModifierName { get; set; } = "";
+    public GameManager.ModifierType AcceptModifierType { get; set; } = GameManager.ModifierType.Popularity;
+    public int AcceptModifierValue { get; set; } = 0;
+    public string AcceptRemoveModifierId { get; set; } = ""; // Allows them to take away a debuff!
+
+    public string DeclineModifierId { get; set; } = "";
+    public string DeclineModifierName { get; set; } = "";
+    public GameManager.ModifierType DeclineModifierType { get; set; } = GameManager.ModifierType.Popularity;
+    public int DeclineModifierValue { get; set; } = 0;
+    public string DeclineRemoveModifierId { get; set; } = "";
 }

@@ -1,18 +1,74 @@
-[gd_scene load_steps=8 format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=21 format=3 uid="uid://l5ejk6qnrbk"]
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
-[ext_resource type="Texture2D" uid="uid://bpss2wm3gxfvo" path="res://Art/oldcomps.png" id="3_rxrax"]
 [ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="3_theme"]
+[ext_resource type="Texture2D" uid="uid://cblbn0r8wm6ff" path="res://Art/Computer_Monitor-Sheet.png" id="3_vkblu"]
+[ext_resource type="Script" uid="uid://b43oy1budju3w" path="res://Scenes/ComputerTurnOn.cs" id="4_cslvj"]
 [ext_resource type="PackedScene" uid="uid://edtprmbk77a4" path="res://Nodes/change_scenes_button.tscn" id="4_xfmv1"]
+[ext_resource type="Texture2D" uid="uid://b2xt1dlpny382" path="res://Art/Window_Header_Resizable_Inactive.png" id="5_71ly4"]
+[ext_resource type="FontFile" uid="uid://byt545w0epytt" path="res://Art/nerdropol lattice.otf" id="6_cslvj"]
+[ext_resource type="Texture2D" uid="uid://cs2238bljuk6d" path="res://Art/accpetdenybuttons.png" id="7_ojyf7"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_vkblu"]
-atlas = ExtResource("3_rxrax")
-region = Rect2(41, 38, 32, 20)
+[sub_resource type="AtlasTexture" id="AtlasTexture_71ly4"]
+atlas = ExtResource("3_vkblu")
+region = Rect2(0, 0, 1268, 700)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_rxrax"]
-atlas = ExtResource("3_rxrax")
-region = Rect2(41, 61, 32, 9)
+[sub_resource type="AtlasTexture" id="AtlasTexture_ojyf7"]
+atlas = ExtResource("3_vkblu")
+region = Rect2(1268, 0, 1268, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_so1ys"]
+atlas = ExtResource("3_vkblu")
+region = Rect2(2536, 0, 1268, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0belv"]
+atlas = ExtResource("3_vkblu")
+region = Rect2(3804, 0, 1268, 700)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_r6jfc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_71ly4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ojyf7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_so1ys")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0belv")
+}],
+"loop": false,
+"name": &"default",
+"speed": 10.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r6jfc"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(123, 18, 31, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pdqre"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(165, 19, 29, 29)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u81j5"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(38, 18, 30, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h8ggs"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(79, 19, 29, 29)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lb4jd"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(292, 18, 30, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fwo70"]
+atlas = ExtResource("7_ojyf7")
+region = Rect2(333, 19, 29, 29)
 
 [node name="RoomScene" type="Control"]
 layout_mode = 3
@@ -24,119 +80,127 @@ grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
 
-[node name="TextureRect" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 132.0
-offset_top = -3.0
-offset_right = 1080.0
-offset_bottom = 517.0
-texture = SubResource("AtlasTexture_vkblu")
-expand_mode = 1
-stretch_mode = 5
+[node name="Monitor" type="AnimatedSprite2D" parent="."]
+position = Vector2(574.5, 360.5)
+scale = Vector2(0.992902, 0.998571)
+sprite_frames = SubResource("SpriteFrames_r6jfc")
+frame = 3
+frame_progress = 1.0
+script = ExtResource("4_cslvj")
 
-[node name="StatsHUD" parent="." instance=ExtResource("2_statshud")]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 831.0
-offset_bottom = 44.0
+[node name="WindowHeaderResizableInactive" type="Sprite2D" parent="Monitor"]
+position = Vector2(-5, -48)
+scale = Vector2(8.92708, 7.05208)
+texture = ExtResource("5_71ly4")
 
-[node name="TextureRect2" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 273.0
-offset_top = 416.0
-offset_right = 795.0
-offset_bottom = 735.0
-texture = SubResource("AtlasTexture_rxrax")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="AdvisorPortrait" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(80, 80)
-layout_mode = 2
-offset_left = 285.0
-offset_top = 109.0
-offset_right = 391.0
-offset_bottom = 209.0
+[node name="AdvisorPortrait" type="ColorRect" parent="Monitor"]
+custom_minimum_size = Vector2(64, 64)
+offset_left = -186.0
+offset_top = -193.0
+offset_right = -122.0
+offset_bottom = -129.0
 size_flags_vertical = 0
 color = Color(0.35, 0.22, 0.19, 1)
 
-[node name="AdvisorNameLabel" type="Label" parent="."]
-layout_mode = 2
-offset_left = 398.0
-offset_top = 111.0
-offset_right = 752.0
-offset_bottom = 143.0
-theme_override_font_sizes/font_size = 16
-text = "Advisor Name"
+[node name="AdvisorNameLabel" type="Label" parent="Monitor"]
+offset_left = -117.0
+offset_top = -193.0
+offset_right = 179.0
+offset_bottom = -141.0
+theme_override_fonts/font = ExtResource("6_cslvj")
+theme_override_font_sizes/font_size = 20
+text = "Advisor's name here..."
 
-[node name="DialogueLabel" type="Label" parent="."]
-layout_mode = 2
-offset_left = 397.0
-offset_top = 149.0
-offset_right = 780.0
-offset_bottom = 302.0
+[node name="DialogueLabel" type="Label" parent="Monitor"]
+offset_left = -116.0
+offset_top = -165.0
+offset_right = 179.0
+offset_bottom = -42.0
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("6_cslvj")
+theme_override_font_sizes/font_size = 13
 text = "Dialogue text will appear here..."
 autowrap_mode = 3
 
-[node name="AcceptButton" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-offset_left = 285.0
-offset_top = 237.0
-offset_right = 402.0
-offset_bottom = 269.0
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "Accept"
+[node name="AcceptButton" type="TextureButton" parent="Monitor"]
+custom_minimum_size = Vector2(24, 24)
+offset_left = -190.855
+offset_top = -30.5436
+offset_right = -166.855
+offset_bottom = -6.54363
+texture_normal = SubResource("AtlasTexture_r6jfc")
+texture_pressed = SubResource("AtlasTexture_pdqre")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="DeclineButton" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-offset_left = 287.0
-offset_top = 285.0
-offset_right = 410.0
-offset_bottom = 317.0
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "Decline"
+[node name="DeclineButton" type="TextureButton" parent="Monitor"]
+custom_minimum_size = Vector2(24, 24)
+offset_left = -191.862
+offset_top = 10.515
+offset_right = -167.862
+offset_bottom = 34.515
+texture_normal = SubResource("AtlasTexture_u81j5")
+texture_pressed = SubResource("AtlasTexture_h8ggs")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="ResponseLabel" type="Label" parent="."]
+[node name="AcceptEffectsLabel" type="Label" parent="Monitor"]
+offset_left = -163.0
+offset_top = -31.0
+offset_right = 187.0
+offset_bottom = 4.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_cslvj")
+theme_override_font_sizes/font_size = 13
+text = "Accept TExt here..."
+autowrap_mode = 3
+
+[node name="DeclineEffectsLabel" type="Label" parent="Monitor"]
+offset_left = -164.0
+offset_top = 10.0
+offset_right = 132.0
+offset_bottom = 64.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_cslvj")
+theme_override_font_sizes/font_size = 13
+text = "Decline Text here..."
+autowrap_mode = 3
+
+[node name="ResponseLabel" type="Label" parent="Monitor"]
 custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
-offset_left = 1262.0
-offset_top = 420.0
-offset_right = 2350.0
-offset_bottom = 448.0
+offset_left = 683.0
+offset_top = 59.0
+offset_right = 1771.0
+offset_bottom = 87.0
 theme_override_colors/font_color = Color(0.72, 0.85, 0.55, 1)
 theme_override_font_sizes/font_size = 15
 autowrap_mode = 3
 
-[node name="BottomHBox" type="HBoxContainer" parent="."]
-layout_mode = 2
-offset_left = 468.0
-offset_top = 349.0
-offset_right = 735.0
-offset_bottom = 381.0
-alignment = 2
+[node name="NextButton" type="TextureButton" parent="Monitor"]
+custom_minimum_size = Vector2(24, 24)
+offset_left = -193.876
+offset_top = 77.6109
+offset_right = -169.876
+offset_bottom = 101.611
+texture_normal = SubResource("AtlasTexture_lb4jd")
+texture_pressed = SubResource("AtlasTexture_fwo70")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="Spacer" type="Control" parent="BottomHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="NextButton" type="Button" parent="BottomHBox"]
-custom_minimum_size = Vector2(159, 32)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Next Advisor"
-
-[node name="EndTurnButton" type="Button" parent="BottomHBox"]
+[node name="EndTurnButton" type="Button" parent="Monitor"]
 custom_minimum_size = Vector2(100, 32)
-layout_mode = 2
+offset_left = 213.012
+offset_top = 25.5365
+offset_right = 313.012
+offset_bottom = 57.5365
 theme_override_font_sizes/font_size = 12
 text = "End Day"
+
+[node name="StatsHUD" parent="." instance=ExtResource("2_statshud")]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 831.0
+offset_bottom = 44.0
 
 [node name="ChangeScenesButton" parent="." instance=ExtResource("4_xfmv1")]
 layout_mode = 1

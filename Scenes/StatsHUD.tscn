@@ -96,9 +96,9 @@ script = ExtResource("3_mtoip")
 
 [node name="DropdownText" type="RichTextLabel" parent="HBoxContainer/TextureButton"]
 layout_mode = 2
-offset_left = -126.0
+offset_left = -135.0
 offset_top = 38.0
-offset_right = 16.0
+offset_right = -5.0
 offset_bottom = 85.0
 theme_override_font_sizes/normal_font_size = 10
 bbcode_enabled = true
@@ -131,9 +131,9 @@ script = ExtResource("4_5e38n")
 
 [node name="DropdownText" type="RichTextLabel" parent="HBoxContainer2/TextureButton"]
 layout_mode = 2
-offset_left = -126.0
+offset_left = -144.0
 offset_top = 38.0
-offset_right = 16.0
+offset_right = -6.0
 offset_bottom = 85.0
 theme_override_font_sizes/normal_font_size = 10
 bbcode_enabled = true
@@ -166,9 +166,9 @@ script = ExtResource("5_lo2kh")
 
 [node name="DropdownText" type="RichTextLabel" parent="HBoxContainer3/TextureButton"]
 layout_mode = 2
-offset_left = -126.0
+offset_left = -62.0
 offset_top = 38.0
-offset_right = 16.0
+offset_right = 50.0
 offset_bottom = 85.0
 theme_override_font_sizes/normal_font_size = 10
 bbcode_enabled = true

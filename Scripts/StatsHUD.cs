@@ -77,11 +77,16 @@ public partial class StatsHUD : HBoxContainer
         _pollutionLabel.Text = $"[color=white]Pollution: {gm.Pollution}[/color] [color={GetInvertedDeltaColor(gm.ExpectedDailyPollution)}]({FormatDelta(gm.ExpectedDailyPollution)})[/color]";
         _popularityLabel.Text = $"[color=white]Approval: {gm.Popularity}[/color] [color={GetDeltaColor(gm.ExpectedDailyPopularity)}]({FormatDelta(gm.ExpectedDailyPopularity)})[/color]";
 
+        // --- NEW: Dynamic Formatting for Current Money ---
+        string currentMoneySign = gm.Money < 0 ? "-" : "";
+        string currentMoneyColor = gm.Money < 0 ? "#e57373" : "#ffd54f"; // Red if debt, yellow if positive/zero
+
         string moneyDeltaSign = gm.ExpectedDailyMoney >= 0 ? "+" : "-";
         string moneyDeltaFormatted = FormatMoney(Mathf.Abs(gm.ExpectedDailyMoney));
         string moneyDeltaColor = GetDeltaColor(gm.ExpectedDailyMoney);
 
-        _moneyLabel.Text = $"[color=#ffd54f]${FormatMoney(gm.Money)}[/color] [color={moneyDeltaColor}]({moneyDeltaSign}${moneyDeltaFormatted})[/color]";
+        // Inject the dynamic color and negative sign for the main money pool
+        _moneyLabel.Text = $"[color={currentMoneyColor}]{currentMoneySign}${FormatMoney(gm.Money)}[/color] [color={moneyDeltaColor}]({moneyDeltaSign}${moneyDeltaFormatted})[/color]";
 
         // 3. Update Day Bar Fill (Bypassing Layout Engine with Scale)
         float dayRatio = gm.MaxTurns > 1 ? (float)daysLeft / (gm.MaxTurns - 1) : 0f;
