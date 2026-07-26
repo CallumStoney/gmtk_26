@@ -1,7 +1,8 @@
-[gd_scene load_steps=86 format=4 uid="uid://cn1sjd3e0rebi"]
+[gd_scene load_steps=87 format=4 uid="uid://cn1sjd3e0rebi"]
 
 [ext_resource type="Script" uid="uid://lajp5hvyyasm" path="res://Code/InventoryUI.cs" id="1_3dntw"]
 [ext_resource type="Script" uid="uid://cnkfp2urbc1c" path="res://Code/BuildingManager.cs" id="1_aobtk"]
+[ext_resource type="Script" uid="uid://dhf71pvj6f0o4" path="res://Code/TrafficManager.cs" id="1_hnkv4"]
 [ext_resource type="Script" uid="uid://bh78vjp1puptt" path="res://Code/SmogManager.cs" id="1_ld7dv"]
 [ext_resource type="Texture2D" uid="uid://b3c2gabytvnsd" path="res://Art/groundTiles.png" id="1_nrjec"]
 [ext_resource type="Script" uid="uid://b4jfet5jhhwp1" path="res://Code/CursorManager.cs" id="1_p3gyn"]
@@ -29,7 +30,6 @@
 [ext_resource type="Script" uid="uid://bphhq3v51b6m1" path="res://Code/UIShopName.cs" id="15_vya6f"]
 [ext_resource type="Script" uid="uid://dfjs67ynwmdld" path="res://Code/UIShopPriceLabel.cs" id="17_xobmb"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="18_hggrv"]
-[ext_resource type="Resource" uid="uid://bb2aplymruhad" path="res://DevMapPreset.tres" id="25_hnkv4"]
 [ext_resource type="PackedScene" uid="uid://cit31k5vjifus" path="res://Nodes/apartment_1.tscn" id="27_r1o1k"]
 [ext_resource type="PackedScene" uid="uid://dqc0xlq3xccgy" path="res://Nodes/nature_1.tscn" id="28_4xs4g"]
 [ext_resource type="PackedScene" uid="uid://b7wm1yg2bksbq" path="res://Nodes/statue_1.tscn" id="29_56atv"]
@@ -38,6 +38,7 @@
 [ext_resource type="PackedScene" uid="uid://dh471xh5fegk1" path="res://Nodes/factory_1.tscn" id="32_4xs4g"]
 [ext_resource type="PackedScene" uid="uid://chvx74arknvu8" path="res://Nodes/solarpannels_1.tscn" id="33_11u8x"]
 [ext_resource type="PackedScene" uid="uid://coowvlmltfhst" path="res://Nodes/windPower_1.tscn" id="34_laldt"]
+[ext_resource type="Texture2D" uid="uid://c20t8cn8n4488" path="res://Art/carTileMap.png" id="39_c7fbx"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_56atv"]
 atlas = ExtResource("2_r1o1k")
@@ -3306,7 +3307,6 @@ tile_set = SubResource("TileSet_ynusb")
 script = ExtResource("1_aobtk")
 GroundTileMap = NodePath("../TileSets/GroundTileMap")
 MainCamera = NodePath("../Camera2D")
-InitialMapStateRaw = ExtResource("25_hnkv4")
 BuildingInfo = Dictionary[int, PackedStringArray]({
 0: PackedStringArray("House", "Capacity: +4, Approval: +1/day,Upkeep Cost: $1k/day", "$5k", "$2.5k"),
 1: PackedStringArray("Office", "Money: +$5k/day,,Upkeep Cost: $1k/day", "$25k", "$12.5k", "$25k", "Money: +$10k/day,Upkeep Cost: $2k/day", "Money: +$15k/day,Upkeep Cost: $3k/day"),
@@ -3336,3 +3336,8 @@ UpgradeDialog = NodePath("../InCityUI/ActionMenu/UpgradeDialog")
 InfoPanel = NodePath("../InCityUI/ActionMenu/InfoPanel")
 InfoTitleLabel = NodePath("../InCityUI/ActionMenu/InfoPanel/Label")
 InfoBodyLabel = NodePath("../InCityUI/ActionMenu/InfoPanel/Label2")
+
+[node name="TrafficManager" type="Node2D" parent="."]
+script = ExtResource("1_hnkv4")
+CarSpriteSheet = ExtResource("39_c7fbx")
+TintSpritesWithCarColor = true
