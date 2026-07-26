@@ -142,16 +142,10 @@ public partial class GameManager : Node
     // -----------------------------------------
     // DYNAMIC MODIFIER CALCULATIONS
     // -----------------------------------------
-
-    /// <summary>
-    /// Generates a list of all active dynamic nerfs and buffs based on current game state.
-    /// </summary>
     public List<StatModifier> GetActiveModifiers()
     {
         var modifiers = new List<StatModifier>();
 
-        // --- 1. Pollution-based Approval Nerf ---
-        // Every 10 points of Pollution reduces daily Approval by 1 point
         if (Pollution > 0)
         {
             int pollutionPenalty = -(Pollution / 10);
@@ -162,16 +156,14 @@ public partial class GameManager : Node
                 {
                     SourceName = "Smog & Pollution",
                     Type = ModifierType.Popularity,
-                    Value = pollutionPenalty // Negative value (Nerf)
+                    Value = pollutionPenalty
                 });
             }
         }
 
-        // --- 2. Overcrowding Penalties (Population > Capacity) ---
         int overflow = Population - Capacity;
         if (overflow > 0)
         {
-            // Penalty 1: Money (-$1,000 per person over capacity)
             modifiers.Add(new StatModifier
             {
                 SourceName = "Overcrowding",
@@ -179,7 +171,6 @@ public partial class GameManager : Node
                 Value = -(overflow * 1000)
             });
 
-            // Penalty 2: Approval (-1 approval per person over capacity)
             modifiers.Add(new StatModifier
             {
                 SourceName = "Overcrowding",
@@ -191,10 +182,6 @@ public partial class GameManager : Node
         return modifiers;
     }
 
-    /// <summary>
-    /// Call this immediately after loading the initial map state so that Day 1 starts with
-    /// the accurate starting map capacity, without displaying a fake daily delta.
-    /// </summary>
     public void SyncInitialCapacity()
     {
         _lastTurnCapacity = Capacity;
@@ -211,6 +198,20 @@ public partial class GameManager : Node
         _capacity = Mathf.Max(_capacity + capacity, 0);
 
         EmitSignal(SignalName.StatsChanged);
+    }
+
+    // --- NEW: SAFE INVENTORY ADDITION ---
+    public void AddBuildingToInventory(int buildingIndex, int amount)
+    {
+        if (buildingIndex >= 0 && buildingIndex < BuildingInventory.Count)
+        {
+            BuildingInventory[buildingIndex] += amount;
+            EmitSignal(SignalName.StatsChanged); // Notifies UI that inventory changed
+        }
+        else
+        {
+            GD.PrintErr($"Failed to add building: Index {buildingIndex} is out of bounds!");
+        }
     }
 
     public void AdvanceTurn()
@@ -266,20 +267,6 @@ public partial class GameManager : Node
             GD.PrintErr("DEBUG FAILED: BuildingInfo is NULL or EMPTY! The GameManager is not receiving the dictionary from the Inspector.");
             return;
         }
-
-        GD.Print("\n--- DEBUG: RAW BUILDING INFO FROM INSPECTOR ---");
-        foreach (var kvp in BuildingInfo)
-        {
-            int typeIndex = kvp.Key;
-            string[] infoArray = kvp.Value;
-
-            GD.Print($"Building Type [{typeIndex}]: Found {infoArray.Length} strings.");
-            for (int i = 0; i < infoArray.Length; i++)
-            {
-                GD.Print($"    Line {i}: \"{infoArray[i]}\"");
-            }
-        }
-        GD.Print("-----------------------------------------------\n");
 
         foreach (var kvp in BuildingInfo)
         {
@@ -401,17 +388,14 @@ public partial class GameManager : Node
             }
         }
 
-        // 1. Store Raw Building Yields separately
         BuildingDailyPopulation = totalPop;
         BuildingDailyPollution = totalPol;
         BuildingDailyPopularity = totalPopu;
         BuildingDailyMoney = totalMon;
 
-        // 2. Update Capacity FIRST so modifiers evaluate against updated map state
         Capacity = totalCap;
         ExpectedDailyCapacity = Capacity - _lastTurnCapacity;
 
-        // 3. Sum up active Modifiers (including Overcrowding!)
         int modPopu = 0, modPol = 0, modMon = 0;
         foreach (var mod in GetActiveModifiers())
         {
@@ -420,7 +404,6 @@ public partial class GameManager : Node
             if (mod.Type == ModifierType.Money) modMon += mod.Value;
         }
 
-        // 4. Set Total Expected Daily Changes (Buildings + Modifiers)
         ExpectedDailyPopulation = totalPop;
         ExpectedDailyPollution = totalPol + modPol;
         ExpectedDailyPopularity = totalPopu + modPopu;

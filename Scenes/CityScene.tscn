@@ -3351,7 +3351,7 @@ BuildingInfo = Dictionary[int, PackedStringArray]({
 3: PackedStringArray("Big Factory", "Money: +$40k/day,Pollution: +10/day,Approval: -5/day,Upkeep Cost: $10k/day", "$40k", "$20k"),
 4: PackedStringArray("Big Apartment", "Capacity: +12,Approval: -1/day,Upkeep Cost: $2k/day", "$20k", "$10k", "$20k", "Capacity: +24,Approval: -2/day,Upkeep Cost: $3k/day", "Capacity: +36,Approval: -3/day,Upkeep Cost: $4k/day", "Capacity: +48,Approval: -4/day,Upkeep Cost: $5k/day"),
 5: PackedStringArray("Apartment", "Capacity: +6,Approval: -1/day,Upkeep Cost: $2k/day", "$7.5k", "$3.25k", "$7.5k", "Capacity: +12,Approval: -2/day,Upkeep Cost: $3k/day", "Capacity: +18,Approval: -3/day,Upkeep Cost: $4k/day", "Capacity: +24,Approval: -4/day,Upkeep Cost: $5k/day", "Capacity: +30,Approval: -5/day,Upkeep Cost: $6k/day"),
-6: PackedStringArray("Nature", "Pollution: -1/day,Approval: +1/day,Upkeep Cost: $1k/day", "$7.5k", "$3.25k"),
+6: PackedStringArray("Nature Park", "Pollution: -1/day,Approval: +1/day,Upkeep Cost: $1k/day", "$7.5k", "$3.25k"),
 7: PackedStringArray("Statue", "Approval: +4/day,Upkeep Cost: $3k/day", "$15k", "$7.5k"),
 8: PackedStringArray("Playground", "Approval: +2/day,Upkeep Cost: $0.5k/day", "$1k", "$500"),
 9: PackedStringArray("Restaurant", "Money: +$3k/day,Approval: +1/day,Upkeep Cost: $1k/day", "$10k", "$5k", "$10k", "Money: +$6k/day,Approval: +2/day,Upkeep Cost: $2k/day"),
