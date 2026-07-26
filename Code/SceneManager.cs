@@ -42,6 +42,8 @@ public partial class SceneManager : Node
         GetTree().Root.AddChild(nextScene);
         GetTree().CurrentScene = nextScene;
 
+        AudioManager.Instance?.SetScene(nextScenePath);
+
         GameManager.Instance.RecalculateDailyYields();
         GameManager.Instance.NotifyStatsChanged();
     }

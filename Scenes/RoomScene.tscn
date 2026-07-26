@@ -82,7 +82,7 @@ region = Rect2(292, 18, 30, 30)
 atlas = ExtResource("7_ojyf7")
 region = Rect2(333, 19, 29, 29)
 
-[node name="RoomScene" type="Control" node_paths=PackedStringArray("ComputerTurnOn")]
+[node name="RoomScene" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -91,7 +91,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
-ComputerTurnOn = NodePath("Monitor")
 
 [node name="BackToCityLabel" type="Label" parent="."]
 layout_mode = 1
@@ -120,15 +119,13 @@ offset_right = 1236.0
 offset_bottom = 122.0
 flip_h = false
 
-[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI", "TitleSpecialEvent", "MainTextSpecialEvent")]
+[node name="Monitor" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("NormalUI", "SpecialEventUI")]
 position = Vector2(574.5, 360.5)
 scale = Vector2(0.992902, 0.998571)
 sprite_frames = SubResource("SpriteFrames_r6jfc")
 script = ExtResource("4_cslvj")
 NormalUI = NodePath("NormalUI")
 SpecialEventUI = NodePath("SpecialEventUI")
-TitleSpecialEvent = NodePath("SpecialEventUI/TitleSpecialEvent")
-MainTextSpecialEvent = NodePath("SpecialEventUI/MainTextSpecialEvent")
 
 [node name="NormalUI" type="Node2D" parent="Monitor"]
 visible = false

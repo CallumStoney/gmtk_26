@@ -10,6 +10,7 @@ public partial class StartMenu : Control
 		{
 			if (keyEvent.Keycode == Key.Space)
 			{
+				AudioManager.Instance?.StartMusic();
 				GetTree().ChangeSceneToFile("res://Scenes//CityScene.tscn");
 			}
 			else if (keyEvent.Keycode == Key.Q || keyEvent.Keycode == Key.Escape)
