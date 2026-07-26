@@ -1,6 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://dsu32rfjq38o2"]
+[gd_scene load_steps=10 format=3 uid="uid://dsu32rfjq38o2"]
 
 [ext_resource type="Script" uid="uid://cahydwy8bfoi6" path="res://Scripts/StatsHUD.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dyjvd5mrw1cmu" path="res://Art/UiCozyFree.png" id="2_if8de"]
+[ext_resource type="Script" uid="uid://piw0fnojvym5" path="res://Scenes/ButtonStatChangesPollution.cs" id="3_mtoip"]
+[ext_resource type="Script" uid="uid://dsugpngiy3t6w" path="res://Scenes/ButtonPopularityStatChanges.cs" id="4_5e38n"]
+[ext_resource type="Script" uid="uid://cet075i72lr27" path="res://Code/ButtonStatMoneyChanges.cs" id="5_lo2kh"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mtoip"]
+atlas = ExtResource("2_if8de")
+region = Rect2(265, 120, 14, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lo2kh"]
+atlas = ExtResource("2_if8de")
+region = Rect2(265, 137, 14, 13)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hi4ai"]
+atlas = ExtResource("2_if8de")
+region = Rect2(265, 137, 14, 13)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bglo5"]
+atlas = ExtResource("2_if8de")
+region = Rect2(265, 137, 14, 13)
 
 [node name="StatsHUD" type="HBoxContainer"]
 theme_override_constants/separation = 16
@@ -39,41 +59,114 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.29, 0.56, 0.85, 1)
 
-[node name="PopulationLabel" type="Label" parent="."]
+[node name="PopulationLabel" type="RichTextLabel" parent="."]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "Pop: 100"
+bbcode_enabled = true
+text = "Pop: 100/100"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="PollutionBar" type="VBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-alignment = 1
 
-[node name="PollutionLabel" type="Label" parent="PollutionBar"]
+[node name="PollutionLabel" type="RichTextLabel" parent="HBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.4, 1)
-theme_override_font_sizes/font_size = 14
+bbcode_enabled = true
 text = "Pollution: 80"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ApprovalBar" type="VBoxContainer" parent="."]
+[node name="TextureButton" type="TextureButton" parent="HBoxContainer"]
+custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-alignment = 1
+texture_normal = SubResource("AtlasTexture_mtoip")
+texture_pressed = SubResource("AtlasTexture_lo2kh")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("3_mtoip")
 
-[node name="PopularityLabel" type="Label" parent="ApprovalBar"]
+[node name="DropdownText" type="RichTextLabel" parent="HBoxContainer/TextureButton"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.55, 1)
-theme_override_font_sizes/font_size = 14
-text = "Approval: 50%"
+offset_left = -126.0
+offset_top = 38.0
+offset_right = 16.0
+offset_bottom = 85.0
+theme_override_font_sizes/normal_font_size = 10
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="PopularityLabel" type="RichTextLabel" parent="HBoxContainer2"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Approval: 50"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="MoneyLabel" type="Label" parent="."]
+[node name="TextureButton" type="TextureButton" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 14
+texture_normal = SubResource("AtlasTexture_mtoip")
+texture_pressed = SubResource("AtlasTexture_hi4ai")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("4_5e38n")
+
+[node name="DropdownText" type="RichTextLabel" parent="HBoxContainer2/TextureButton"]
+layout_mode = 2
+offset_left = -126.0
+offset_top = 38.0
+offset_right = 16.0
+offset_bottom = 85.0
+theme_override_font_sizes/normal_font_size = 10
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="MoneyLabel" type="RichTextLabel" parent="HBoxContainer3"]
+layout_mode = 2
+bbcode_enabled = true
 text = "$500"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="HBoxContainer3"]
+custom_minimum_size = Vector2(16, 0)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_mtoip")
+texture_pressed = SubResource("AtlasTexture_bglo5")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("5_lo2kh")
+
+[node name="DropdownText" type="RichTextLabel" parent="HBoxContainer3/TextureButton"]
+layout_mode = 2
+offset_left = -126.0
+offset_top = 38.0
+offset_right = 16.0
+offset_bottom = 85.0
+theme_override_font_sizes/normal_font_size = 10
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 0

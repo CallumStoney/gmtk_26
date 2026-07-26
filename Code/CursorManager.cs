@@ -1,65 +1,69 @@
 using Godot;
 
-public partial class CursorManager : Node
+public partial class CursorManager : CanvasLayer
 {
     [Export] public Texture2D DefaultCursor;
     [Export] public Texture2D DragCursor;
 
-    // Hotspot is the pixel offset where clicks actually register
     [Export] public Vector2 DefaultHotspot = Vector2.Zero;
     [Export] public Vector2 DragHotspot = new Vector2(16, 16);
 
-    // --- NEW: Global Scale Multiplier ---
-    [Export] public float CursorScale = 2.0f; // 2.0 = 200% size, 1.5 = 150% size, etc.
+    [Export] public float CursorScale = 2.0f;
+
+    private Sprite2D _cursorSprite;
 
     public override void _Ready()
     {
+        // Hide standard hardware mouse
+        Input.MouseMode = Input.MouseModeEnum.Hidden;
+
+        // Create software cursor sprite
+        _cursorSprite = new Sprite2D
+        {
+            Centered = false
+        };
+        AddChild(_cursorSprite);
+
         SetDefaultCursor();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_cursorSprite != null && _cursorSprite.Visible)
+        {
+            _cursorSprite.GlobalPosition = GetViewport().GetMousePosition();
+        }
     }
 
     public void SetDefaultCursor()
     {
-        SetScaledCursor(DefaultCursor, DefaultHotspot);
+        ApplyCursor(DefaultCursor, DefaultHotspot, "Default");
     }
 
     public void SetDragCursor()
     {
-        SetScaledCursor(DragCursor, DragHotspot);
+        ApplyCursor(DragCursor, DragHotspot, "Drag");
     }
 
     public void ResetToHardwareCursor()
     {
-        Input.SetCustomMouseCursor(null);
+        Input.MouseMode = Input.MouseModeEnum.Visible;
+        if (_cursorSprite != null) _cursorSprite.Visible = false;
     }
 
-    // Helper method to resize the texture and scale the hotspot automatically
-    private void SetScaledCursor(Texture2D texture, Vector2 hotspot)
+    private void ApplyCursor(Texture2D texture, Vector2 hotspot, string cursorType)
     {
-        if (texture == null) return;
+        if (_cursorSprite == null) return;
 
-        Texture2D finalTexture = texture;
-        Vector2 finalHotspot = hotspot;
-
-        // Only process resizing if scale is different from 1.0
-        if (!Mathf.IsEqualApprox(CursorScale, 1.0f) && CursorScale > 0)
+        if (texture == null)
         {
-            // 1. Get image data from texture
-            Image image = texture.GetImage();
-
-            // 2. Calculate new size
-            int newWidth = Mathf.RoundToInt(image.GetWidth() * CursorScale);
-            int newHeight = Mathf.RoundToInt(image.GetHeight() * CursorScale);
-
-            // 3. Resize image (Use Interpolation.Nearest for pixel art, or Interpolation.Bilinear for smooth graphics)
-            image.Resize(newWidth, newHeight, Image.Interpolation.Nearest);
-
-            // 4. Create an ImageTexture from the resized image
-            finalTexture = ImageTexture.CreateFromImage(image);
-
-            // 5. Scale the hotspot coordinate proportionally!
-            finalHotspot = hotspot * CursorScale;
+            GD.PrintErr($"[CursorManager] Missing texture! Set '{cursorType}Cursor' in the CursorManager Inspector.");
+            return;
         }
 
-        Input.SetCustomMouseCursor(finalTexture, Input.CursorShape.Arrow, finalHotspot);
+        _cursorSprite.Visible = true;
+        _cursorSprite.Texture = texture;
+        _cursorSprite.Scale = new Vector2(CursorScale, CursorScale);
+        _cursorSprite.Offset = -hotspot;
     }
 }

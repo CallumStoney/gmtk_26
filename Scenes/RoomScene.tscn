@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://l5ejk6qnrbk"]
+[gd_scene load_steps=6 format=3 uid="uid://l5ejk6qnrbk"]
 
 [ext_resource type="Script" uid="uid://bm11svq7c7cb2" path="res://Scripts/RoomScene.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dsu32rfjq38o2" path="res://Scenes/StatsHUD.tscn" id="2_statshud"]
+[ext_resource type="PackedScene" uid="uid://b3qjae4nu5uhb" path="res://Nodes/cursor_manager.tscn" id="3_rxrax"]
 [ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="3_theme"]
 [ext_resource type="PackedScene" uid="uid://edtprmbk77a4" path="res://Nodes/change_scenes_button.tscn" id="4_xfmv1"]
 
@@ -14,6 +15,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
+
+[node name="CursorManager" parent="." instance=ExtResource("3_rxrax")]
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

@@ -41,5 +41,8 @@ public partial class SceneManager : Node
         // 3. Add the next scene to the active game and set it as current
         GetTree().Root.AddChild(nextScene);
         GetTree().CurrentScene = nextScene;
+
+        GameManager.Instance.RecalculateDailyYields();
+        GameManager.Instance.NotifyStatsChanged();
     }
 }

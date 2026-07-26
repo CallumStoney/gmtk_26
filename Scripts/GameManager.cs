@@ -5,11 +5,17 @@ public partial class GameManager : Node
 {
     public static GameManager Instance { get; private set; }
 
-    //signals let u sub from any scene
+    // Signals let u sub from any scene
     [Signal] public delegate void StatsChangedEventHandler();
     [Signal] public delegate void TurnAdvancedEventHandler(int currentTurn);
     [Signal] public delegate void GameOverEventHandler(string reason);
     [Signal] public delegate void AdvisorTagExecutedEventHandler(string tag);
+
+
+    // --- UI STATE PERSISTENCE ---
+    public bool IsPollutionDropdownOpen { get; set; } = false;
+    public bool IsPopularityDropdownOpen { get; set; } = false;
+    public bool IsMoneyDropdownOpen { get; set; } = false;
 
     public AdvisorMemory Memory { get; private set; }
 
@@ -21,15 +27,36 @@ public partial class GameManager : Node
     // The raw text from the inspector (passed from BuildingManager)
     public Godot.Collections.Dictionary<int, string[]> BuildingInfo = new Godot.Collections.Dictionary<int, string[]>();
 
-    // NEW: The clean, pre-calculated math numbers
+    // Clean, pre-calculated math numbers
     public Dictionary<int, Dictionary<int, BuildingYieldStats>> ParsedBuildingStats = new Dictionary<int, Dictionary<int, BuildingYieldStats>>();
 
+    // --- STAT MODIFIER SYSTEM (NERFS / BUFFS) ---
+    public enum ModifierType
+    {
+        Popularity,
+        Pollution,
+        Money
+    }
 
+    public struct StatModifier
+    {
+        public string SourceName;  // e.g., "Smog & Pollution", "Overcrowding"
+        public ModifierType Type;  // Popularity, Pollution, or Money
+        public int Value;          // Negative for Nerfs, Positive for Buffs
+    }
+
+    // --- RAW BUILDING YIELDS (For UI Dropdowns) ---
+    public int BuildingDailyPopulation { get; private set; } = 0;
+    public int BuildingDailyPollution { get; private set; } = 0;
+    public int BuildingDailyPopularity { get; private set; } = 0;
+    public int BuildingDailyMoney { get; private set; } = 0;
+
+    // --- CORE STAT FIELDS ---
     private int _population = 100;
-    private int _pollution = 80;   //this might be a tad high idk
-    private int _popularity = 50;   //they start not giving a shit abt u
+    private int _pollution = 80;    // Starts high
+    private int _popularity = 50;   // Default approval
     private int _money = 50000000;
-    private int _capacity = 0; //have at defaultvalue
+    private int _capacity = 0;
 
     private int _expectedDailyPopulation = 0;
     private int _expectedDailyPollution = 0;
@@ -38,7 +65,7 @@ public partial class GameManager : Node
     private int _expectedDailyCapacity = 0;
     private int _lastTurnCapacity = 0;
 
-    // --- ACTUAL STATS ---
+    // --- ACTUAL STAT PROPERTIES ---
     public int Population
     {
         get => _population;
@@ -48,14 +75,12 @@ public partial class GameManager : Node
     public int Pollution
     {
         get => _pollution;
-        // THE FIX: Changed from Mathf.Clamp to Mathf.Max so it can climb above 100!
         set { _pollution = Mathf.Max(value, 0); EmitSignal(SignalName.StatsChanged); }
     }
 
     public int Popularity
     {
         get => _popularity;
-        // THE FIX: Changed from Mathf.Clamp to Mathf.Max so it can climb above 100!
         set { _popularity = Mathf.Max(value, 0); EmitSignal(SignalName.StatsChanged); }
     }
 
@@ -71,7 +96,7 @@ public partial class GameManager : Node
         set { _capacity = Mathf.Max(value, 0); EmitSignal(SignalName.StatsChanged); }
     }
 
-    // --- EXPECTED YIELDS ---
+    // --- EXPECTED TOTAL YIELDS (Buildings + Modifiers) ---
     public int ExpectedDailyPopulation
     {
         get => _expectedDailyPopulation;
@@ -105,14 +130,65 @@ public partial class GameManager : Node
     public int MaxTurns { get; set; } = 15;
     public int CurrentTurn { get; private set; } = 1;
 
-    public int PollutionTarget { get; set; } = 30;   //must get pollution <= this
-    public int PopularityFloor { get; set; } = 15;   //loose if popularity drops below
-
+    public int PollutionTarget { get; set; } = 30;   // Must get pollution <= this
+    public int PopularityFloor { get; set; } = 15;   // Lose if popularity drops below
 
     public override void _Ready()
     {
         Instance = this;
         Memory = new AdvisorMemory();
+    }
+
+    // -----------------------------------------
+    // DYNAMIC MODIFIER CALCULATIONS
+    // -----------------------------------------
+
+    /// <summary>
+    /// Generates a list of all active dynamic nerfs and buffs based on current game state.
+    /// </summary>
+    public List<StatModifier> GetActiveModifiers()
+    {
+        var modifiers = new List<StatModifier>();
+
+        // --- 1. Pollution-based Approval Nerf ---
+        // Every 10 points of Pollution reduces daily Approval by 1 point
+        if (Pollution > 0)
+        {
+            int pollutionPenalty = -(Pollution / 10);
+
+            if (pollutionPenalty != 0)
+            {
+                modifiers.Add(new StatModifier
+                {
+                    SourceName = "Smog & Pollution",
+                    Type = ModifierType.Popularity,
+                    Value = pollutionPenalty // Negative value (Nerf)
+                });
+            }
+        }
+
+        // --- 2. Overcrowding Penalties (Population > Capacity) ---
+        int overflow = Population - Capacity;
+        if (overflow > 0)
+        {
+            // Penalty 1: Money (-$1,000 per person over capacity)
+            modifiers.Add(new StatModifier
+            {
+                SourceName = "Overcrowding",
+                Type = ModifierType.Money,
+                Value = -(overflow * 1000)
+            });
+
+            // Penalty 2: Approval (-1 approval per person over capacity)
+            modifiers.Add(new StatModifier
+            {
+                SourceName = "Overcrowding",
+                Type = ModifierType.Popularity,
+                Value = -overflow
+            });
+        }
+
+        return modifiers;
     }
 
     /// <summary>
@@ -129,11 +205,8 @@ public partial class GameManager : Node
     public void ApplyStatChanges(int population = 0, int pollution = 0, int popularity = 0, int money = 0, int capacity = 0)
     {
         _population = Mathf.Max(_population + population, 0);
-
-        // THE FIX: Allows infinite growth instead of stopping at 100
         _pollution = Mathf.Max(_pollution + pollution, 0);
         _popularity = Mathf.Max(_popularity + popularity, 0);
-
         _money = Mathf.Max(_money + money, 0);
         _capacity = Mathf.Max(_capacity + capacity, 0);
 
@@ -149,8 +222,6 @@ public partial class GameManager : Node
         GD.Print($"Pollution:  {(ExpectedDailyPollution >= 0 ? "+" : "")}{ExpectedDailyPollution}");
         GD.Print($"Approval:   {(ExpectedDailyPopularity >= 0 ? "+" : "")}{ExpectedDailyPopularity}");
         GD.Print($"Money:      {(ExpectedDailyMoney >= 0 ? "+" : "")}{ExpectedDailyMoney}");
-
-        // Prints the difference (e.g. +12)
         GD.Print($"Capacity:   {(ExpectedDailyCapacity >= 0 ? "+" : "")}{ExpectedDailyCapacity}");
         GD.Print("===================================\n");
 
@@ -159,12 +230,10 @@ public partial class GameManager : Node
             pollution: ExpectedDailyPollution,
             popularity: ExpectedDailyPopularity,
             money: ExpectedDailyMoney
-        // Note: capacity is still intentionally left out here!
         );
 
         CurrentTurn++;
 
-        // NEW: Remember today's capacity so we can calculate the difference tomorrow!
         _lastTurnCapacity = Capacity;
 
         EmitSignal(SignalName.TurnAdvanced, CurrentTurn);
@@ -192,7 +261,6 @@ public partial class GameManager : Node
     {
         ParsedBuildingStats.Clear();
 
-        // --- DEBUG BLOCK START ---
         if (BuildingInfo == null || BuildingInfo.Count == 0)
         {
             GD.PrintErr("DEBUG FAILED: BuildingInfo is NULL or EMPTY! The GameManager is not receiving the dictionary from the Inspector.");
@@ -208,14 +276,11 @@ public partial class GameManager : Node
             GD.Print($"Building Type [{typeIndex}]: Found {infoArray.Length} strings.");
             for (int i = 0; i < infoArray.Length; i++)
             {
-                GD.Print($"   Line {i}: \"{infoArray[i]}\"");
+                GD.Print($"    Line {i}: \"{infoArray[i]}\"");
             }
         }
         GD.Print("-----------------------------------------------\n");
-        // --- DEBUG BLOCK END ---
 
-
-        // (The rest of the parsing code continues below)
         foreach (var kvp in BuildingInfo)
         {
             int typeIndex = kvp.Key;
@@ -223,7 +288,6 @@ public partial class GameManager : Node
 
             var levelDict = new Dictionary<int, BuildingYieldStats>();
 
-            // Assuming max 4 upgrades (so 5 levels total: 0, 1, 2, 3, 4)
             for (int lvl = 0; lvl <= 4; lvl++)
             {
                 string rawStats = "";
@@ -238,10 +302,9 @@ public partial class GameManager : Node
                     if (infoArray.Length > targetStatsIndex)
                         rawStats = infoArray[targetStatsIndex];
                     else if (infoArray.Length >= 2)
-                        rawStats = infoArray[1]; // Fallback to level 0 stats if missing
+                        rawStats = infoArray[1];
                 }
 
-                // Parse it once and store it!
                 levelDict[lvl] = ParseYieldStats(rawStats);
             }
 
@@ -255,12 +318,10 @@ public partial class GameManager : Node
         BuildingYieldStats result = new BuildingYieldStats();
         if (string.IsNullOrWhiteSpace(statsString)) return result;
 
-        // Split by comma to separate the different stats
         string[] stats = statsString.Split(',', System.StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string stat in stats)
         {
-            // Split by colon to separate the name (e.g., "Money") from the value (e.g., "+$5k/day")
             string[] kv = stat.Split(':');
 
             if (kv.Length == 2)
@@ -268,26 +329,21 @@ public partial class GameManager : Node
                 string statName = kv[0].Trim().ToLower();
                 string valStr = kv[1].Trim().ToLower();
 
-                // 1. Check if the value contains 'k' (thousands)
                 bool isK = valStr.Contains("k");
 
-                // 2. Aggressively clean out all symbols and letters, leaving only numbers, decimals, and minus signs
                 valStr = valStr.Replace("+", "")
                                .Replace("$", "")
                                .Replace("k", "")
                                .Replace("/day", "")
                                .Trim();
 
-                // 3. Parse the number as a float (so it safely handles decimals like "2.5")
                 if (float.TryParse(valStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float parsedVal))
                 {
-                    // Convert 'k' to thousands if needed
                     int finalValue = (int)(isK ? parsedVal * 1000f : parsedVal);
 
-                    // 4. Map the extracted value to the correct stat!
                     if (statName.Contains("upkeep"))
                     {
-                        result.Money -= finalValue; // Upkeep subtracts money!
+                        result.Money -= finalValue;
                     }
                     else if (statName.Contains("money"))
                     {
@@ -297,7 +353,7 @@ public partial class GameManager : Node
                     {
                         result.Capacity += finalValue;
                     }
-                    else if (statName.Contains("approval")) // THE FIX: Correctly maps "Approval: +4" to the Popularity variable
+                    else if (statName.Contains("approval"))
                     {
                         result.Popularity += finalValue;
                     }
@@ -326,7 +382,6 @@ public partial class GameManager : Node
 
             for (int type = 0; type < typeCount; type++)
             {
-                // Skip if this building type isn't in our pre-calculated dictionary
                 if (!ParsedBuildingStats.TryGetValue(type, out var levelDict)) continue;
 
                 for (int lvl = 0; lvl < levelCount; lvl++)
@@ -334,7 +389,6 @@ public partial class GameManager : Node
                     int countOnMap = PlacedBuildingLevelCounts[type, lvl];
                     if (countOnMap <= 0) continue;
 
-                    // Grab the pre-calculated math struct! No strings involved.
                     if (levelDict.TryGetValue(lvl, out BuildingYieldStats stats))
                     {
                         totalPop += (stats.Population * countOnMap);
@@ -347,17 +401,35 @@ public partial class GameManager : Node
             }
         }
 
-        // (This goes at the very bottom of RecalculateDailyYields)
-        ExpectedDailyPopulation = totalPop;
-        ExpectedDailyPollution = totalPol;
-        ExpectedDailyPopularity = totalPopu;
-        ExpectedDailyMoney = totalMon;
+        // 1. Store Raw Building Yields separately
+        BuildingDailyPopulation = totalPop;
+        BuildingDailyPollution = totalPol;
+        BuildingDailyPopularity = totalPopu;
+        BuildingDailyMoney = totalMon;
 
-        // 1. Set the absolute map capacity (No base 100 filler)
+        // 2. Update Capacity FIRST so modifiers evaluate against updated map state
         Capacity = totalCap;
-
-        // 2. The "Daily" capacity is just whatever changed today!
         ExpectedDailyCapacity = Capacity - _lastTurnCapacity;
+
+        // 3. Sum up active Modifiers (including Overcrowding!)
+        int modPopu = 0, modPol = 0, modMon = 0;
+        foreach (var mod in GetActiveModifiers())
+        {
+            if (mod.Type == ModifierType.Popularity) modPopu += mod.Value;
+            if (mod.Type == ModifierType.Pollution) modPol += mod.Value;
+            if (mod.Type == ModifierType.Money) modMon += mod.Value;
+        }
+
+        // 4. Set Total Expected Daily Changes (Buildings + Modifiers)
+        ExpectedDailyPopulation = totalPop;
+        ExpectedDailyPollution = totalPol + modPol;
+        ExpectedDailyPopularity = totalPopu + modPopu;
+        ExpectedDailyMoney = totalMon + modMon;
+    }
+
+    public void NotifyStatsChanged()
+    {
+        EmitSignal(SignalName.StatsChanged);
     }
 
     public void ResetGame()
@@ -366,7 +438,7 @@ public partial class GameManager : Node
         _pollution = 80;
         _popularity = 50;
         _money = 500;
-        _capacity = 0; // Removed 100 filler
+        _capacity = 0;
 
         _expectedDailyPopulation = 0;
         _expectedDailyPollution = 0;
@@ -374,7 +446,16 @@ public partial class GameManager : Node
         _expectedDailyMoney = 0;
         _expectedDailyCapacity = 0;
 
-        _lastTurnCapacity = 0; // Reset this too!
+        _lastTurnCapacity = 0;
+
+        BuildingDailyPopulation = 0;
+        BuildingDailyPollution = 0;
+        BuildingDailyPopularity = 0;
+        BuildingDailyMoney = 0;
+
+        IsPollutionDropdownOpen = false;
+        IsPopularityDropdownOpen = false;
+        IsMoneyDropdownOpen = false;
 
         CurrentTurn = 1;
         Memory.Reset();
@@ -383,7 +464,6 @@ public partial class GameManager : Node
         EmitSignal(SignalName.StatsChanged);
     }
 
-    // The container for our math
     public struct BuildingYieldStats
     {
         public int Population;

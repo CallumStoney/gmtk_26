@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://d2q8bgoo1jm8f"]
+[gd_scene load_steps=4 format=3 uid="uid://bv107oefhsh4k"]
 
 [ext_resource type="Script" uid="uid://cf1vs1kc5yqjk" path="res://Scripts/HomeScreen.cs" id="1_script"]
-[ext_resource type="Theme" uid="uid://den3oap6m2s7s" path="res://Art/cozy_theme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://yplwk77rles2" path="res://Art/cozy_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" uid="uid://b3qjae4nu5uhb" path="res://Nodes/cursor_manager.tscn" id="3_kvy12"]
 
 [node name="HomeScreen" type="Control"]
 layout_mode = 3
@@ -12,6 +13,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_script")
+
+[node name="CursorManager" parent="." instance=ExtResource("3_kvy12")]
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

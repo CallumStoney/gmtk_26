@@ -11,10 +11,11 @@ public partial class Camera2d : Camera2D
     // Trackpad Settings
     [Export] public float TrackpadPanSpeed = 35f;
 
-    // How softly the camera tracks your mouse. Lower = softer, Higher = snappier.
-    [Export] public float DragSmoothingSpeed = 20f;
+    // Smoothness: Lower = floatier/softer, Higher = snappier/faster.
+    // Recommended value range: 8f to 15f
+    [Export] public float DragSmoothingSpeed = 10f;
 
-    // --- NEW: Cursor Manager Reference ---
+    // --- Cursor Manager Reference ---
     [Export] public CursorManager CursorMgr;
 
     private bool _isDragging = false;
@@ -22,12 +23,14 @@ public partial class Camera2d : Camera2D
 
     public override void _EnterTree()
     {
-        // Forces this camera to take over the screen again every time the scene loads
         MakeCurrent();
     }
 
     public override void _Ready()
     {
+        // 1. CRITICAL: Force Godot's built-in smoothing OFF so it doesn't fight script lerping
+        PositionSmoothingEnabled = false;
+
         Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
         _targetPosition = Position;
     }
@@ -37,19 +40,18 @@ public partial class Camera2d : Camera2D
         // 1. Standard Mouse Interactions
         if (@event is InputEventMouseButton mouseButton)
         {
-            // Ignore zoom wheel if the cursor is hovering over ANY UI control node
             bool isHoveringUI = GetViewport().GuiGetHoveredControl() != null;
 
             if (mouseButton.ButtonIndex == MouseButton.WheelUp && mouseButton.Pressed)
             {
-                if (isHoveringUI) return; // Prevent zooming over UI
+                if (isHoveringUI) return;
 
                 Zoom += ZoomSpeed;
                 Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
             }
             else if (mouseButton.ButtonIndex == MouseButton.WheelDown && mouseButton.Pressed)
             {
-                if (isHoveringUI) return; // Prevent zooming over UI
+                if (isHoveringUI) return;
 
                 Zoom -= ZoomSpeed;
                 Zoom = Zoom.Clamp(ZoomMin, ZoomMax);
@@ -62,14 +64,10 @@ public partial class Camera2d : Camera2D
 
                 if (_isDragging)
                 {
-                    _targetPosition = Position;
-
-                    // --- NEW: Switch to Drag Cursor on press ---
                     CursorMgr?.SetDragCursor();
                 }
                 else
                 {
-                    // --- NEW: Switch back to Default Cursor on release ---
                     CursorMgr?.SetDefaultCursor();
                 }
             }
@@ -96,6 +94,17 @@ public partial class Camera2d : Camera2D
 
     public override void _Process(double delta)
     {
-        Position = Position.Lerp(_targetPosition, (float)delta * DragSmoothingSpeed);
+        float dt = (float)delta;
+
+        // 2. Framerate-Independent Exponential Decay Lerp Formula
+        // This guarantees smooth movement regardless of FPS spikes or input polling rates.
+        float weight = 1.0f - Mathf.Exp(-DragSmoothingSpeed * dt);
+        Position = Position.Lerp(_targetPosition, weight);
+
+        // 3. Snap when extremely close to prevent sub-pixel micro-jitter
+        if (Position.DistanceSquaredTo(_targetPosition) < 0.01f)
+        {
+            Position = _targetPosition;
+        }
     }
 }
