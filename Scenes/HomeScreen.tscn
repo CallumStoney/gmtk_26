@@ -846,11 +846,6 @@ text = "Mute"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SettingsButton" type="Button" parent="TopUI/HBoxContainer"]
-custom_minimum_size = Vector2(80, 40)
-layout_mode = 2
-text = "Settings"
-
 [node name="TitleLabel2" type="Label" parent="."]
 layout_mode = 2
 offset_left = 203.0

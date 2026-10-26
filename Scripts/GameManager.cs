@@ -296,20 +296,6 @@ public partial class GameManager : Node
         _lastTurnCapacity = Capacity;
 
         EmitSignal(SignalName.TurnAdvanced, CurrentTurn);
-
-        if (_popularity <= PopularityFloor)
-        {
-            EmitSignal(SignalName.GameOver, "Gtfo!");
-            return;
-        }
-
-        if (CurrentTurn > MaxTurns)
-        {
-            if (_pollution <= PollutionTarget)
-                EmitSignal(SignalName.GameOver, "pluh");
-            else
-                EmitSignal(SignalName.GameOver, "because of you, everyone is dead");
-        }
     }
 
     // ==========================================

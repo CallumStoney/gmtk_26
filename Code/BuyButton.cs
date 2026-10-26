@@ -19,26 +19,32 @@ public partial class BuyButton : TextureButton
     // -----------------------------------------
     public override void _Ready()
     {
-        // Hook into the GameManager's signal so the button updates automatically!
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StatsChanged += UpdateButtonState;
-        }
-
-        // Wait until all nodes finish loading to run initial check
-        CallDeferred(nameof(UpdateButtonState));
+        // Removed the signal hook from here because we will handle it dynamically in _EnterTree
     }
 
     public override void _EnterTree()
     {
+        // 1. Handle button press signals
         Pressed -= OnButtonPressed;
         Pressed += OnButtonPressed;
+
+        // 2. Re-hook the StatsChanged signal every time the shop is opened
+        if (GameManager.Instance != null)
+        {
+            // Subtracting first ensures we never accidentally connect twice
+            GameManager.Instance.StatsChanged -= UpdateButtonState;
+            GameManager.Instance.StatsChanged += UpdateButtonState;
+        }
+
+        // 3. Immediately evaluate if we can afford the building upon opening the menu
+        CallDeferred(nameof(UpdateButtonState));
     }
 
     public override void _ExitTree()
     {
         Pressed -= OnButtonPressed;
 
+        // Unhook when the shop closes so hidden buttons don't unnecessarily process data
         if (GameManager.Instance != null)
         {
             GameManager.Instance.StatsChanged -= UpdateButtonState;

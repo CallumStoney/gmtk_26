@@ -9,6 +9,9 @@ public partial class PlaceButton : TextureButton
     // 2. Type the ID of the building this button selects (0 for House, 1 for Office, etc.)
     [Export] public int BuildingIndex = 0;
 
+    // 3. Drag your InventoryUI node here in the Inspector so the button can close it
+    [Export] public InventoryUI InventoryUI;
+
     // -----------------------------------------
     // INITIALIZATION & CLEANUP
     // -----------------------------------------
@@ -42,7 +45,16 @@ public partial class PlaceButton : TextureButton
 
         // Uses your existing selection method in BuildingManager
         Manager.SelectBuilding(BuildingIndex);
-
         GD.Print($"Selected building index updated to: {BuildingIndex}");
+
+        // Close the inventory popup after making a selection
+        if (InventoryUI != null)
+        {
+            InventoryUI.CloseInventory();
+        }
+        else
+        {
+            GD.PrintErr("PlaceButton: InventoryUI reference is missing in the Inspector!");
+        }
     }
 }

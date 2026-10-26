@@ -105,7 +105,7 @@ public partial class AudioManager : Node
 
 		if (_isMuted)
 		{
-			_muteLabel.Text = "MUTED [M]";
+			_muteLabel.Text = "[M]";
 			_muteLabel.Visible = true;
 		}
 		else
@@ -181,14 +181,19 @@ public partial class AudioManager : Node
 		}
 	}
 
-	public void StartHomeMusic()
-	{
-		_homeMusicPlayer.VolumeDb = SilentDb;
-		_homeMusicPlayer.Play();
-		TweenVolume(_homeMusicPlayer, HomeMusicDb, HomeMusicFadeDuration);
-	}
+    public void StartHomeMusic()
+    {
+        // 1. Force the volume to be loud instantly (bypassing the 3-second -80db fade)
+        _homeMusicPlayer.VolumeDb = HomeMusicDb;
 
-	public void StopHomeMusic(){
+        // 2. Play it
+        _homeMusicPlayer.Play();
+
+        // 3. Print to the console so we know 100% this method actually ran
+        GD.Print("Home music is attempting to play at " + HomeMusicDb + " db!");
+    }
+
+    public void StopHomeMusic(){
 		TweenVolume(_homeMusicPlayer, SilentDb, 0.5f);
 	}
 

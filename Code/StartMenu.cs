@@ -5,20 +5,20 @@ public partial class StartMenu : Control
 {
 	private Button _muteButton;
 
-	public override void _Ready()
-	{
-		_muteButton = GetNode<Button>("TopUI/HBoxContainer/Mute");
-		if (_muteButton != null)
-		{
-			_muteButton.Pressed += OnMutePressed;
-			UpdateMuteButtonText();
-		}
+    public override void _Ready()
+    {
+        _muteButton = GetNode<Button>("TopUI/HBoxContainer/Mute");
+        if (_muteButton != null)
+        {
+            _muteButton.Pressed += OnMutePressed;
+            UpdateMuteButtonText();
+        }
 
-		
+		// BUG: This plays the city music, not the home screen music!
 		AudioManager.Instance?.StartHomeMusic();
-	}
+    }
 
-	private void OnMutePressed()
+    private void OnMutePressed()
 	{
 		AudioManager.Instance?.ToggleMute();
 		UpdateMuteButtonText();
